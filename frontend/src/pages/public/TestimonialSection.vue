@@ -4,7 +4,7 @@
     class="py-12 px-6 md:px-12 lg:px-20 bg-gray-50 overflow-hidden relative"
   >
     <h2
-      class="text-4xl md:text-5xl font-extrabold text-center mb-8 text-primary"
+      class="text-4xl md:text-5xl font-extrabold text-center mb-8 text-primary text-green-600"
     >
       What Our Clients Say
     </h2>

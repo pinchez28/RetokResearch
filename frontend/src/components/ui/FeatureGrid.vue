@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import FeatureCard from './FeatureCard.vue';
+import FeatureCard from './TopRatedExpertCard.vue';
 
 const props = defineProps({
   reasons: {

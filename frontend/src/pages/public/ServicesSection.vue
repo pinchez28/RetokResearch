@@ -4,29 +4,30 @@
     class="relative py-20 px-6 md:px-12 lg:px-20 bg-gray-50"
   >
     <!-- Floating CTA Button -->
-    <div class="flex justify-end mb-8">
-      <button
-        @click="openAssignmentModal"
-        class="bg-[#ff8040] hover:bg-green-500 text-gray-900 font-extrabold text-lg sm:text-xl md:text-2xl py-2 sm:py-3 px-4 sm:px-6 rounded-3xl shadow-2xl transition-all duration-300"
-      >
-        Quickly Post A Research Assignment
-      </button>
-    </div>
-
+    <!-- Section Title + Button -->
     <h2
-      class="text-4xl font-extrabold mb-12 text-center text-gray-800 animate-fadeUp"
+      class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 text-center text-green-600 animate-fadeUp"
     >
       Our Core Research Services
     </h2>
 
+    <div class="flex justify-center mb-12">
+      <button
+        @click="openAssignmentModal"
+        class="bg-gradient-to-r from-[#ff8040] to-[#ffb366] text-gray-900 font-extrabold py-2 sm:py-3 px-4 sm:px-6 rounded-3xl shadow-2xl hover:scale-105 transition-transform duration-300 w-full sm:w-auto text-center"
+      >
+        Quickly Get Help with Reseach
+      </button>
+    </div>
+
     <!-- Branch buttons -->
-    <div class="flex flex-wrap justify-center gap-4 sm:gap-6 mb-10">
+    <div class="flex flex-wrap justify-center gap-3 sm:gap-6 mb-10">
       <button
         v-for="branch in branches"
         :key="branch._id"
         @click="activeBranch = branch._id"
         :class="[
-          'px-6 py-3 rounded-full font-semibold shadow-md transition-all duration-300',
+          'px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold shadow-md transition-all duration-300 whitespace-nowrap',
           activeBranch === branch._id
             ? 'bg-blue-900 text-white shadow-xl'
             : 'bg-white text-gray-800 hover:bg-blue-100',
@@ -41,7 +42,7 @@
       <div
         v-if="currentBranch"
         :key="currentBranch._id"
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
       >
         <div
           v-for="category in currentBranch.categories"
@@ -50,12 +51,12 @@
         >
           <!-- Category Title -->
           <h3
-            class="text-xl font-semibold text-gray-800 mb-4 border-l-4 border-blue-700 pl-3"
+            class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 border-l-4 border-blue-700 pl-3"
           >
             {{ category.name }}
           </h3>
 
-          <!-- Services Grid inside category -->
+          <!-- Services Grid -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
             <ServiceCard
               v-for="service in category.services"
@@ -88,12 +89,14 @@
           </button>
 
           <h2
-            class="text-3xl md:text-4xl font-bold text-gray-800 mb-4 tracking-wide"
+            class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4 tracking-wide"
           >
             {{ selectedService.title }}
           </h2>
 
-          <p class="text-lg text-gray-600 mb-4 leading-relaxed tracking-wide">
+          <p
+            class="text-base sm:text-lg md:text-xl text-gray-600 mb-4 leading-relaxed tracking-wide"
+          >
             {{
               selectedService.fullDescription ||
               selectedService.shortDescription
@@ -162,18 +165,9 @@
             &times;
           </button>
 
-          <h2 class="text-3xl font-bold mb-4 text-gray-800">
+          <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-gray-800">
             Submit Your Assignment
           </h2>
-
-          <p class="text-gray-600 mb-2 font-medium">Fill in all details</p>
-
-          <p
-            class="mb-6 text-red-600 font-extrabold text-lg border-l-4 border-red-600 pl-3"
-          >
-            ⚠️ To receive live updates on your assignment status, you must sign
-            up.
-          </p>
 
           <form @submit.prevent="submitAssignment" class="space-y-4">
             <label class="font-bold text-lg text-gray-800 block"
@@ -239,7 +233,7 @@
 
             <button
               type="submit"
-              class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+              class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 w-full sm:w-auto"
             >
               Submit Assignment
             </button>
@@ -254,7 +248,7 @@
 import { ref, computed } from 'vue';
 import ServiceCard from '@/components/ui/ServiceCard.vue';
 
-/* Sample branches */
+/* Prefilled sample data (Academic + Industrial) */
 const branches = ref([
   {
     _id: 'academic',
@@ -278,7 +272,6 @@ const branches = ref([
             prerequisites: ['Research topic', 'Institution guidelines'],
             duration: '2–4 weeks',
             price: '$150',
-            icon: 'FileSearch',
           },
           {
             _id: 'svc-2',
@@ -290,7 +283,6 @@ const branches = ref([
             prerequisites: ['Approved topic', 'Previous research work'],
             duration: '1–6 months',
             price: '$400',
-            icon: 'GraduationCap',
           },
         ],
       },
@@ -308,7 +300,17 @@ const branches = ref([
             prerequisites: ['Raw data files', 'Variables list'],
             duration: '1–2 weeks',
             price: '$120',
-            icon: 'BarChart3',
+          },
+          {
+            _id: 'svc-9',
+            title: 'Survey Data Processing',
+            shortDescription: 'Clean and analyze surveys',
+            fullDescription:
+              'Transform survey responses into actionable insights.',
+            features: ['Data cleaning', 'Visualization', 'Reporting'],
+            prerequisites: ['Survey results'],
+            duration: '1 week',
+            price: '$100',
           },
         ],
       },
@@ -336,7 +338,17 @@ const branches = ref([
             prerequisites: ['Business sector', 'Target market details'],
             duration: '2–3 weeks',
             price: '$200',
-            icon: 'BarChart3',
+          },
+          {
+            _id: 'svc-10',
+            title: 'Customer Feedback Research',
+            shortDescription: 'Gather insights',
+            fullDescription:
+              'Analyze customer feedback to improve products and services.',
+            features: ['Surveys', 'Focus groups', 'Analysis'],
+            prerequisites: ['Customer database'],
+            duration: '1–2 weeks',
+            price: '$150',
           },
         ],
       },
@@ -358,7 +370,17 @@ const branches = ref([
             prerequisites: ['Prototype', 'Target audience data'],
             duration: '3–5 weeks',
             price: '$300',
-            icon: 'Lightbulb',
+          },
+          {
+            _id: 'svc-11',
+            title: 'Innovation Assessment',
+            shortDescription: 'Evaluate new ideas',
+            fullDescription:
+              'Assess feasibility and market potential of innovations.',
+            features: ['Idea validation', 'Market fit', 'Risk analysis'],
+            prerequisites: ['Concept documentation'],
+            duration: '2–4 weeks',
+            price: '$250',
           },
         ],
       },
@@ -415,3 +437,31 @@ const submitAssignment = () => {
   closeAssignmentModal();
 };
 </script>
+
+<style scoped>
+/* Fade-up animation */
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeUp {
+  animation: fadeUp 0.8s cubic-bezier(0.22, 0.9, 0.35, 1) forwards;
+}
+
+/* Fade-slide transition */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.5s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+</style>
