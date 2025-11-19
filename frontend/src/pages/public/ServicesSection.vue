@@ -1,12 +1,11 @@
 <template>
   <section
     id="services"
-    class="relative py-20 px-6 md:px-12 lg:px-20 bg-gray-50"
+    class="relative py-24 px-6 md:px-12 lg:px-20 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white"
   >
-    <!-- Floating CTA Button -->
-    <!-- Section Title + Button -->
+    <!-- Section Title + CTA Button -->
     <h2
-      class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 text-center text-green-600 animate-fadeUp"
+      class="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-8 text-center text-white drop-shadow-lg animate-fadeUp"
     >
       Our Core Research Services
     </h2>
@@ -14,23 +13,23 @@
     <div class="flex justify-center mb-12">
       <button
         @click="openAssignmentModal"
-        class="bg-gradient-to-r from-[#ff8040] to-[#ffb366] text-gray-900 font-extrabold py-2 sm:py-3 px-4 sm:px-6 rounded-3xl shadow-2xl hover:scale-105 transition-transform duration-300 w-full sm:w-auto text-center"
+        class="bg-gradient-to-r from-green-800 to-teal-500 text-white font-extrabold py-3 sm:py-4 px-6 sm:px-8 rounded-3xl shadow-2xl hover:scale-105 transition-transform duration-300 w-full sm:w-auto text-center"
       >
-        Quickly Get Help with Reseach
+        Quickly Get Help with Research
       </button>
     </div>
 
-    <!-- Branch buttons -->
-    <div class="flex flex-wrap justify-center gap-3 sm:gap-6 mb-10">
+    <!-- Branch Buttons -->
+    <div class="flex flex-wrap justify-center gap-4 mb-12">
       <button
         v-for="branch in branches"
         :key="branch._id"
         @click="activeBranch = branch._id"
         :class="[
-          'px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold shadow-md transition-all duration-300 whitespace-nowrap',
+          'px-5 py-2 rounded-full font-semibold shadow-md transition-all duration-300 whitespace-nowrap',
           activeBranch === branch._id
-            ? 'bg-blue-900 text-white shadow-xl'
-            : 'bg-white text-gray-800 hover:bg-blue-100',
+            ? 'bg-white text-blue-900 shadow-xl'
+            : 'bg-blue-700 text-white hover:bg-blue-600',
         ]"
       >
         {{ branch.name }}
@@ -47,11 +46,11 @@
         <div
           v-for="category in currentBranch.categories"
           :key="category._id"
-          class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-gray-200 hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition-all duration-300"
+          class="p-6 rounded-2xl shadow-xl flex flex-col border border-blue-700 bg-gradient-to-br from-blue-800 to-blue-900 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-300"
         >
           <!-- Category Title -->
           <h3
-            class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 border-l-4 border-blue-700 pl-3"
+            class="text-xl sm:text-2xl font-semibold mb-4 border-l-4 border-green-400 pl-3 text-white drop-shadow-md"
           >
             {{ category.name }}
           </h3>
@@ -97,10 +96,7 @@
           <p
             class="text-base sm:text-lg md:text-xl text-gray-600 mb-4 leading-relaxed tracking-wide"
           >
-            {{
-              selectedService.fullDescription ||
-              selectedService.shortDescription
-            }}
+            {{ selectedService.fullDescription || selectedService.shortDescription }}
           </p>
 
           <div v-if="selectedService.features?.length" class="mb-4">
@@ -113,14 +109,9 @@
           </div>
 
           <div v-if="selectedService.prerequisites?.length" class="mb-4">
-            <h4 class="font-semibold text-gray-800 mb-2 text-lg">
-              Prerequisites:
-            </h4>
+            <h4 class="font-semibold text-gray-800 mb-2 text-lg">Prerequisites:</h4>
             <ul class="list-disc list-inside text-gray-700 space-y-1">
-              <li
-                v-for="(item, idx) in selectedService.prerequisites"
-                :key="idx"
-              >
+              <li v-for="(item, idx) in selectedService.prerequisites" :key="idx">
                 {{ item }}
               </li>
             </ul>
@@ -170,9 +161,7 @@
           </h2>
 
           <form @submit.prevent="submitAssignment" class="space-y-4">
-            <label class="font-bold text-lg text-gray-800 block"
-              >Research Topic</label
-            >
+            <label class="font-bold text-lg text-gray-800 block">Research Topic</label>
             <input
               v-model="assignmentForm.topic"
               type="text"
@@ -181,9 +170,7 @@
               required
             />
 
-            <label class="font-bold text-lg text-gray-800 block"
-              >Full Description</label
-            >
+            <label class="font-bold text-lg text-gray-800 block">Full Description</label>
             <textarea
               v-model="assignmentForm.description"
               placeholder="Full Description"
@@ -201,9 +188,7 @@
               class="w-full border border-gray-300 rounded-xl p-3"
             />
 
-            <label class="font-bold text-lg text-gray-800 block"
-              >Your Email</label
-            >
+            <label class="font-bold text-lg text-gray-800 block">Your Email</label>
             <input
               v-model="assignmentForm.email"
               type="email"
@@ -212,9 +197,7 @@
               required
             />
 
-            <label class="font-bold text-lg text-gray-800 block"
-              >Phone Number</label
-            >
+            <label class="font-bold text-lg text-gray-800 block">Phone Number</label>
             <input
               v-model="assignmentForm.phone"
               type="text"
@@ -245,142 +228,131 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import ServiceCard from '@/components/ui/ServiceCard.vue';
+import { ref, computed } from "vue";
+import ServiceCard from "@/components/ui/ServiceCard.vue";
 
-/* Prefilled sample data (Academic + Industrial) */
+// --- Branch Data ---
 const branches = ref([
   {
-    _id: 'academic',
-    name: 'Academic Research',
+    _id: "academic",
+    name: "Academic Research",
     categories: [
       {
-        _id: 'writing-1',
-        name: 'Research Writing',
+        _id: "writing-1",
+        name: "Research Writing",
         services: [
           {
-            _id: 'svc-1',
-            title: 'Proposal Writing',
-            shortDescription: 'High-quality proposals',
+            _id: "svc-1",
+            title: "Proposal Writing",
+            shortDescription: "High-quality proposals",
             fullDescription:
-              'Comprehensive guidance from topic selection to final submission.',
-            features: [
-              'Step-by-step guidance',
-              'Expert review',
-              'Draft revision',
-            ],
-            prerequisites: ['Research topic', 'Institution guidelines'],
-            duration: '2–4 weeks',
-            price: '$150',
+              "Comprehensive guidance from topic selection to final submission.",
+            features: ["Step-by-step guidance", "Expert review", "Draft revision"],
+            prerequisites: ["Research topic", "Institution guidelines"],
+            duration: "2–4 weeks",
+            price: "$150",
           },
           {
-            _id: 'svc-2',
-            title: 'Thesis Support',
-            shortDescription: 'Chapter guidance',
+            _id: "svc-2",
+            title: "Thesis Support",
+            shortDescription: "Chapter guidance",
             fullDescription:
-              'Full thesis supervision and consultation to meet academic standards.',
-            features: ['Mentorship', 'Draft review', 'Formatting assistance'],
-            prerequisites: ['Approved topic', 'Previous research work'],
-            duration: '1–6 months',
-            price: '$400',
+              "Full thesis supervision and consultation to meet academic standards.",
+            features: ["Mentorship", "Draft review", "Formatting assistance"],
+            prerequisites: ["Approved topic", "Previous research work"],
+            duration: "1–6 months",
+            price: "$400",
           },
         ],
       },
       {
-        _id: 'data-1',
-        name: 'Data Analysis',
+        _id: "data-1",
+        name: "Data Analysis",
         services: [
           {
-            _id: 'svc-3',
-            title: 'SPSS Analysis',
-            shortDescription: 'Statistical tests',
+            _id: "svc-3",
+            title: "SPSS Analysis",
+            shortDescription: "Statistical tests",
             fullDescription:
-              'Professional data analysis including cleaning, coding, and reporting.',
-            features: ['SPSS coding', 'Interpretation', 'Graphs & tables'],
-            prerequisites: ['Raw data files', 'Variables list'],
-            duration: '1–2 weeks',
-            price: '$120',
+              "Professional data analysis including cleaning, coding, and reporting.",
+            features: ["SPSS coding", "Interpretation", "Graphs & tables"],
+            prerequisites: ["Raw data files", "Variables list"],
+            duration: "1–2 weeks",
+            price: "$120",
           },
           {
-            _id: 'svc-9',
-            title: 'Survey Data Processing',
-            shortDescription: 'Clean and analyze surveys',
-            fullDescription:
-              'Transform survey responses into actionable insights.',
-            features: ['Data cleaning', 'Visualization', 'Reporting'],
-            prerequisites: ['Survey results'],
-            duration: '1 week',
-            price: '$100',
+            _id: "svc-9",
+            title: "Survey Data Processing",
+            shortDescription: "Clean and analyze surveys",
+            fullDescription: "Transform survey responses into actionable insights.",
+            features: ["Data cleaning", "Visualization", "Reporting"],
+            prerequisites: ["Survey results"],
+            duration: "1 week",
+            price: "$100",
           },
         ],
       },
     ],
   },
   {
-    _id: 'industrial',
-    name: 'Industrial & Corporate Research',
+    _id: "industrial",
+    name: "Industrial & Corporate Research",
     categories: [
       {
-        _id: 'market-1',
-        name: 'Market & Business Research',
+        _id: "market-1",
+        name: "Market & Business Research",
         services: [
           {
-            _id: 'svc-4',
-            title: 'Market Analysis',
-            shortDescription: 'Insights & trends',
+            _id: "svc-4",
+            title: "Market Analysis",
+            shortDescription: "Insights & trends",
             fullDescription:
-              'In-depth market research and competitor analysis for strategic decisions.',
-            features: [
-              'Competitor research',
-              'Customer surveys',
-              'Trend evaluation',
-            ],
-            prerequisites: ['Business sector', 'Target market details'],
-            duration: '2–3 weeks',
-            price: '$200',
+              "In-depth market research and competitor analysis for strategic decisions.",
+            features: ["Competitor research", "Customer surveys", "Trend evaluation"],
+            prerequisites: ["Business sector", "Target market details"],
+            duration: "2–3 weeks",
+            price: "$200",
           },
           {
-            _id: 'svc-10',
-            title: 'Customer Feedback Research',
-            shortDescription: 'Gather insights',
+            _id: "svc-10",
+            title: "Customer Feedback Research",
+            shortDescription: "Gather insights",
             fullDescription:
-              'Analyze customer feedback to improve products and services.',
-            features: ['Surveys', 'Focus groups', 'Analysis'],
-            prerequisites: ['Customer database'],
-            duration: '1–2 weeks',
-            price: '$150',
+              "Analyze customer feedback to improve products and services.",
+            features: ["Surveys", "Focus groups", "Analysis"],
+            prerequisites: ["Customer database"],
+            duration: "1–2 weeks",
+            price: "$150",
           },
         ],
       },
       {
-        _id: 'innovation-1',
-        name: 'Product & Innovation Research',
+        _id: "innovation-1",
+        name: "Product & Innovation Research",
         services: [
           {
-            _id: 'svc-5',
-            title: 'Product Research',
-            shortDescription: 'Testing & validation',
-            fullDescription:
-              'Analyze product usability, user behavior, and market fit.',
+            _id: "svc-5",
+            title: "Product Research",
+            shortDescription: "Testing & validation",
+            fullDescription: "Analyze product usability, user behavior, and market fit.",
             features: [
-              'User testing',
-              'Prototype evaluation',
-              'Data-driven recommendations',
+              "User testing",
+              "Prototype evaluation",
+              "Data-driven recommendations",
             ],
-            prerequisites: ['Prototype', 'Target audience data'],
-            duration: '3–5 weeks',
-            price: '$300',
+            prerequisites: ["Prototype", "Target audience data"],
+            duration: "3–5 weeks",
+            price: "$300",
           },
           {
-            _id: 'svc-11',
-            title: 'Innovation Assessment',
-            shortDescription: 'Evaluate new ideas',
-            fullDescription:
-              'Assess feasibility and market potential of innovations.',
-            features: ['Idea validation', 'Market fit', 'Risk analysis'],
-            prerequisites: ['Concept documentation'],
-            duration: '2–4 weeks',
-            price: '$250',
+            _id: "svc-11",
+            title: "Innovation Assessment",
+            shortDescription: "Evaluate new ideas",
+            fullDescription: "Assess feasibility and market potential of innovations.",
+            features: ["Idea validation", "Market fit", "Risk analysis"],
+            prerequisites: ["Concept documentation"],
+            duration: "2–4 weeks",
+            price: "$250",
           },
         ],
       },
@@ -393,7 +365,7 @@ const currentBranch = computed(() =>
   branches.value.find((b) => b._id === activeBranch.value)
 );
 
-/* Service Modal */
+// Service Modal
 const isServiceModalVisible = ref(false);
 const selectedService = ref({});
 const openServiceModal = (service) => {
@@ -405,17 +377,17 @@ const closeServiceModal = () => {
   isServiceModalVisible.value = false;
 };
 const handleServiceRequest = (service) => {
-  console.log('Requesting service:', service.title);
+  console.log("Requesting service:", service.title);
 };
 
-/* Assignment Modal */
+// Assignment Modal
 const isAssignmentModalVisible = ref(false);
 const assignmentForm = ref({
-  topic: '',
-  description: '',
-  timeline: '',
-  email: '',
-  phone: '',
+  topic: "",
+  description: "",
+  timeline: "",
+  email: "",
+  phone: "",
   file: null,
 });
 const openAssignmentModal = () => {
@@ -423,17 +395,17 @@ const openAssignmentModal = () => {
 };
 const closeAssignmentModal = () => {
   assignmentForm.value = {
-    topic: '',
-    description: '',
-    timeline: '',
-    email: '',
-    phone: '',
+    topic: "",
+    description: "",
+    timeline: "",
+    email: "",
+    phone: "",
     file: null,
   };
   isAssignmentModalVisible.value = false;
 };
 const submitAssignment = () => {
-  console.log('Assignment submitted:', assignmentForm.value);
+  console.log("Assignment submitted:", assignmentForm.value);
   closeAssignmentModal();
 };
 </script>

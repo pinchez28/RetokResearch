@@ -1,90 +1,122 @@
 <template>
-  <section id="why-us" class="py-20 px-6 md:px-12 lg:px-20 bg-gray-50">
+  <section
+    id="why-us"
+    class="py-20 px-6 md:px-12 lg:px-20 bg-gradient-to-br from-[#F5F1DC] via-[#FF8040] to-[#0046FF] text-gray-900"
+  >
     <!-- Section Title + CTA -->
-    <div class="flex flex-col items-center mb-12 gap-4">
+    <div class="flex flex-col items-center mb-12 gap-6">
       <h2
-        class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-green-600 animate-fadeUp text-center"
+        class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#001BB7] animate-fadeUp text-center drop-shadow-lg"
       >
         Why Choose Us
       </h2>
 
       <button
         @click="handleCTA"
-        class="bg-gradient-to-r from-[#ff8040] to-[#ffb366] text-gray-900 font-extrabold text-base sm:text-lg md:text-xl lg:text-2xl py-2 sm:py-3 px-4 sm:px-6 rounded-3xl shadow-2xl hover:scale-105 transition-transform duration-300 w-full md:w-auto text-center"
+        class="bg-gradient-to-r from-[#0046FF] to-[#001BB7] text-white font-extrabold text-base sm:text-lg md:text-xl lg:text-2xl py-3 px-6 rounded-3xl shadow-2xl hover:scale-105 hover:shadow-2xl transition-transform duration-300 w-full md:w-auto text-center"
       >
         Get Started Today
       </button>
     </div>
 
     <!-- Cards Grid -->
-    <WhyUsGrid :cards="whyUsCards" />
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div
+        v-for="card in whyUsCards"
+        :key="card._id"
+        class="p-6 rounded-3xl shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-3xl"
+        :style="getCardGradient(card._id)"
+      >
+        <div class="flex items-center justify-center mb-4">
+          <component :is="card.icon" class="w-12 h-12 text-white" />
+        </div>
+        <h3 class="text-xl sm:text-2xl font-bold mb-2 text-white">
+          {{ card.title }}
+        </h3>
+        <p class="text-sm sm:text-base mb-4 text-white/90 leading-relaxed">
+          {{ card.description }}
+        </p>
+        <ul class="list-disc list-inside mb-4 text-white/80 space-y-1">
+          <li v-for="(feature, idx) in card.features" :key="idx">
+            {{ feature }}
+          </li>
+        </ul>
+        <button
+          @click="card.ctaHandler"
+          class="bg-white text-[#0046FF] font-bold py-2 px-4 rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all duration-300"
+        >
+          {{ card.ctaText }}
+        </button>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import WhyUsGrid from '@/components/ui/WhyUsGrid.vue';
-
-/* Sample data */
-import { BookOpen, Users, Zap, Heart } from 'lucide-vue-next'; // Example icons
+import { ref } from "vue";
+import { BookOpen, Users, Zap, Heart } from "lucide-vue-next";
 
 const whyUsCards = ref([
   {
-    _id: 'wu-1',
-    title: 'Expert Researchers',
+    _id: "wu-1",
+    title: "Expert Researchers",
     description:
-      'Our team consists of experienced researchers in various fields ensuring quality work.',
-    features: [
-      'PhD-level guidance',
-      'Years of experience',
-      'Field-specific expertise',
-    ],
+      "Our team consists of experienced researchers in various fields ensuring quality work.",
+    features: ["PhD-level guidance", "Years of experience", "Field-specific expertise"],
     icon: BookOpen,
-    ctaText: 'Learn More',
-    ctaHandler: () => alert('Expert Researchers clicked!'),
+    ctaText: "Learn More",
+    ctaHandler: () => alert("Expert Researchers clicked!"),
   },
   {
-    _id: 'wu-2',
-    title: 'Timely Delivery',
+    _id: "wu-2",
+    title: "Timely Delivery",
     description:
-      'We guarantee to deliver your assignments and reports on time, every time.',
-    features: ['Fast turnaround', 'Deadline tracking', 'Real-time updates'],
+      "We guarantee to deliver your assignments and reports on time, every time.",
+    features: ["Fast turnaround", "Deadline tracking", "Real-time updates"],
     icon: Users,
-    ctaText: 'See How',
-    ctaHandler: () => alert('Timely Delivery clicked!'),
+    ctaText: "See How",
+    ctaHandler: () => alert("Timely Delivery clicked!"),
   },
   {
-    _id: 'wu-3',
-    title: 'Innovative Solutions',
+    _id: "wu-3",
+    title: "Innovative Solutions",
     description:
-      'We offer unique and innovative research solutions tailored to your needs.',
-    features: [
-      'Custom methodologies',
-      'Data-driven insights',
-      'Creative approach',
-    ],
+      "We offer unique and innovative research solutions tailored to your needs.",
+    features: ["Custom methodologies", "Data-driven insights", "Creative approach"],
     icon: Zap,
-    ctaText: 'Discover More',
-    ctaHandler: () => alert('Innovative Solutions clicked!'),
+    ctaText: "Discover More",
+    ctaHandler: () => alert("Innovative Solutions clicked!"),
   },
   {
-    _id: 'wu-4',
-    title: 'Customer Satisfaction',
+    _id: "wu-4",
+    title: "Customer Satisfaction",
     description:
-      'Your satisfaction is our priority. We work closely to meet your expectations.',
-    features: [
-      'Dedicated support',
-      'Revision options',
-      'Transparent communication',
-    ],
+      "Your satisfaction is our priority. We work closely to meet your expectations.",
+    features: ["Dedicated support", "Revision options", "Transparent communication"],
     icon: Heart,
-    ctaText: 'Contact Us',
-    ctaHandler: () => alert('Customer Satisfaction clicked!'),
+    ctaText: "Contact Us",
+    ctaHandler: () => alert("Customer Satisfaction clicked!"),
   },
 ]);
 
 const handleCTA = () => {
-  alert('Get Started CTA clicked!');
+  alert("Get Started CTA clicked!");
+};
+
+// Dynamic card gradients based on ID for visual variety
+const getCardGradient = (id) => {
+  switch (id) {
+    case "wu-1":
+      return "background: linear-gradient(135deg, #001BB7, #0046FF)";
+    case "wu-2":
+      return "background: linear-gradient(135deg, #FF8040, #F5F1DC)";
+    case "wu-3":
+      return "background: linear-gradient(135deg, #0046FF, #FF8040)";
+    case "wu-4":
+      return "background: linear-gradient(135deg, #F5F1DC, #001BB7)";
+    default:
+      return "background: linear-gradient(135deg, #001BB7, #0046FF)";
+  }
 };
 </script>
 
