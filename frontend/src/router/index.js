@@ -10,11 +10,10 @@ import ForgotPassword from '@/pages/public/ForgotPassword.vue';
 
 // Layouts
 import PublicLayout from '@/layouts/PublicLayout.vue';
-import ClientLayout from '@/layouts/ClientLayout.vue';
-import ExpertLayout from '@/layouts/ExpertLayout.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
 const routes = [
+  // Public routes
   {
     path: '/',
     component: PublicLayout,
@@ -29,78 +28,17 @@ const routes = [
         name: 'ForgotPassword',
         component: ForgotPassword,
       },
-
-      // PostAssignment is only for logged-in users
       {
         path: 'post-assignment',
         name: 'PostAssignment',
         beforeEnter: (to, from, next) => {
-          // You don't have client auth yet, so redirect all attempts to login/signup
-          next({
-            name: 'Login',
-            query: { redirect: '/post-assignment' },
-          });
+          next({ name: 'Login', query: { redirect: '/post-assignment' } });
         },
       },
     ],
   },
-  {
-    path: '/client',
-    component: ClientLayout,
-    children: [
-      {
-        path: '',
-        name: 'ClientDashboard',
-        component: () => import('@/pages/client/Dashboard.vue'),
-      },
-      {
-        path: 'profile',
-        name: 'ClientProfile',
-        component: () => import('@/pages/client/Profile.vue'),
-      },
-      {
-        path: 'projects',
-        name: 'ClientProjects',
-        component: () => import('@/pages/client/Projects.vue'),
-      },
-      {
-        path: 'payments',
-        name: 'ClientPayments',
-        component: () => import('@/pages/client/Payments.vue'),
-      },
-      {
-        path: 'support',
-        name: 'ClientSupport',
-        component: () => import('@/pages/client/Suport.vue'),
-      },
-    ],
-  },
-  {
-    path: '/expert',
-    component: ExpertLayout,
-    children: [
-      {
-        path: '',
-        name: 'ExpertDashboard',
-        component: () => import('@/pages/expert/Dashboard.vue'),
-      },
-      {
-        path: 'profile',
-        name: 'ExpertProfile',
-        component: () => import('@/pages/expert/Profile.vue'),
-      },
-      {
-        path: 'assignments',
-        name: 'ExpertAssignments',
-        component: () => import('@/pages/expert/Assignments.vue'),
-      },
-      {
-        path: 'support',
-        name: 'ExpertSupport',
-        component: () => import('@/pages/expert/Support.vue'),
-      },
-    ],
-  },
+
+  // Admin routes
   {
     path: '/admin',
     component: AdminLayout,
@@ -108,45 +46,75 @@ const routes = [
       {
         path: '',
         name: 'AdminDashboard',
-        component: () => import('@/pages/admin/Dashboard.vue'),
+        component: () => import('@/pages/admin/AdminDashboard.vue'),
       },
+
+      // Homepage + support management
       {
-        path: 'users',
-        name: 'AdminUsers',
-        component: () => import('@/pages/admin/Users.vue'),
-      },
-      {
-        path: 'assignments',
-        name: 'AdminAssignments',
-        component: () => import('@/pages/admin/Assignments.vue'),
-      },
-      {
-        path: 'settings',
-        name: 'AdminSettings',
-        component: () => import('@/pages/admin/Settings.vue'),
-      },
-      {
-        path: 'support',
-        name: 'AdminSupport',
-        component: () => import('@/pages/admin/Support.vue'),
+        path: 'homepage',
+        component: () =>
+          import('@/pages/admin/homepagemanagement/HomepageManagement.vue'),
+        children: [
+          // Home sections
+          {
+            path: 'services',
+            name: 'AdminHomeServices',
+            component: () =>
+              import('@/pages/admin/homepagemanagement/ServiceSection.vue'),
+          },
+          {
+            path: 'experts',
+            name: 'AdminHomeExperts',
+            component: () =>
+              import('@/pages/admin/homepagemanagement/TopRatedExperts.vue'),
+          },
+          {
+            path: 'about',
+            name: 'AdminHomeAbout',
+            component: () =>
+              import('@/pages/admin/homepagemanagement/AboutSection.vue'),
+          },
+          {
+            path: 'contact',
+            name: 'AdminHomeContact',
+            component: () =>
+              import(
+                '@/pages/admin/homepagemanagement/PublicContactSection.vue'
+              ),
+          },
+
+          // Support Sections
+          {
+            path: 'guest-support',
+            name: 'AdminGuestSupport',
+            component: () =>
+              import('@/pages/admin/homepagemanagement/GuestSupport.vue'),
+          },
+          {
+            path: 'client-support',
+            name: 'AdminClientSupport',
+            component: () =>
+              import('@/pages/admin/homepagemanagement/ClientSupport.vue'),
+          },
+          {
+            path: 'expert-support',
+            name: 'AdminExpertSupport',
+            component: () =>
+              import('@/pages/admin/homepagemanagement/ExpertSupport.vue'),
+          },
+        ],
       },
     ],
   },
+
+  // Fallback for non-existing pages
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    if (to.hash) {
-      const el = document.querySelector(to.hash);
-      if (el) {
-        const yOffset = -80;
-        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-        return false;
-      }
-    }
+  scrollBehavior() {
     return { top: 0 };
   },
 });

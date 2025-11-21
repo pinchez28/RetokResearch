@@ -48,7 +48,7 @@
           >
             <option value="" disabled>Select role</option>
             <option value="client">Client</option>
-            <option value="service_provider">Service Provider</option>
+            <option value="expert">Expert</option>
           </select>
         </div>
 
@@ -76,26 +76,28 @@
           />
         </div>
 
+        <!-- Error Message -->
+        <div v-if="error" class="text-red-500 text-sm text-center">
+          {{ error }}
+        </div>
+
         <!-- Submit -->
         <button
           type="submit"
-          class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          :disabled="loading"
+          class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sign Up
+          <span v-if="loading">Signing up...</span>
+          <span v-else>Sign Up</span>
         </button>
       </form>
 
       <p class="text-sm text-gray-500 mt-4 text-center">
         Already have an account?
-        <router-link to="/login" class="text-blue-600 hover:underline"
-          >Login</router-link
-        >
+        <router-link to="/login" class="text-blue-600 hover:underline">Login</router-link>
       </p>
 
-      <router-link
-        :to="{ name: 'Home' }"
-        class="block text-center text-gray-500 mt-2"
-      >
+      <router-link :to="{ name: 'Home' }" class="block text-center text-gray-500 mt-2">
         Back to Home
       </router-link>
     </div>
@@ -103,38 +105,65 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
 
-// Form data
 const form = ref({
-  name: '',
-  email: '',
-  phone: '',
-  role: '',
-  password: '',
-  confirmPassword: '',
+  name: "",
+  email: "",
+  phone: "",
+  role: "",
+  password: "",
+  confirmPassword: "",
 });
 
-const handleSignup = () => {
+const loading = ref(false);
+const error = ref("");
+
+const handleSignup = async () => {
+  error.value = "";
+
   const { name, email, phone, role, password, confirmPassword } = form.value;
 
   if (!name || !email || !phone || !role || !password || !confirmPassword) {
-    alert('Please fill all fields.');
+    error.value = "Please fill all fields.";
     return;
   }
 
   if (password !== confirmPassword) {
-    alert('Passwords do not match.');
+    error.value = "Passwords do not match.";
     return;
   }
 
-  // Normally, call your backend API here
-  console.log('Signup data:', form.value);
+  loading.value = true;
 
-  alert('Signup successful! Redirecting to login...');
-  router.push({ name: 'Login' });
+  try {
+    // Call backend signup API
+    const { data } = await axios.post("/api/auth/signup", {
+      name,
+      email,
+      phone,
+      role,
+      password,
+    });
+
+    // Save token and user info
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    // Redirect based on role
+    if (data.user.role === "client") {
+      router.push("/client");
+    } else if (data.user.role === "expert") {
+      router.push("/expert");
+    }
+  } catch (err) {
+    error.value = err.response?.data?.message || "Signup failed. Try again.";
+  } finally {
+    loading.value = false;
+  }
 };
 </script>

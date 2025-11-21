@@ -1,18 +1,15 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
     <div class="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 space-y-6">
-      <h2 class="text-3xl font-extrabold text-gray-800 text-center">
-        Welcome Back
-      </h2>
+      <h2 class="text-3xl font-extrabold text-gray-800 text-center">Welcome Back</h2>
       <p class="text-sm text-gray-500 text-center">
         Sign in to your account to request and track research services.
       </p>
 
       <form @submit.prevent="handleLogin" class="space-y-4">
+        <!-- Email -->
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700"
-            >Email</label
-          >
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
           <input
             v-model="email"
             type="email"
@@ -23,6 +20,7 @@
           />
         </div>
 
+        <!-- Password -->
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700"
             >Password</label
@@ -37,17 +35,18 @@
           />
         </div>
 
-        <div class="flex justify-between items-center text-sm text-blue-700">
-          <router-link :to="{ name: 'ForgotPassword' }"
-            >Forgot password?</router-link
-          >
+        <!-- Error -->
+        <div v-if="error" class="text-red-500 text-sm text-center">
+          {{ error }}
         </div>
 
         <button
           type="submit"
-          class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl transition-all duration-300"
+          :disabled="loading"
+          class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Login
+          <span v-if="loading">Signing in...</span>
+          <span v-else>Login</span>
         </button>
 
         <p class="text-sm text-gray-500 mt-4 text-center">
@@ -57,10 +56,7 @@
           >
         </p>
 
-        <router-link
-          :to="{ name: 'Home' }"
-          class="block text-center text-gray-500 mt-2"
-        >
+        <router-link :to="{ name: 'Home' }" class="block text-center text-gray-500 mt-2">
           Back to Home
         </router-link>
       </form>
@@ -69,20 +65,49 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import api from "@/utils/api.js"; // Axios instance with baseURL
 
 const router = useRouter();
 const route = useRoute();
 
-const email = ref('');
-const password = ref('');
+const email = ref("");
+const password = ref("");
+const loading = ref(false);
+const error = ref("");
 
-const handleLogin = () => {
-  if (!email.value || !password.value) return;
+const handleLogin = async () => {
+  error.value = "";
+  if (!email.value || !password.value) {
+    error.value = "Please enter both email and password.";
+    return;
+  }
 
-  const redirectTo = route.query.redirect || '/';
-  router.push(redirectTo);
+  loading.value = true;
+
+  try {
+    const { data } = await api.post("/auth/login", {
+      email: email.value,
+      password: password.value,
+    });
+
+    // Save token & user info
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    // Redirect based on role
+    if (data.user.role === "admin") router.push("/admin");
+    else if (data.user.role === "client") router.push("/client");
+    else if (data.user.role === "expert") router.push("/expert");
+    else router.push("/"); // fallback
+  } catch (err) {
+    console.error(err);
+    error.value =
+      err.response?.data?.message || "Unable to reach server. Please try again.";
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 
