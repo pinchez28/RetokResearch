@@ -7,6 +7,7 @@ import serviceRoutes from './src/routes/serviceRoutes.js';
 import guestSubmissionsRoutes from './src/routes/guestSubmissions.js';
 import clientMessagesRoutes from './src/routes/clientMessages.js';
 import expertMessagesRoutes from './src/routes/expertMessages.js';
+import guestRequestRoutes from './src/routes/guestRequestRoutes.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/auth', authRouter);
 app.use('/api/services', serviceRoutes);
 app.use('/api/guest-submissions', guestSubmissionsRoutes);
+app.use('/api/guest-requests', guestRequestRoutes);
 app.use('/api/client-messages', clientMessagesRoutes);
 app.use('/api/expert-messages', expertMessagesRoutes);
 

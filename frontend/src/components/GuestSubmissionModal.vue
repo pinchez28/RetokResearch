@@ -1,22 +1,23 @@
 <script setup>
-import { reactive, watch } from "vue";
-import api from "@/utils/api.js"; // your axios instance
+import { reactive, watch } from 'vue';
+import api from '@/utils/api.js'; // your axios instance
 
 const { visible, service } = defineProps({
   visible: Boolean,
   service: { type: Object, default: null },
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(['close']);
 
 // Form state using reactive
 const guestForm = reactive({
-  email: "",
-  topic: "",
-  description: "",
-  phone: "",
-  deadline: "",
-  proposedPrice: "",
+  name: '',
+  email: '',
+  topic: '',
+  description: '',
+  phone: '',
+  deadline: '',
+  proposedPrice: '',
 });
 
 // Reset form when modal opens or service changes
@@ -24,12 +25,13 @@ watch(
   () => [visible, service],
   ([isVisible, svc]) => {
     if (isVisible) {
-      guestForm.email = "";
-      guestForm.phone = "";
-      guestForm.topic = svc?.title || "";
-      guestForm.description = svc?.fullDescription || "";
-      guestForm.deadline = "";
-      guestForm.proposedPrice = "";
+      guestForm.name = '';
+      guestForm.email = '';
+      guestForm.phone = '';
+      guestForm.topic = svc?.title || '';
+      guestForm.description = svc?.fullDescription || '';
+      guestForm.deadline = '';
+      guestForm.proposedPrice = '';
     }
   }
 );
@@ -38,22 +40,23 @@ watch(
 const submitGuestRequest = async () => {
   try {
     const payload = {
+      name: guestForm.name,
       email: guestForm.email,
       topic: guestForm.topic,
       description: guestForm.description,
       phone: guestForm.phone,
       deadline: guestForm.deadline,
-      proposedPrice: guestForm.proposedPrice,
-      service: service?.title || null,
+      service: service?.title || 'Quick Request',
+      proposedPrice: guestForm.proposedPrice || null,
     };
 
-    await api.post("/guest-requests", payload);
+    await api.post('/guest-requests', payload);
 
-    alert("Request submitted successfully! Admin has been notified.");
-    emit("close");
+    alert('Request submitted successfully! Admin has been notified.');
+    emit('close');
   } catch (err) {
-    console.error("Error submitting request:", err);
-    alert(err.response?.data?.message || "Failed to submit request.");
+    console.error('Error submitting request:', err);
+    alert(err.response?.data?.message || 'Failed to submit request.');
   }
 };
 </script>
@@ -77,55 +80,56 @@ const submitGuestRequest = async () => {
         </button>
 
         <h3 class="text-2xl font-bold mb-6 text-gray-900 text-center">
-          {{ service?.title ? `Request "${service.title}"` : "Quick Research Request" }}
+          {{
+            service?.title
+              ? `Request "${service.title}"`
+              : 'Quick Research Request'
+          }}
         </h3>
 
         <form @submit.prevent="submitGuestRequest" class="space-y-4">
+          <!-- Name & Email -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="font-semibold text-gray-900 mb-1 block">Your Email</label>
+              <label class="font-semibold text-gray-900 mb-1 block"
+                >Your Name</label
+              >
+              <input
+                v-model="guestForm.name"
+                type="text"
+                required
+                placeholder="Enter your full name"
+                class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+              />
+            </div>
+            <div>
+              <label class="font-semibold text-gray-900 mb-1 block"
+                >Your Email</label
+              >
               <input
                 v-model="guestForm.email"
                 type="email"
                 required
                 placeholder="Enter your email"
-                class="w-full border p-3 rounded-xl"
+                class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
               />
             </div>
+          </div>
+
+          <!-- Phone & Deadline -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="font-semibold text-gray-900 mb-1 block">Phone Number</label>
+              <label class="font-semibold text-gray-900 mb-1 block"
+                >Phone Number</label
+              >
               <input
                 v-model="guestForm.phone"
                 type="text"
-                placeholder="Optional phone number"
-                class="w-full border p-3 rounded-xl"
+                required
+                placeholder="Enter your phone number"
+                class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
               />
             </div>
-          </div>
-
-          <div>
-            <label class="font-semibold text-gray-900 mb-1 block">Research Topic</label>
-            <input
-              v-model="guestForm.topic"
-              type="text"
-              required
-              placeholder="Topic of research"
-              class="w-full border p-3 rounded-xl"
-            />
-          </div>
-
-          <div>
-            <label class="font-semibold text-gray-900 mb-1 block">Full Description</label>
-            <textarea
-              v-model="guestForm.description"
-              required
-              placeholder="Describe your request"
-              class="w-full border p-3 rounded-xl"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="font-semibold text-gray-900 mb-1 block"
                 >Timeline / Deadline</label
@@ -133,19 +137,51 @@ const submitGuestRequest = async () => {
               <input
                 v-model="guestForm.deadline"
                 type="text"
-                placeholder="Optional timeline"
-                class="w-full border p-3 rounded-xl"
+                required
+                placeholder="Enter timeline / deadline"
+                class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
               />
             </div>
-            <div>
-              <label class="font-semibold text-gray-900 mb-1 block">Proposed Price</label>
-              <input
-                v-model="guestForm.proposedPrice"
-                type="text"
-                placeholder="Optional"
-                class="w-full border p-3 rounded-xl"
-              />
-            </div>
+          </div>
+
+          <!-- Topic & Description -->
+          <div>
+            <label class="font-semibold text-gray-900 mb-1 block"
+              >Research Topic</label
+            >
+            <input
+              v-model="guestForm.topic"
+              type="text"
+              required
+              placeholder="Topic of research"
+              class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+            />
+          </div>
+
+          <div>
+            <label class="font-semibold text-gray-900 mb-1 block"
+              >Full Description</label
+            >
+            <textarea
+              v-model="guestForm.description"
+              required
+              placeholder="Describe your request"
+              class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Proposed Price -->
+          <div>
+            <label class="font-semibold text-gray-900 mb-1 block"
+              >Proposed Price (Optional)</label
+            >
+            <input
+              v-model="guestForm.proposedPrice"
+              type="text"
+              placeholder="Optional"
+              class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+            />
           </div>
 
           <button

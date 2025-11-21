@@ -51,7 +51,7 @@
             <li
               v-for="item in section.items"
               :key="item.name"
-              @click="navigate(item.path)"
+              @click="navigate(item)"
               class="cursor-pointer px-3 py-2 rounded hover:bg-[#0046FF]"
             >
               {{ item.label }}
@@ -64,61 +64,76 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { Menu } from "lucide-vue-next";
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { Menu } from 'lucide-vue-next';
 
 const sidebarOpen = ref(false);
 const router = useRouter();
 
-const navigate = (path) => {
-  router.push(path);
+// Navigate using either path or named route
+const navigate = (item) => {
+  if (item.routeName) {
+    router.push({ name: item.routeName });
+  } else {
+    router.push(item.path);
+  }
   sidebarOpen.value = false;
 };
 
 const sections = [
   {
-    name: "homepage",
-    label: "Homepage Management",
+    name: 'homepage',
+    label: 'Homepage Management',
     items: [
       {
-        name: "AdminHomeServices",
-        label: "Services",
-        path: "/admin/homepage/services",
+        name: 'AdminHomeServices',
+        label: 'Services',
+        path: '/admin/homepage/services',
+        routeName: 'AdminHomeServices',
       },
       {
-        name: "AdminHomeExperts",
-        label: "Top Rated Experts",
-        path: "/admin/homepage/experts",
+        name: 'AdminHomeExperts',
+        label: 'Top Rated Experts',
+        path: '/admin/homepage/experts',
+        routeName: 'AdminHomeExperts',
       },
-      { name: "AdminHomeAbout", label: "About", path: "/admin/homepage/about" },
       {
-        name: "AdminHomeContact",
-        label: "Contact",
-        path: "/admin/homepage/contact",
+        name: 'AdminHomeAbout',
+        label: 'About',
+        path: '/admin/homepage/about',
+        routeName: 'AdminHomeAbout',
+      },
+      {
+        name: 'AdminHomeContact',
+        label: 'Contact',
+        path: '/admin/homepage/contact',
+        routeName: 'AdminHomeContact',
       },
     ],
   },
 
-  // 🔥 NEW SUPPORT MANAGEMENT SECTION
   {
-    name: "support",
-    label: "Support Management",
+    name: 'support',
+    label: 'Support Management',
     items: [
       {
-        name: "AdminGuestSupport",
-        label: "Guest Submissions",
-        path: "/admin/support/guest",
+        name: 'AdminGuestSupport',
+        label: 'Guest Support',
+        path: '/admin/guest-support',
+        routeName: 'AdminGuestSupport',
       },
       {
-        name: "AdminClientSupport",
-        label: "Client Support",
-        path: "/admin/support/client",
+        name: 'AdminClientSupport',
+        label: 'Client Support',
+        path: '/admin/client-support',
+        routeName: 'AdminClientSupport',
       },
       {
-        name: "AdminExpertSupport",
-        label: "Expert Support",
-        path: "/admin/support/expert",
+        name: 'AdminExpertSupport',
+        label: 'Expert Support',
+        path: '/admin/expert-support',
+        routeName: 'AdminExpertSupport',
       },
     ],
   },

@@ -49,60 +49,58 @@ const routes = [
         component: () => import('@/pages/admin/AdminDashboard.vue'),
       },
 
-      // Homepage + support management
+      // Homepage main management wrapper
       {
         path: 'homepage',
+        name: 'AdminHomepage',
         component: () =>
           import('@/pages/admin/homepagemanagement/HomepageManagement.vue'),
-        children: [
-          // Home sections
-          {
-            path: 'services',
-            name: 'AdminHomeServices',
-            component: () =>
-              import('@/pages/admin/homepagemanagement/ServiceSection.vue'),
-          },
-          {
-            path: 'experts',
-            name: 'AdminHomeExperts',
-            component: () =>
-              import('@/pages/admin/homepagemanagement/TopRatedExperts.vue'),
-          },
-          {
-            path: 'about',
-            name: 'AdminHomeAbout',
-            component: () =>
-              import('@/pages/admin/homepagemanagement/AboutSection.vue'),
-          },
-          {
-            path: 'contact',
-            name: 'AdminHomeContact',
-            component: () =>
-              import(
-                '@/pages/admin/homepagemanagement/PublicContactSection.vue'
-              ),
-          },
+      },
 
-          // Support Sections
-          {
-            path: 'guest-support',
-            name: 'AdminGuestSupport',
-            component: () =>
-              import('@/pages/admin/homepagemanagement/GuestSupport.vue'),
-          },
-          {
-            path: 'client-support',
-            name: 'AdminClientSupport',
-            component: () =>
-              import('@/pages/admin/homepagemanagement/ClientSupport.vue'),
-          },
-          {
-            path: 'expert-support',
-            name: 'AdminExpertSupport',
-            component: () =>
-              import('@/pages/admin/homepagemanagement/ExpertSupport.vue'),
-          },
-        ],
+      // Homepage subsections (more logical & clean)
+      {
+        path: 'homepage/services',
+        name: 'AdminHomeServices',
+        component: () =>
+          import('@/pages/admin/homepagemanagement/ServiceSection.vue'),
+      },
+      {
+        path: 'homepage/experts',
+        name: 'AdminHomeExperts',
+        component: () =>
+          import('@/pages/admin/homepagemanagement/TopRatedExperts.vue'),
+      },
+      {
+        path: 'homepage/about',
+        name: 'AdminHomeAbout',
+        component: () =>
+          import('@/pages/admin/homepagemanagement/AboutSection.vue'),
+      },
+      {
+        path: 'homepage/contact',
+        name: 'AdminHomeContact',
+        component: () =>
+          import('@/pages/admin/homepagemanagement/PublicContactSection.vue'),
+      },
+
+      // 🚀 Support management (fixed — no more nested issues)
+      {
+        path: 'guest-support',
+        name: 'AdminGuestSupport',
+        component: () =>
+          import('@/pages/admin/homepagemanagement/GuestSupport.vue'),
+      },
+      {
+        path: 'client-support',
+        name: 'AdminClientSupport',
+        component: () =>
+          import('@/pages/admin/homepagemanagement/ClientSupport.vue'),
+      },
+      {
+        path: 'expert-support',
+        name: 'AdminExpertSupport',
+        component: () =>
+          import('@/pages/admin/homepagemanagement/ExpertSupport.vue'),
       },
     ],
   },

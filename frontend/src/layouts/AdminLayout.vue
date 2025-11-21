@@ -11,9 +11,10 @@
       <AdminTopbar />
 
       <!-- Main content -->
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto p-6 main-content">
         <router-view />
       </main>
+
       <Footer />
     </div>
   </div>
@@ -26,22 +27,27 @@ import Footer from '@/components/footer/Footer.vue';
 </script>
 
 <style scoped>
-/* Optional scrollbar styling */
-main {
+/* Dynamic topbar height */
+:root {
+  --topbar-height: 4rem; /* Adjust this to match AdminTopbar height */
+}
+
+.main-content {
+  padding-top: var(--topbar-height);
   scrollbar-width: thin;
   scrollbar-color: #0046ff #f5f1dc;
 }
 
-main::-webkit-scrollbar {
+.main-content::-webkit-scrollbar {
   width: 8px;
 }
 
-main::-webkit-scrollbar-thumb {
+.main-content::-webkit-scrollbar-thumb {
   background-color: #0046ff;
   border-radius: 4px;
 }
 
-/* Ensure sidebar is always full height */
+/* Ensure sidebar and layout are full height */
 .admin-layout {
   min-height: 100vh;
 }

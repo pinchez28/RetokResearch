@@ -9,10 +9,18 @@ const guestRequestSchema = new mongoose.Schema(
     phone: { type: String },
     deadline: { type: String },
     proposedPrice: { type: String },
-    service: { type: String }, // optional: the service requested
-    status: { type: String, default: 'New' }, // New, Seen, In Progress, Completed
+    service: { type: String },
+    status: {
+      type: String,
+      default: 'New',
+      enum: ['New', 'Seen', 'In Progress', 'Completed'],
+    },
   },
   { timestamps: true }
 );
+
+// ⭐ NEW: Indexes for faster admin queries
+guestRequestSchema.index({ status: 1 });
+guestRequestSchema.index({ createdAt: -1 });
 
 export default mongoose.model('GuestRequest', guestRequestSchema);

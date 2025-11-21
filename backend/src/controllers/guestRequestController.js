@@ -1,16 +1,28 @@
+// src/controllers/guestRequestController.js
 import GuestRequest from '../models/GuestRequest.js';
 import nodemailer from 'nodemailer';
+import { io } from '../../server.js';
 
-// Configure email (example with Gmail SMTP)
+// Configure email transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT || 587,
+  secure: false,
   auth: {
-    user: process.env.ADMIN_EMAIL, // admin email
-    pass: process.env.EMAIL_PASSWORD, // app password or SMTP password
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
+// Verify email transporter
+transporter.verify((err, success) => {
+  if (err) console.error('SMTP Error:', err);
+  else console.log('SMTP ready');
+});
+
+// ------------------------
 // Create a guest request
+// ------------------------
 export const createGuestRequest = async (req, res) => {
   try {
     const {
@@ -24,10 +36,19 @@ export const createGuestRequest = async (req, res) => {
       service,
     } = req.body;
 
-    if (!email || !topic || !description) {
+    // Validate required fields (all except proposedPrice)
+    if (
+      !name ||
+      !email ||
+      !topic ||
+      !description ||
+      !phone ||
+      !deadline ||
+      !service
+    ) {
       return res
         .status(400)
-        .json({ message: 'Email, topic, and description are required' });
+        .json({ message: 'All fields except proposedPrice are required' });
     }
 
     const newRequest = await GuestRequest.create({
@@ -37,27 +58,36 @@ export const createGuestRequest = async (req, res) => {
       description,
       phone,
       deadline,
-      proposedPrice,
+      proposedPrice: proposedPrice || null,
       service,
     });
 
-    // Send email to admin
-    await transporter.sendMail({
-      from: email,
-      to: process.env.ADMIN_EMAIL,
-      subject: `New Guest Research Request: ${topic}`,
-      html: `
-        <h2>New Research Request</h2>
-        <p><strong>Name:</strong> ${name || 'N/A'}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Topic:</strong> ${topic}</p>
-        <p><strong>Service:</strong> ${service || 'Quick Request'}</p>
-        <p><strong>Description:</strong> ${description}</p>
-        <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
-        <p><strong>Deadline:</strong> ${deadline || 'N/A'}</p>
-        <p><strong>Proposed Price:</strong> ${proposedPrice || 'N/A'}</p>
-      `,
-    });
+    // Emit socket event
+    io.emit('new-guest-request', newRequest);
+
+    // Send email notification to admin
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: process.env.ADMIN_EMAIL,
+        replyTo: email,
+        subject: `New Guest Request: ${topic}`,
+        text: `New Research Request Received:
+
+Name: ${name}
+Email: ${email}
+Topic: ${topic}
+Service: ${service}
+Description: ${description}
+Phone: ${phone}
+Deadline: ${deadline}
+Proposed Price: ${proposedPrice || 'N/A'}
+        `,
+      });
+      console.log('Email sent successfully');
+    } catch (err) {
+      console.error('Email send failed:', err);
+    }
 
     res
       .status(201)
@@ -68,12 +98,82 @@ export const createGuestRequest = async (req, res) => {
   }
 };
 
-// Admin: fetch all guest requests
+// ------------------------
+// Get all guest requests
+// Supports pagination & sorting
+// ------------------------
 export const getGuestRequests = async (req, res) => {
   try {
-    const requests = await GuestRequest.find().sort({ createdAt: -1 });
-    res.json(requests);
+    let { page = 1, limit = 20 } = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const total = await GuestRequest.countDocuments();
+    const requests = await GuestRequest.find()
+      .sort({ createdAt: -1 }) // newest first
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({ total, page, limit, requests });
   } catch (error) {
+    console.error('Error fetching guest requests:', error);
     res.status(500).json({ message: 'Failed to fetch requests' });
+  }
+};
+
+// ------------------------
+// Update request status
+// ------------------------
+export const updateGuestRequestStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['New', 'Seen', 'In Progress', 'Completed'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const updatedRequest = await GuestRequest.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    io.emit('guest-request-status-updated', updatedRequest);
+
+    res.json({
+      message: 'Status updated successfully',
+      request: updatedRequest,
+    });
+  } catch (error) {
+    console.error('Error updating request status:', error);
+    res.status(500).json({ message: 'Failed to update status' });
+  }
+};
+
+// ------------------------
+// Delete a guest request
+// ------------------------
+export const deleteGuestRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await GuestRequest.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // Notify frontend via socket
+    io.emit('guest-request-deleted', { id });
+
+    res.json({ message: 'Deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting guest request:', err);
+    res.status(500).json({ message: 'Failed to delete request' });
   }
 };
