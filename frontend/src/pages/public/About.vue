@@ -17,46 +17,30 @@
       <div class="grid md:grid-cols-2 gap-12">
         <div class="animate-fadeLeft">
           <h2 class="text-4xl font-bold mb-4 text-[#001bb7]">Our Mission</h2>
-          <p class="text-gray-700 text-lg">
-            To provide a seamless platform where researchers, academics, and professionals
-            can find trusted expertise to accelerate their projects and elevate the
-            quality of research.
-          </p>
+          <p class="text-gray-700 text-lg">{{ mission }}</p>
         </div>
 
         <div class="animate-fadeRight">
           <h2 class="text-4xl font-bold mb-4 text-[#001bb7]">Our Vision</h2>
-          <p class="text-gray-700 text-lg">
-            To be the global standard for verified, high-quality research collaboration
-            and knowledge exchange.
-          </p>
+          <p class="text-gray-700 text-lg">{{ vision }}</p>
         </div>
       </div>
     </section>
 
-    <!-- Team / Values -->
+    <!-- Core Values -->
     <section class="py-16 bg-[#001bb7] max-w-6xl mx-auto px-6 text-center rounded-3xl">
       <h2 class="text-4xl font-bold mb-12 text-white animate-fadeUp">Core Values</h2>
       <div class="grid md:grid-cols-3 gap-8">
         <div
-          class="bg-white rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition animate-fadeUp delay-150"
+          v-for="(value, index) in coreValues"
+          :key="index"
+          class="bg-white rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition animate-fadeUp"
+          :style="{ animationDelay: `${index * 0.15}s` }"
         >
-          <h3 class="font-bold text-xl mb-2 text-[#001bb7]">Integrity</h3>
-          <p class="text-gray-600">Trusted and verified experts ensuring quality work.</p>
-        </div>
-        <div
-          class="bg-white rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition animate-fadeUp delay-300"
-        >
-          <h3 class="font-bold text-xl mb-2 text-[#001bb7]">Collaboration</h3>
-          <p class="text-gray-600">Seamless teamwork between researchers and experts.</p>
-        </div>
-        <div
-          class="bg-white rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition animate-fadeUp delay-450"
-        >
-          <h3 class="font-bold text-xl mb-2 text-[#001bb7]">Innovation</h3>
-          <p class="text-gray-600">
-            Advanced tools and insights for better research outcomes.
-          </p>
+          <h3 class="font-bold text-xl mb-2 text-[#001bb7]">
+            {{ value.title }}
+          </h3>
+          <p class="text-gray-600">{{ value.description }}</p>
         </div>
       </div>
     </section>
@@ -64,7 +48,28 @@
 </template>
 
 <script setup>
-import Navbar from "@/components/navbar/Navbar.vue";
+import { ref, onMounted } from "vue";
+import axios from "@/utils/api.js";
+
+const mission = ref("");
+const vision = ref("");
+const coreValues = ref([]);
+
+const fetchAbout = async () => {
+  try {
+    const res = await axios.get("/about");
+    const about = res.data.about;
+    if (about) {
+      mission.value = about.mission;
+      vision.value = about.vision;
+      coreValues.value = about.coreValues || [];
+    }
+  } catch (err) {
+    console.error("Failed to load About page:", err);
+  }
+};
+
+onMounted(fetchAbout);
 </script>
 
 <style scoped>
@@ -80,15 +85,6 @@ import Navbar from "@/components/navbar/Navbar.vue";
 }
 .animate-fadeUp {
   animation: fadeUp 1s ease-out forwards;
-}
-.delay-150 {
-  animation-delay: 0.15s;
-}
-.delay-300 {
-  animation-delay: 0.3s;
-}
-.delay-450 {
-  animation-delay: 0.45s;
 }
 
 @keyframes fadeLeft {

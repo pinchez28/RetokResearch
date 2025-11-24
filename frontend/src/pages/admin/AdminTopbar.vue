@@ -30,42 +30,37 @@
           />
         </svg>
 
-        <!-- Notification Count -->
+        <!-- Unread Count -->
         <span
-          v-if="unreadCount > 0"
+          v-if="unreadNotifications.length > 0"
           class="absolute -top-1 -right-1 bg-[#FF8040] text-white text-xs font-bold rounded-full px-1 min-w-[18px] text-center"
         >
-          {{ unreadCount > 9 ? '9+' : unreadCount }}
+          {{ unreadNotifications.length > 9 ? "9+" : unreadNotifications.length }}
         </span>
       </button>
 
-      <!-- Dropdown -->
+      <!-- Notification Dropdown -->
       <div
         v-if="dropdownOpen"
         class="absolute right-0 mt-12 w-72 bg-white text-black rounded-lg shadow-lg border overflow-hidden animate-fadeIn"
       >
-        <div class="bg-[#001BB7] text-white px-4 py-2 font-semibold">
-          Notifications
-        </div>
+        <div class="bg-[#001BB7] text-white px-4 py-2 font-semibold">Notifications</div>
 
         <div
-          v-if="filteredNotifications.length === 0"
+          v-if="unreadNotifications.length === 0"
           class="p-4 text-center text-gray-500"
         >
-          No notifications (last 48 hrs)
+          No new notifications
         </div>
 
         <div
-          v-for="(n, index) in filteredNotifications"
-          :key="index"
+          v-for="n in unreadNotifications"
+          :key="n.requestId"
           class="p-3 border-b hover:bg-gray-100 cursor-pointer"
-          @click="markAsRead(n)"
+          @click="markAsReadAndNavigate(n)"
         >
           <div class="flex items-center justify-between">
-            <span class="font-medium">
-              {{ n.source }}
-            </span>
-
+            <span class="font-medium">{{ n.source }}</span>
             <span
               v-if="!n.read"
               class="text-xs bg-[#FF8040] text-white px-2 py-0.5 rounded-full"
@@ -74,9 +69,7 @@
             </span>
           </div>
 
-          <div class="text-sm text-gray-600">
-            {{ n.message }}
-          </div>
+          <div class="text-sm text-gray-600">{{ n.message }}</div>
 
           <div class="text-xs text-gray-400 mt-1">
             {{ timeAgo(n.timestamp) }}
@@ -106,97 +99,100 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { io } from 'socket.io-client';
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { io } from "socket.io-client";
+import axios from "@/utils/api.js";
 
-// Router
 const route = useRoute();
 const router = useRouter();
 
 // Dropdown state
 const dropdownOpen = ref(false);
-const toggleDropdown = () => {
-  dropdownOpen.value = !dropdownOpen.value;
-};
+const toggleDropdown = () => (dropdownOpen.value = !dropdownOpen.value);
 
 // Notifications
 const notifications = ref([]);
 
-// Listen to backend socket
-let socket;
+// Only unread notifications
+const unreadNotifications = computed(() => notifications.value.filter((n) => !n.read));
 
-onMounted(() => {
-  socket = io(import.meta.env.VITE_API_URL);
-
-  socket.on('new_guest_request', (data) => {
-    notifications.value.unshift({
-      message: data.message,
-      source: 'Guest Request',
-      timestamp: Date.now(),
-      read: false,
-    });
-
-    cleanupOldNotifications();
-  });
-
-  cleanupOldNotifications();
-});
-
-// 48-hour filter
-const filteredNotifications = computed(() => {
-  const now = Date.now();
-  return notifications.value.filter(
-    (n) => now - n.timestamp <= 48 * 60 * 60 * 1000
-  );
-});
-
-// Count unread
-const unreadCount = computed(
-  () => filteredNotifications.value.filter((n) => !n.read).length
-);
-
-// Mark as read
-const markAsRead = (n) => {
-  n.read = true;
-  dropdownOpen.value = false;
-  router.push('/admin/guestsupport');
-};
-
-// Remove notifications older than 48 hours
-const cleanupOldNotifications = () => {
-  const now = Date.now();
+// Mark notification as read and navigate
+const markAsReadAndNavigate = (n) => {
+  // Remove notification from bell
   notifications.value = notifications.value.filter(
-    (n) => now - n.timestamp <= 48 * 60 * 60 * 1000
+    (notif) => notif.requestId !== n.requestId
   );
+
+  dropdownOpen.value = false; // close dropdown
+
+  // Navigate to guest-support with modal open
+  router.push({
+    path: "/admin/guest-support",
+    query: { requestId: n.requestId },
+  });
 };
 
-// Human readable “time ago”
+// Time ago
 const timeAgo = (timestamp) => {
   const diff = (Date.now() - timestamp) / 1000;
-
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-
-  return Math.floor(diff / 86400) + 'd ago';
+  if (diff < 60) return "just now";
+  if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+  if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+  return Math.floor(diff / 86400) + "d ago";
 };
 
-// Current section computed name
+// Section title
 const currentSection = computed(() => {
-  if (route.path.startsWith('/admin/homepage')) return 'Homepage Management';
-  if (route.path.startsWith('/admin/clients')) return 'Client Dashboard';
-  if (route.path.startsWith('/admin/experts')) return 'Expert Dashboard';
-  if (route.path.startsWith('/admin/settings')) return 'Admin Settings';
-  return 'Admin Dashboard';
+  if (route.path.startsWith("/admin/homepage")) return "Homepage Management";
+  if (route.path.startsWith("/admin/clients")) return "Client Dashboard";
+  if (route.path.startsWith("/admin/experts")) return "Expert Dashboard";
+  if (route.path.startsWith("/admin/settings")) return "Admin Settings";
+  return "Admin Dashboard";
 });
 
 // Logout
-const logout = () => {
-  console.log('Logging out...');
-  router.push('/login');
-};
+const logout = () => router.push("/login");
+
+// Socket & initial fetch
+let socket;
+onMounted(async () => {
+  socket = io(import.meta.env.VITE_API_URL);
+
+  try {
+    const res = await axios.get("/guest-requests");
+    const requests = res.data.requests || [];
+    const cutoff = Date.now() - 48 * 60 * 60 * 1000;
+
+    requests.forEach((r) => {
+      const ts = new Date(r.createdAt).getTime();
+      if (ts >= cutoff) {
+        notifications.value.push({
+          message: `${r.topic} by ${r.name || "Guest User"}`,
+          source: "Guest Request",
+          timestamp: ts,
+          requestId: r._id,
+          read: false,
+        });
+      }
+    });
+  } catch (err) {
+    console.error("Failed to load guest requests:", err);
+  }
+
+  // Listen for new requests
+  socket.on("new-guest-request", (data) => {
+    notifications.value.unshift({
+      message: `${data.topic} by ${data.name || "Guest User"}`,
+      source: "Guest Request",
+      timestamp: new Date(data.createdAt).getTime(),
+      requestId: data._id,
+      read: false,
+    });
+  });
+});
 </script>
+
 <style scoped>
 @keyframes fadeIn {
   from {
@@ -208,7 +204,6 @@ const logout = () => {
     transform: translateY(0);
   }
 }
-
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 bg-white rounded-2xl shadow-md">
+  <div class="p-6 bg-gray-50 rounded-2xl shadow-md mb-0">
     <h2 class="text-2xl font-bold mb-4">Guest User Support</h2>
 
     <!-- Loading -->
@@ -116,6 +116,7 @@
 <script>
 import axios from '@/utils/api.js';
 import { io } from 'socket.io-client';
+import { useRoute } from 'vue-router';
 
 export default {
   name: 'GuestSupport',
@@ -137,8 +138,15 @@ export default {
         const res = await axios.get('/guest-requests', {
           params: { page: this.page, limit: this.limit },
         });
-        this.messages = res.data.messages || [];
-        this.totalPages = res.data.pages;
+        this.messages = res.data.requests || [];
+        this.totalPages = Math.ceil(res.data.total / this.limit);
+
+        // If a requestId was passed in query, open modal automatically
+        const requestId = this.$route.query.requestId;
+        if (requestId) {
+          const msg = this.messages.find((m) => m._id === requestId);
+          if (msg) this.openModal(msg);
+        }
       } catch (err) {
         console.error(err);
         alert('Failed to load guest messages.');
@@ -154,6 +162,10 @@ export default {
     },
     closeModal() {
       this.selectedMessage = null;
+      // Remove query param after opening
+      if (this.$route.query.requestId) {
+        this.$router.replace({ query: {} });
+      }
     },
     async deleteRequest(id) {
       if (!confirm('Are you sure you want to delete this request?')) return;

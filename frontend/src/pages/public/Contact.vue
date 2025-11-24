@@ -12,27 +12,34 @@
     <section
       class="py-24 max-w-3xl mx-auto px-6 bg-white rounded-3xl shadow-2xl shadow-black/20 animate-fadeUp delay-300 transform hover:-translate-y-1 transition-all duration-300 -mt-20 relative z-10"
     >
-      <form class="grid gap-6">
+      <form @submit.prevent="submitContactForm" class="grid gap-6">
         <input
+          v-model="name"
           type="text"
           placeholder="Your Name"
+          required
           class="border border-gray-300 p-4 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow-lg"
         />
         <input
+          v-model="email"
           type="email"
           placeholder="Your Email"
+          required
           class="border border-gray-300 p-4 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow-lg"
         />
         <textarea
+          v-model="message"
           placeholder="Your Message"
           rows="6"
+          required
           class="border border-gray-300 p-4 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow-lg"
         ></textarea>
         <button
           type="submit"
-          class="bg-[#FF8040] hover:bg-[#FFA366] text-[#333] font-bold py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl"
+          :disabled="loading"
+          class="bg-[#FF8040] hover:bg-[#FFA366] text-[#333] font-bold py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl disabled:opacity-50"
         >
-          Send Message
+          {{ loading ? "Sending..." : "Send Message" }}
         </button>
       </form>
     </section>
@@ -40,7 +47,39 @@
 </template>
 
 <script setup>
-import Navbar from "@/components/navbar/Navbar.vue";
+import { ref } from "vue";
+import axios from "@/utils/api.js"; // Axios instance
+
+const name = ref("");
+const email = ref("");
+const message = ref("");
+const loading = ref(false);
+
+const submitContactForm = async () => {
+  if (!name.value || !email.value || !message.value) return;
+
+  loading.value = true;
+  try {
+    // Send to new contact-messages endpoint
+    await axios.post("/contact-messages", {
+      name: name.value,
+      email: email.value,
+      message: message.value,
+    });
+
+    // Clear form
+    name.value = "";
+    email.value = "";
+    message.value = "";
+
+    alert("Your message has been sent successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to send message. Please try again.");
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <style scoped>

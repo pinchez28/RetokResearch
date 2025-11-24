@@ -1,13 +1,13 @@
 <script setup>
-import { ref } from 'vue';
-import GuestSubmissionModal from './GuestSubmissionModal.vue';
+import { ref } from "vue";
+import GuestSubmissionModal from "./GuestSubmissionModal.vue";
 
 const { visible, service } = defineProps({
   visible: Boolean,
   service: { type: Object, default: null },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(["close"]);
 const showGuestModal = ref(false);
 
 const handleRequest = () => {
@@ -88,10 +88,10 @@ const handleRequest = () => {
           >
             Request This Research
           </button>
-          <p class="mt-3 text-sm text-gray-600">
+          <!-- <p class="mt-3 text-sm text-gray-600">
             Benefits of registering: Track your request in real-time, receive
             updates, and manage your submissions efficiently.
-          </p>
+          </p> -->
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 <template>
-  <section class="p-6 bg-[#F5F1DC] min-h-screen">
+  <section class="p-6 bg-gray-50 min-h-screen">
     <h2 class="text-3xl font-extrabold text-blue-900 mb-6 text-center">
       Admin Services Management
     </h2>

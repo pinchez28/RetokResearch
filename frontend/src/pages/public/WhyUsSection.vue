@@ -6,7 +6,7 @@
     <!-- Section Title + CTA -->
     <div class="flex flex-col items-center mb-12 gap-6">
       <h2
-        class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#001BB7] animate-fadeUp text-center drop-shadow-lg"
+        class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#001BB7] animate-fadeUp text-center drop-shadow-xl"
       >
         Why Choose Us
       </h2>
@@ -24,98 +24,129 @@
       <div
         v-for="card in whyUsCards"
         :key="card._id"
-        class="p-6 rounded-3xl shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-3xl"
+        class="relative p-6 rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-3xl"
         :style="getCardGradient(card._id)"
       >
-        <div class="flex items-center justify-center mb-4">
-          <component :is="card.icon" class="w-12 h-12 text-white" />
+        <!-- DARK OVERLAY FOR READABILITY -->
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+
+        <!-- Card Content -->
+        <div class="relative z-10">
+          <div class="flex items-center justify-center mb-4">
+            <component
+              :is="card.icon"
+              class="w-12 h-12 text-white drop-shadow-xl"
+            />
+          </div>
+
+          <h3
+            class="text-xl sm:text-2xl font-bold mb-2 text-white drop-shadow-xl"
+          >
+            {{ card.title }}
+          </h3>
+
+          <p
+            class="text-sm sm:text-base mb-4 text-white/90 leading-relaxed drop-shadow"
+          >
+            {{ card.description }}
+          </p>
+
+          <ul
+            class="list-disc list-inside mb-4 text-white/90 space-y-1 drop-shadow"
+          >
+            <li v-for="(feature, idx) in card.features" :key="idx">
+              {{ feature }}
+            </li>
+          </ul>
+
+          <button
+            @click="card.ctaHandler"
+            class="bg-white text-[#0046FF] font-bold py-2 px-4 rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all duration-300"
+          >
+            {{ card.ctaText }}
+          </button>
         </div>
-        <h3 class="text-xl sm:text-2xl font-bold mb-2 text-white">
-          {{ card.title }}
-        </h3>
-        <p class="text-sm sm:text-base mb-4 text-white/90 leading-relaxed">
-          {{ card.description }}
-        </p>
-        <ul class="list-disc list-inside mb-4 text-white/80 space-y-1">
-          <li v-for="(feature, idx) in card.features" :key="idx">
-            {{ feature }}
-          </li>
-        </ul>
-        <button
-          @click="card.ctaHandler"
-          class="bg-white text-[#0046FF] font-bold py-2 px-4 rounded-xl shadow hover:shadow-lg hover:scale-105 transition-all duration-300"
-        >
-          {{ card.ctaText }}
-        </button>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { BookOpen, Users, Zap, Heart } from "lucide-vue-next";
+import { ref } from 'vue';
+import { BookOpen, Users, Zap, Heart } from 'lucide-vue-next';
 
 const whyUsCards = ref([
   {
-    _id: "wu-1",
-    title: "Expert Researchers",
+    _id: 'wu-1',
+    title: 'Expert Researchers',
     description:
-      "Our team consists of experienced researchers in various fields ensuring quality work.",
-    features: ["PhD-level guidance", "Years of experience", "Field-specific expertise"],
+      'Our team consists of experienced researchers in various fields ensuring quality work.',
+    features: [
+      'PhD-level guidance',
+      'Years of experience',
+      'Field-specific expertise',
+    ],
     icon: BookOpen,
-    ctaText: "Learn More",
-    ctaHandler: () => alert("Expert Researchers clicked!"),
+    ctaText: 'Learn More',
+    ctaHandler: () => alert('Expert Researchers clicked!'),
   },
   {
-    _id: "wu-2",
-    title: "Timely Delivery",
+    _id: 'wu-2',
+    title: 'Timely Delivery',
     description:
-      "We guarantee to deliver your assignments and reports on time, every time.",
-    features: ["Fast turnaround", "Deadline tracking", "Real-time updates"],
+      'We guarantee to deliver your assignments and reports on time, every time.',
+    features: ['Fast turnaround', 'Deadline tracking', 'Real-time updates'],
     icon: Users,
-    ctaText: "See How",
-    ctaHandler: () => alert("Timely Delivery clicked!"),
+    ctaText: 'See How',
+    ctaHandler: () => alert('Timely Delivery clicked!'),
   },
   {
-    _id: "wu-3",
-    title: "Innovative Solutions",
+    _id: 'wu-3',
+    title: 'Innovative Solutions',
     description:
-      "We offer unique and innovative research solutions tailored to your needs.",
-    features: ["Custom methodologies", "Data-driven insights", "Creative approach"],
+      'We offer unique and innovative research solutions tailored to your needs.',
+    features: [
+      'Custom methodologies',
+      'Data-driven insights',
+      'Creative approach',
+    ],
     icon: Zap,
-    ctaText: "Discover More",
-    ctaHandler: () => alert("Innovative Solutions clicked!"),
+    ctaText: 'Discover More',
+    ctaHandler: () => alert('Innovative Solutions clicked!'),
   },
   {
-    _id: "wu-4",
-    title: "Customer Satisfaction",
+    _id: 'wu-4',
+    title: 'Customer Satisfaction',
     description:
-      "Your satisfaction is our priority. We work closely to meet your expectations.",
-    features: ["Dedicated support", "Revision options", "Transparent communication"],
+      'Your satisfaction is our priority. We work closely to meet your expectations.',
+    features: [
+      'Dedicated support',
+      'Revision options',
+      'Transparent communication',
+    ],
     icon: Heart,
-    ctaText: "Contact Us",
-    ctaHandler: () => alert("Customer Satisfaction clicked!"),
+    ctaText: 'Contact Us',
+    ctaHandler: () => alert('Customer Satisfaction clicked!'),
   },
 ]);
 
 const handleCTA = () => {
-  alert("Get Started CTA clicked!");
+  alert('Get Started CTA clicked!');
 };
 
-// Dynamic card gradients based on ID for visual variety
+// Dynamic gradients
 const getCardGradient = (id) => {
   switch (id) {
-    case "wu-1":
-      return "background: linear-gradient(135deg, #001BB7, #0046FF)";
-    case "wu-2":
-      return "background: linear-gradient(135deg, #FF8040, #F5F1DC)";
-    case "wu-3":
-      return "background: linear-gradient(135deg, #0046FF, #FF8040)";
-    case "wu-4":
-      return "background: linear-gradient(135deg, #F5F1DC, #001BB7)";
+    case 'wu-1':
+      return 'background: linear-gradient(135deg, #001BB7, #0046FF)';
+    case 'wu-2':
+      return 'background: linear-gradient(135deg, #FF8040, #F5F1DC)';
+    case 'wu-3':
+      return 'background: linear-gradient(135deg, #0046FF, #FF8040)';
+    case 'wu-4':
+      return 'background: linear-gradient(135deg, #F5F1DC, #001BB7)';
     default:
-      return "background: linear-gradient(135deg, #001BB7, #0046FF)";
+      return 'background: linear-gradient(135deg, #001BB7, #0046FF)';
   }
 };
 </script>
@@ -133,5 +164,12 @@ const getCardGradient = (id) => {
 }
 .animate-fadeUp {
   animation: fadeUp 0.8s cubic-bezier(0.22, 0.9, 0.35, 1) forwards;
+}
+
+.drop-shadow {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.drop-shadow-xl {
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.85);
 }
 </style>

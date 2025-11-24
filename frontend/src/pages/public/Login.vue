@@ -1,7 +1,9 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
     <div class="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 space-y-6">
-      <h2 class="text-3xl font-extrabold text-gray-800 text-center">Welcome Back</h2>
+      <h2 class="text-3xl font-extrabold text-gray-800 text-center">
+        Welcome Back
+      </h2>
       <p class="text-sm text-gray-500 text-center">
         Sign in to your account to request and track research services.
       </p>
@@ -9,7 +11,9 @@
       <form @submit.prevent="handleLogin" class="space-y-4">
         <!-- Email -->
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <label for="email" class="block text-sm font-medium text-gray-700"
+            >Email</label
+          >
           <input
             v-model="email"
             type="email"
@@ -56,7 +60,10 @@
           >
         </p>
 
-        <router-link :to="{ name: 'Home' }" class="block text-center text-gray-500 mt-2">
+        <router-link
+          :to="{ name: 'Home' }"
+          class="block text-center text-gray-500 mt-2"
+        >
           Back to Home
         </router-link>
       </form>
@@ -65,46 +72,50 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import api from "@/utils/api.js"; // Axios instance with baseURL
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 const router = useRouter();
-const route = useRoute();
 
-const email = ref("");
-const password = ref("");
+const email = ref('');
+const password = ref('');
 const loading = ref(false);
-const error = ref("");
+const error = ref('');
 
 const handleLogin = async () => {
-  error.value = "";
+  error.value = '';
   if (!email.value || !password.value) {
-    error.value = "Please enter both email and password.";
+    error.value = 'Please enter both email and password.';
     return;
   }
 
   loading.value = true;
 
   try {
-    const { data } = await api.post("/auth/login", {
+    // Determine backend route based on saved role (optional: can add a toggle)
+    const roleRoute = localStorage.getItem('loginRole') || 'clients'; // default to client
+    const url = `/api/auth/${roleRoute}/login`;
+
+    const { data } = await axios.post(url, {
       email: email.value,
       password: password.value,
     });
 
     // Save token & user info
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
 
     // Redirect based on role
-    if (data.user.role === "admin") router.push("/admin");
-    else if (data.user.role === "client") router.push("/client");
-    else if (data.user.role === "expert") router.push("/expert");
-    else router.push("/"); // fallback
+    if (data.user.role === 'admin') router.push('/admin');
+    else if (data.user.role === 'client') router.push('/client');
+    else if (data.user.role === 'expert') router.push('/expert');
+    else router.push('/'); // fallback
   } catch (err) {
     console.error(err);
     error.value =
-      err.response?.data?.message || "Unable to reach server. Please try again.";
+      err.response?.data?.message ||
+      'Unable to reach server. Please try again.';
   } finally {
     loading.value = false;
   }

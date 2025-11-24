@@ -24,36 +24,65 @@
         >
           <!-- Homepage section links -->
           <li>
-            <a class="nav-link" href="#" @click.prevent="scrollToSection('hero')">Home</a>
+            <a
+              class="nav-link"
+              :class="{ active: activeSection === 'hero' }"
+              href="#"
+              @click.prevent="scrollToSection('hero')"
+              >Home</a
+            >
           </li>
           <li>
-            <a class="nav-link" href="#" @click.prevent="scrollToSection('howitworks')"
+            <a
+              class="nav-link"
+              :class="{ active: activeSection === 'howitworks' }"
+              href="#"
+              @click.prevent="scrollToSection('howitworks')"
               >How it Works</a
             >
           </li>
           <li>
-            <a class="nav-link" href="#" @click.prevent="scrollToSection('services')"
+            <a
+              class="nav-link"
+              :class="{ active: activeSection === 'services' }"
+              href="#"
+              @click.prevent="scrollToSection('services')"
               >Services</a
             >
           </li>
           <li>
-            <a class="nav-link" href="#" @click.prevent="scrollToSection('why-us')"
+            <a
+              class="nav-link"
+              :class="{ active: activeSection === 'why-us' }"
+              href="#"
+              @click.prevent="scrollToSection('why-us')"
               >Why Us</a
             >
           </li>
           <li>
-            <a class="nav-link" href="#" @click.prevent="scrollToSection('testimonials')"
+            <a
+              class="nav-link"
+              :class="{ active: activeSection === 'testimonials' }"
+              href="#"
+              @click.prevent="scrollToSection('testimonials')"
               >Testimonials</a
             >
           </li>
 
           <!-- Public pages -->
-          <a class="nav-link" href="#about" @click.prevent="scrollToSection('about')"
-            >About</a
-          >
           <li>
             <a
               class="nav-link"
+              :class="{ active: activeSection === 'about' }"
+              href="#about"
+              @click.prevent="scrollToSection('about')"
+              >About</a
+            >
+          </li>
+          <li>
+            <a
+              class="nav-link"
+              :class="{ active: activeSection === 'contact' }"
               href="#contact"
               @click.prevent="scrollToSection('contact')"
               >Contact Us</a
@@ -65,7 +94,9 @@
         <div
           class="hidden lg:flex items-center space-x-4 text-lg md:text-xl lg:text-2xl font-extrabold"
         >
-          <router-link class="nav-link text-white" to="/login">Login</router-link>
+          <router-link class="nav-link text-white" to="/login"
+            >Login</router-link
+          >
           <router-link
             class="px-4 py-2 rounded-md font-semibold transition"
             :style="{ backgroundColor: ctaBg, color: ctaColor }"
@@ -125,84 +156,69 @@
         class="fixed inset-0 z-40 flex flex-col bg-[#001bb7] text-[#f5f1dc] p-6 pt-24 lg:hidden overflow-y-auto"
       >
         <ul class="flex flex-col space-y-6 font-semibold text-xl list-none">
-          <!-- Homepage section links -->
           <li>
             <a
-              class="mobile-link block"
-              @click.prevent="
-                scrollToSection('hero');
-                closeMenu();
-              "
+              class="mobile-link"
+              :class="{ active: activeSection === 'hero' }"
+              @click.prevent="scrollToSection('hero')"
               >Home</a
             >
           </li>
           <li>
             <a
-              class="mobile-link block"
-              @click.prevent="
-                scrollToSection('howitworks');
-                closeMenu();
-              "
+              class="mobile-link"
+              :class="{ active: activeSection === 'howitworks' }"
+              @click.prevent="scrollToSection('howitworks')"
               >How it Works</a
             >
           </li>
           <li>
             <a
-              class="mobile-link block"
-              @click.prevent="
-                scrollToSection('services');
-                closeMenu();
-              "
+              class="mobile-link"
+              :class="{ active: activeSection === 'services' }"
+              @click.prevent="scrollToSection('services')"
               >Services</a
             >
           </li>
           <li>
             <a
-              class="mobile-link block"
-              @click.prevent="
-                scrollToSection('why-us');
-                closeMenu();
-              "
+              class="mobile-link"
+              :class="{ active: activeSection === 'why-us' }"
+              @click.prevent="scrollToSection('why-us')"
               >Why Us</a
             >
           </li>
           <li>
             <a
-              class="mobile-link block"
-              @click.prevent="
-                scrollToSection('testimonials');
-                closeMenu();
-              "
+              class="mobile-link"
+              :class="{ active: activeSection === 'testimonials' }"
+              @click.prevent="scrollToSection('testimonials')"
               >Testimonials</a
             >
           </li>
-
-          <!-- Public pages -->
           <li>
             <a
-              class="mobile-link block"
-              @click.prevent="
-                scrollToSection('contact');
-                closeMenu();
-              "
+              class="mobile-link"
+              :class="{ active: activeSection === 'contact' }"
+              @click.prevent="scrollToSection('contact')"
               >Contact Us</a
             >
           </li>
           <li>
             <a
-              class="mobile-link block"
-              @click.prevent="
-                scrollToSection('about');
-                closeMenu();
-              "
+              class="mobile-link"
+              :class="{ active: activeSection === 'about' }"
+              @click.prevent="scrollToSection('about')"
               >About</a
             >
           </li>
+
           <li>
-            <router-link class="mobile-link block" @click="closeMenu" to="/login"
+            <router-link class="mobile-link" @click="closeMenu" to="/login"
               >Login</router-link
             >
           </li>
+
           <li>
             <router-link
               class="mobile-btn block text-center py-2 rounded-md font-semibold"
@@ -220,34 +236,69 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from "vue"; // ✅ make sure computed is imported
-import { useRoute, useRouter } from "vue-router";
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const menuOpen = ref(false);
 const route = useRoute();
 const router = useRouter();
-
 const closeMenu = () => (menuOpen.value = false);
 
-const ctaBg = "#ee6983";
-const ctaColor = "#333";
-const hoverCTA = (e) => (e.target.style.backgroundColor = "#FF9966");
-const leaveCTA = (e) => (e.target.style.backgroundColor = "#FF8040");
+const ctaBg = '#ee6983';
+const ctaColor = '#333';
+const hoverCTA = (e) => (e.target.style.backgroundColor = '#FF9966');
+const leaveCTA = (e) => (e.target.style.backgroundColor = '#FF8040');
 
-// Auth page detection
 const isAuthPage = computed(() =>
-  ["Login", "Signup", "ForgotPassword"].includes(route.name)
+  ['Login', 'Signup', 'ForgotPassword'].includes(route.name)
 );
 
-// Smooth scroll to homepage sections
+// ACTIVE SECTION LOGIC
+const activeSection = ref('');
+
+const sectionIds = [
+  'hero',
+  'howitworks',
+  'services',
+  'why-us',
+  'testimonials',
+  'about',
+  'contact',
+];
+
+const handleScroll = () => {
+  let scrollPosition = window.scrollY + 150;
+
+  for (const id of sectionIds) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+
+    const top = el.offsetTop;
+    const height = el.offsetHeight;
+
+    if (scrollPosition >= top && scrollPosition < top + height) {
+      activeSection.value = id;
+      break;
+    }
+  }
+};
+
+onMounted(() => window.addEventListener('scroll', handleScroll));
+onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+
+// Smooth scroll
 const scrollToSection = async (id) => {
-  if (route.path !== "/") {
-    // Navigate to homepage first
-    await router.push({ path: "/", query: { scrollTo: id } });
+  activeSection.value = id;
+
+  if (route.path !== '/') {
+    await router.push({ path: '/', query: { scrollTo: id } });
     return;
   }
-  const section = document.getElementById(id);
-  if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  closeMenu();
 };
 </script>
 
@@ -255,12 +306,20 @@ const scrollToSection = async (id) => {
 .nav-link,
 .mobile-link {
   color: #f5f1dc;
-  transition: color 0.2s;
+  font-size: 1.2rem;
+  font-weight: 700;
+  transition: color 0.25s;
   text-decoration: none;
 }
+
+.nav-link.active,
+.mobile-link.active {
+  color: #00e0ff;
+}
+
 .nav-link:hover,
 .mobile-link:hover {
-  color: #0046ff;
+  color: #00b2ff;
 }
 
 .mobile-btn {
@@ -272,12 +331,6 @@ const scrollToSection = async (id) => {
   border-radius: 0.375rem;
   transition: background-color 0.2s;
   text-decoration: none;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
 }
 
 .slide-enter-active,

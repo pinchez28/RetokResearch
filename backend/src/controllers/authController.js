@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import User from '../models/auth/Client.js';
 import generateToken from '../utils/generateToken.js';
 
 // Register user (with optional photo)

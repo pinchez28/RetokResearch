@@ -1,54 +1,53 @@
 <template>
-  <div class="admin-layout flex min-h-screen bg-[#F5F1DC]">
-    <!-- Sidebar -->
-    <AdminSidebar
-      class="hidden md:flex flex-col w-64 bg-[#001BB7] text-white"
-    />
+  <div class="admin-layout flex flex-col min-h-screen bg-[#F5F1DC]">
+    <!-- Topbar always on top -->
+    <AdminTopbar class="fixed top-0 left-0 right-0 z-50" />
 
-    <!-- Main area -->
-    <div class="flex-1 flex flex-col">
-      <!-- Topbar -->
-      <AdminTopbar />
+    <div class="flex flex-1 overflow-hidden pt-16">
+      <!-- Sidebar fixed height, never scrolls -->
+      <AdminSidebar
+        class="hidden md:flex flex-col w-64 bg-[#001BB7] text-white min-h-screen z-40"
+      />
 
-      <!-- Main content -->
-      <main class="flex-1 overflow-y-auto p-6 main-content">
-        <router-view />
+      <!-- Main content scrolls independently -->
+      <main class="flex-1 overflow-y-auto p-6">
+        <div class="content-wrapper pb-24">
+          <router-view />
+        </div>
       </main>
-
-      <Footer />
     </div>
+
+    <!-- Footer always at bottom -->
+    <Footer class="flex-shrink-0" />
   </div>
 </template>
 
 <script setup>
-import AdminSidebar from '@/pages/admin/AdminSidebar.vue';
-import AdminTopbar from '@/pages/admin/AdminTopbar.vue';
-import Footer from '@/components/footer/Footer.vue';
+import AdminSidebar from "@/pages/admin/AdminSidebar.vue";
+import AdminTopbar from "@/pages/admin/AdminTopbar.vue";
+import Footer from "@/components/footer/Footer.vue";
 </script>
 
 <style scoped>
-/* Dynamic topbar height */
-:root {
-  --topbar-height: 4rem; /* Adjust this to match AdminTopbar height */
+.admin-layout {
+  min-height: 100vh;
 }
 
-.main-content {
-  padding-top: var(--topbar-height);
+/* Scrollbar for main content */
+main::-webkit-scrollbar {
+  width: 8px;
+}
+main::-webkit-scrollbar-thumb {
+  background-color: #0046ff;
+  border-radius: 4px;
+}
+main {
   scrollbar-width: thin;
   scrollbar-color: #0046ff #f5f1dc;
 }
 
-.main-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.main-content::-webkit-scrollbar-thumb {
-  background-color: #0046ff;
-  border-radius: 4px;
-}
-
-/* Ensure sidebar and layout are full height */
-.admin-layout {
-  min-height: 100vh;
+/* Footer padding for main content */
+.content-wrapper {
+  padding-bottom: 4rem; /* matches footer height */
 }
 </style>
