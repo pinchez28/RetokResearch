@@ -3,7 +3,9 @@
     class="fixed top-0 left-0 w-full z-50 shadow-md h-24"
     style="background-color: #001bb7"
   >
-    <div class="flex items-center justify-between w-full px-4 h-full">
+    <div
+      class="flex items-center justify-between w-full px-4 sm:px-6 lg:px-12 h-full"
+    >
       <!-- Logo -->
       <div class="logo flex-shrink-0 h-full flex items-center space-x-2">
         <img
@@ -12,100 +14,45 @@
           class="h-full w-auto rounded-full cursor-grab"
           draggable="false"
         />
-        <span class="text-white font-extrabold text-lg md:text-xl lg:text-2xl">
+        <span class="text-white font-extrabold text-lg sm:text-xl lg:text-2xl">
           Retok
         </span>
       </div>
 
-      <!-- Desktop Links & Auth Buttons -->
+      <!-- Non-auth pages -->
       <template v-if="!isAuthPage">
+        <!-- Desktop Links -->
         <ul
-          class="hidden lg:flex flex-1 justify-center space-x-8 font-medium list-none items-center"
+          class="hidden lg:flex flex-1 justify-center space-x-6 xl:space-x-8 font-medium list-none items-center"
         >
-          <!-- Homepage section links -->
-          <li>
+          <li v-for="id in sectionIds" :key="id">
             <a
               class="nav-link"
-              :class="{ active: activeSection === 'hero' }"
+              :class="{ active: activeSection === id }"
               href="#"
-              @click.prevent="scrollToSection('hero')"
-              >Home</a
+              @click.prevent="scrollToSection(id)"
             >
-          </li>
-          <li>
-            <a
-              class="nav-link"
-              :class="{ active: activeSection === 'howitworks' }"
-              href="#"
-              @click.prevent="scrollToSection('howitworks')"
-              >How it Works</a
-            >
-          </li>
-          <li>
-            <a
-              class="nav-link"
-              :class="{ active: activeSection === 'services' }"
-              href="#"
-              @click.prevent="scrollToSection('services')"
-              >Services</a
-            >
-          </li>
-          <li>
-            <a
-              class="nav-link"
-              :class="{ active: activeSection === 'why-us' }"
-              href="#"
-              @click.prevent="scrollToSection('why-us')"
-              >Why Us</a
-            >
-          </li>
-          <li>
-            <a
-              class="nav-link"
-              :class="{ active: activeSection === 'testimonials' }"
-              href="#"
-              @click.prevent="scrollToSection('testimonials')"
-              >Testimonials</a
-            >
-          </li>
-
-          <!-- Public pages -->
-          <li>
-            <a
-              class="nav-link"
-              :class="{ active: activeSection === 'about' }"
-              href="#about"
-              @click.prevent="scrollToSection('about')"
-              >About</a
-            >
-          </li>
-          <li>
-            <a
-              class="nav-link"
-              :class="{ active: activeSection === 'contact' }"
-              href="#contact"
-              @click.prevent="scrollToSection('contact')"
-              >Contact Us</a
-            >
+              {{ sectionLabels[id] }}
+            </a>
           </li>
         </ul>
 
-        <!-- Auth Buttons -->
+        <!-- Auth Buttons Desktop -->
         <div
-          class="hidden lg:flex items-center space-x-4 text-lg md:text-xl lg:text-2xl font-extrabold"
+          class="hidden lg:flex items-center space-x-3 sm:space-x-4 text-lg sm:text-xl lg:text-2xl font-extrabold"
         >
           <router-link class="nav-link text-white" to="/login"
             >Login</router-link
           >
-          <router-link
+          <button
             class="px-4 py-2 rounded-md font-semibold transition"
             :style="{ backgroundColor: ctaBg, color: ctaColor }"
             @mouseover="hoverCTA"
             @mouseleave="leaveCTA"
-            to="/signup"
+            @click="openSignup"
           >
             Signup
-          </router-link>
+          </button>
         </div>
 
         <!-- Mobile Hamburger -->
@@ -155,79 +102,37 @@
         v-if="menuOpen && !isAuthPage"
         class="fixed inset-0 z-40 flex flex-col bg-[#001bb7] text-[#f5f1dc] p-6 pt-24 lg:hidden overflow-y-auto"
       >
-        <ul class="flex flex-col space-y-6 font-semibold text-xl list-none">
-          <li>
+        <ul
+          class="flex flex-col space-y-6 font-semibold text-lg sm:text-xl list-none"
+        >
+          <li v-for="id in sectionIds" :key="id">
             <a
               class="mobile-link"
-              :class="{ active: activeSection === 'hero' }"
-              @click.prevent="scrollToSection('hero')"
-              >Home</a
+              :class="{ active: activeSection === id }"
+              @click.prevent="scrollToSection(id)"
             >
-          </li>
-          <li>
-            <a
-              class="mobile-link"
-              :class="{ active: activeSection === 'howitworks' }"
-              @click.prevent="scrollToSection('howitworks')"
-              >How it Works</a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link"
-              :class="{ active: activeSection === 'services' }"
-              @click.prevent="scrollToSection('services')"
-              >Services</a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link"
-              :class="{ active: activeSection === 'why-us' }"
-              @click.prevent="scrollToSection('why-us')"
-              >Why Us</a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link"
-              :class="{ active: activeSection === 'testimonials' }"
-              @click.prevent="scrollToSection('testimonials')"
-              >Testimonials</a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link"
-              :class="{ active: activeSection === 'contact' }"
-              @click.prevent="scrollToSection('contact')"
-              >Contact Us</a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link"
-              :class="{ active: activeSection === 'about' }"
-              @click.prevent="scrollToSection('about')"
-              >About</a
-            >
+              {{ sectionLabels[id] }}
+            </a>
           </li>
 
           <li>
-            <router-link class="mobile-link" @click="closeMenu" to="/login"
-              >Login</router-link
-            >
+            <router-link class="mobile-link" @click="closeMenu" to="/login">
+              Login
+            </router-link>
           </li>
-
           <li>
-            <router-link
+            <button
               class="mobile-btn block text-center py-2 rounded-md font-semibold"
-              @click="closeMenu"
-              to="/signup"
               style="background-color: #ff8040; color: #f5f1dc"
+              @click="
+                () => {
+                  openSignup();
+                  closeMenu();
+                }
+              "
             >
               Signup
-            </router-link>
+            </button>
           </li>
         </ul>
       </div>
@@ -236,7 +141,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const menuOpen = ref(false);
@@ -249,13 +154,13 @@ const ctaColor = '#333';
 const hoverCTA = (e) => (e.target.style.backgroundColor = '#FF9966');
 const leaveCTA = (e) => (e.target.style.backgroundColor = '#FF8040');
 
+// Mark auth pages based on path
 const isAuthPage = computed(() =>
-  ['Login', 'Signup', 'ForgotPassword'].includes(route.name)
+  ['/signup', '/login'].some((p) => route.path.startsWith(p))
 );
 
-// ACTIVE SECTION LOGIC
+// Active Section
 const activeSection = ref('');
-
 const sectionIds = [
   'hero',
   'howitworks',
@@ -265,17 +170,23 @@ const sectionIds = [
   'about',
   'contact',
 ];
+const sectionLabels = {
+  hero: 'Home',
+  howitworks: 'How it Works',
+  services: 'Services',
+  'why-us': 'Why Us',
+  testimonials: 'Testimonials',
+  about: 'About',
+  contact: 'Contact Us',
+};
 
 const handleScroll = () => {
-  let scrollPosition = window.scrollY + 150;
-
+  const scrollPosition = window.scrollY + 150;
   for (const id of sectionIds) {
     const el = document.getElementById(id);
     if (!el) continue;
-
     const top = el.offsetTop;
     const height = el.offsetHeight;
-
     if (scrollPosition >= top && scrollPosition < top + height) {
       activeSection.value = id;
       break;
@@ -286,42 +197,37 @@ const handleScroll = () => {
 onMounted(() => window.addEventListener('scroll', handleScroll));
 onUnmounted(() => window.removeEventListener('scroll', handleScroll));
 
-// Smooth scroll
 const scrollToSection = async (id) => {
   activeSection.value = id;
-
   if (route.path !== '/') {
     await router.push({ path: '/', query: { scrollTo: id } });
     return;
   }
-
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   closeMenu();
 };
+
+// Global signup overlay trigger
+const openSignup = () => window.openSignupOverlay?.();
 </script>
 
 <style scoped>
 .nav-link,
 .mobile-link {
   color: #f5f1dc;
-  font-size: 1.2rem;
   font-weight: 700;
   transition: color 0.25s;
   text-decoration: none;
 }
-
 .nav-link.active,
 .mobile-link.active {
   color: #00e0ff;
 }
-
 .nav-link:hover,
 .mobile-link:hover {
   color: #00b2ff;
 }
-
 .mobile-btn {
   display: block;
   width: 100%;
@@ -330,9 +236,7 @@ const scrollToSection = async (id) => {
   font-weight: 600;
   border-radius: 0.375rem;
   transition: background-color 0.2s;
-  text-decoration: none;
 }
-
 .slide-enter-active,
 .slide-leave-active {
   transition: transform 0.28s ease;
@@ -341,7 +245,6 @@ const scrollToSection = async (id) => {
 .slide-leave-to {
   transform: translateX(-100%);
 }
-
 .logo img {
   cursor: grab;
   user-select: none;

@@ -52,7 +52,9 @@ const submitGuestRequest = async () => {
 
     await api.post('/guest-requests', payload);
 
-    alert('Request submitted successfully! Admin has been notified.');
+    alert(
+      'Your Request has been submitted and recorded successfuly!\nA Service Provider will get in touch with you shortly .'
+    );
     emit('close');
   } catch (err) {
     console.error('Error submitting request:', err);

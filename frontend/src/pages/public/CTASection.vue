@@ -19,7 +19,7 @@
       class="absolute inset-0 bg-gradient-to-r from-purple-600/60 via-pink-500/50 to-yellow-400/60"
     ></div>
 
-    <!-- Floating Shapes (Optional) -->
+    <!-- Floating Shapes -->
     <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
       <div
         class="absolute -left-10 -top-10 w-56 h-56 rounded-full opacity-30 transform rotate-45 bg-gradient-to-br from-pink-400 to-purple-600 blur-2xl"
@@ -31,23 +31,31 @@
 
     <!-- Content -->
     <div class="relative z-10 text-center px-6 md:px-12 max-w-4xl">
-      <h2 class="text-4xl md:text-5xl font-extrabold text-white animate-fadeUp mb-4">
+      <h2
+        class="text-4xl md:text-5xl font-extrabold text-white animate-fadeUp mb-4"
+      >
         Take Your Research To The Next Level
       </h2>
       <p class="text-lg md:text-xl text-white/90 animate-fadeUp delay-150 mb-8">
-        Get expert-driven academic or industrial research assistance with fast turnaround
-        and guaranteed quality.
+        Get expert-driven academic or industrial research assistance with fast
+        turnaround and guaranteed quality.
       </p>
+
       <div
         class="flex flex-col sm:flex-row justify-center gap-4 animate-fadeUp delay-300"
       >
+        <!-- CTA Button -->
         <button
-          class="px-8 py-4 rounded-xl bg-white text-gray-900 shadow-xl hover:scale-105 transition-transform"
+          class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#e713a8] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#3a1ac9]"
+          @click="openSignup()"
         >
-          Post A Research Assignment
+          Post a Research Assignment
         </button>
+
+        <!-- Learn More (scrolls to section) -->
         <button
-          class="px-6 py-3 rounded-lg border border-white/30 text-white hover:bg-white/20 transition"
+          class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold border-2 border-white text-white hover:bg-white/20 transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/60"
+          @click="scrollToSection('about')"
         >
           Learn More
         </button>
@@ -57,7 +65,31 @@
 </template>
 
 <script setup>
-// Empty script; no state needed currently
+import { useRouter, useRoute } from 'vue-router';
+
+const router = useRouter();
+const route = useRoute();
+
+// CTA click: trigger global signup overlay
+const openSignup = () => {
+  if (typeof window.openSignupOverlay === 'function') {
+    window.openSignupOverlay();
+  } else {
+    console.warn('Signup overlay function not defined');
+  }
+};
+
+// Scroll to section on home page
+const scrollToSection = async (id) => {
+  if (route.path === '/') {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  // Navigate to home page first
+  await router.push({ path: '/', query: { scrollTo: id } });
+};
 </script>
 
 <style scoped>

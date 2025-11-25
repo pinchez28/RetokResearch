@@ -12,8 +12,10 @@
       </h2>
 
       <button
-        @click="handleCTA"
-        class="bg-gradient-to-r from-[#0046FF] to-[#001BB7] text-white font-extrabold text-base sm:text-lg md:text-xl lg:text-2xl py-3 px-6 rounded-3xl shadow-2xl hover:scale-105 hover:shadow-2xl transition-transform duration-300 w-full md:w-auto text-center"
+        class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-3xl font-extrabold bg-[#b35905] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#086b11]"
+        @mouseover="hoverCTA"
+        @mouseleave="leaveCTA"
+        @click="openSignup()"
       >
         Get Started Today
       </button>
@@ -149,6 +151,8 @@ const getCardGradient = (id) => {
       return 'background: linear-gradient(135deg, #001BB7, #0046FF)';
   }
 };
+
+const openSignup = () => window.openSignupOverlay?.();
 </script>
 
 <style scoped>

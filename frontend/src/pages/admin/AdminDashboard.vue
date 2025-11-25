@@ -1,163 +1,175 @@
 <template>
-  <header
-    class="flex items-center justify-between h-16 px-4 sm:px-6 bg-[#001BB7] text-[#F5F1DC] shadow-md fixed top-0 left-0 right-0 z-50"
-  >
-    <!-- Section Title -->
-    <div class="text-lg sm:text-xl md:text-2xl font-bold">
-      {{ currentSection }}
-    </div>
+  <div class="p-6 md:p-10 space-y-8">
+    <!-- WELCOME HEADER -->
+    <section
+      class="bg-[#001BB7] text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-center"
+    >
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold">Welcome, Admin 👋</h1>
+        <p class="mt-2 text-sm md:text-base opacity-90">
+          Manage clients, experts, requests, and homepage content efficiently.
+        </p>
+      </div>
+      <button
+        class="mt-4 md:mt-0 bg-[#FF8040] hover:bg-[#FFA366] text-[#001BB7] font-semibold px-5 py-2 rounded-lg transition"
+      >
+        Add New Announcement
+      </button>
+    </section>
 
-    <!-- User Actions -->
-    <div class="flex items-center space-x-4 relative">
-      <!-- Notifications -->
-      <div class="relative">
+    <!-- STATS CARDS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div
+        class="bg-white shadow-lg rounded-2xl p-5 border-t-4 border-[#0046FF] hover:shadow-xl transition"
+      >
+        <h3 class="text-gray-600 text-sm">Total Clients</h3>
+        <p class="text-3xl font-bold mt-2">120</p>
+      </div>
+      <div
+        class="bg-white shadow-lg rounded-2xl p-5 border-t-4 border-[#FF8040] hover:shadow-xl transition"
+      >
+        <h3 class="text-gray-600 text-sm">Pending Requests</h3>
+        <p class="text-3xl font-bold mt-2">{{ notifications.length }}</p>
+      </div>
+      <div
+        class="bg-white shadow-lg rounded-2xl p-5 border-t-4 border-[#001BB7] hover:shadow-xl transition"
+      >
+        <h3 class="text-gray-600 text-sm">Total Experts</h3>
+        <p class="text-3xl font-bold mt-2">45</p>
+      </div>
+      <div
+        class="bg-white shadow-lg rounded-2xl p-5 border-t-4 border-[#0046FF] hover:shadow-xl transition"
+      >
+        <h3 class="text-gray-600 text-sm">Active Projects</h3>
+        <p class="text-3xl font-bold mt-2">32</p>
+      </div>
+    </section>
+
+    <!-- RECENT GUEST REQUESTS -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl md:text-2xl font-semibold text-[#001BB7]">
+          Recent Guest Requests
+        </h2>
         <button
-          @click="toggleDropdown"
-          class="relative p-1 hover:bg-[#0046FF] rounded-full transition"
+          @click="viewAllRequests"
+          class="text-[#0046FF] hover:underline font-medium"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 sm:h-7 sm:w-7 text-[#F5F1DC]"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3c0 .386-.149.735-.395 1.005L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            />
-          </svg>
-          <span
-            v-if="notifications.length > 0"
-            class="absolute -top-1 -right-1 w-4 h-4 bg-[#FF8040] rounded-full flex items-center justify-center text-xs text-white"
-          >
-            {{ notifications.length }}
-          </span>
+          View all →
         </button>
+      </div>
 
-        <!-- Notification dropdown -->
-        <div
-          v-if="dropdownOpen"
-          class="absolute right-0 mt-2 w-80 bg-white text-gray-800 rounded-xl shadow-lg border border-gray-200 z-50 overflow-y-auto max-h-96"
-        >
-          <h4 class="font-semibold p-3 border-b border-gray-200">
-            New Guest Requests
-          </h4>
-          <ul>
-            <li
+      <div
+        v-if="notifications.length === 0"
+        class="bg-white p-6 rounded-2xl shadow text-center text-gray-500"
+      >
+        No recent requests.
+      </div>
+
+      <div v-else class="bg-white shadow-lg rounded-2xl overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Name
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Topic
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Date
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-100">
+            <tr
               v-for="item in notifications"
               :key="item._id"
-              class="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-              @click="openRequest(item)"
+              class="hover:bg-gray-50 cursor-pointer transition"
             >
-              <div class="font-semibold">{{ item.name || 'Guest User' }}</div>
-              <div class="text-sm text-gray-500">{{ item.topic }}</div>
-            </li>
-            <li v-if="notifications.length === 0" class="p-3 text-gray-400">
-              No new requests
-            </li>
-          </ul>
-        </div>
+              <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
+                {{ item.name || 'Guest User' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                {{ item.topic }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-400 text-sm">
+                {{ formatDate(item.createdAt) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <button
+                  @click="openRequest(item)"
+                  class="text-[#FF8040] hover:text-[#FFA366] font-semibold"
+                >
+                  View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </section>
 
-      <!-- User Avatar / Lucid Icon -->
-      <div class="flex items-center space-x-2">
-        <img
-          src="@/assets/images/logo.jpg"
-          alt="Admin Avatar"
-          class="h-8 w-8 sm:h-9 sm:w-9 rounded-full border-2 border-[#0046FF]"
-        />
-        <span class="hidden sm:block font-medium">Admin</span>
-      </div>
-
-      <!-- Logout Button -->
+    <!-- CTA SECTION -->
+    <section
+      class="bg-[#FF8040] text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between"
+    >
+      <h3 class="text-xl font-semibold">Need help managing the platform?</h3>
       <button
-        @click="logout"
-        class="bg-[#FF8040] hover:bg-[#FF9966] text-[#F5F1DC] px-3 py-1 sm:px-4 sm:py-2 rounded-md font-semibold transition"
+        class="mt-3 md:mt-0 bg-white text-[#FF8040] font-semibold px-5 py-2 rounded-lg hover:bg-[#F5F1DC] transition"
       >
-        Logout
+        Open Admin Tools
       </button>
-    </div>
-  </header>
+    </section>
+  </div>
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { io } from 'socket.io-client';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from '@/utils/api.js';
 
-const route = useRoute();
 const router = useRouter();
-
-const dropdownOpen = ref(false);
 const notifications = ref([]);
 
-// Compute current section title
-const currentSection = computed(() => {
-  if (route.path.startsWith('/admin/homepage')) return 'Homepage Management';
-  if (route.path.startsWith('/admin/clients')) return 'Client Dashboard';
-  if (route.path.startsWith('/admin/experts')) return 'Expert Dashboard';
-  if (route.path.startsWith('/admin/settings')) return 'Admin Settings';
-  return 'Admin Dashboard';
-});
-
-// Logout
-const logout = () => {
-  console.log('Logging out...');
-  router.push('/login');
-};
-
-// Toggle dropdown
-const toggleDropdown = () => {
-  dropdownOpen.value = !dropdownOpen.value;
-};
-
-// Open a request (example: navigate or show modal)
-const openRequest = (request) => {
-  console.log('Clicked request:', request);
-  // Example: navigate to guest support page
-  router.push('/admin/guest-support');
-  dropdownOpen.value = false;
-};
-
-// Socket.IO for live guest requests
-let socket;
 onMounted(async () => {
-  // Fetch initial pending requests
   try {
     const res = await axios.get('/guest-requests');
     notifications.value = res.data || [];
   } catch (err) {
-    console.error('Failed to fetch guest requests:', err);
+    console.error('Failed to fetch requests:', err);
   }
-
-  // Connect socket
-  socket = io('http://localhost:4000');
-  socket.on('new-guest-request', (request) => {
-    notifications.value.unshift(request); // add new request to top
-  });
 });
 
-onBeforeUnmount(() => {
-  if (socket) socket.disconnect();
-});
+const viewAllRequests = () => {
+  router.push('/admin/guest-support');
+};
+
+const openRequest = (request) => {
+  console.log('Opening request:', request);
+  router.push('/admin/guest-support');
+};
+
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
 </script>
 
 <style scoped>
-header {
-  z-index: 50;
-}
-
-/* Responsive tweaks */
-@media (max-width: 640px) {
-  header {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    height: auto;
-    padding: 0.5rem 1rem;
-  }
+/* Optional hover for table rows */
+table tr:hover {
+  background-color: rgba(0, 27, 183, 0.05);
 }
 </style>

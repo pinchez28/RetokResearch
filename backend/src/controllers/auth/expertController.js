@@ -15,6 +15,7 @@ export const signup = async (req, res) => {
       education,
       certifications,
     } = req.body;
+
     if (
       !name ||
       !email ||
@@ -45,7 +46,9 @@ export const signup = async (req, res) => {
       bio,
       experience,
       education,
-      certifications: certifications ? JSON.parse(certifications) : [],
+      certifications: certifications
+        ? certifications.split(',').map((c) => c.trim())
+        : [],
     });
 
     await expert.save();

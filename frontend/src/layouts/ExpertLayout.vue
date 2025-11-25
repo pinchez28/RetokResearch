@@ -1,9 +1,21 @@
 <template>
-  <div></div>
+  <div class="flex">
+    <!-- Sidebar -->
+    <ExpertSidebar />
+
+    <div class="flex flex-col flex-1 ml-60">
+      <!-- Topbar -->
+      <ExpertNavbar />
+
+      <!-- Main Content -->
+      <main class="mt-16 p-6 bg-[#F5F1DC] min-h-screen overflow-y-auto">
+        <router-view />
+      </main>
+    </div>
+  </div>
 </template>
 
-<script>
-export default {};
+<script setup>
+import ExpertSidebar from '@/pages/expert/ExpertSidebar.vue';
+import ExpertNavbar from '@/pages/expert/ExpertNavbar.vue';
 </script>
-
-<style lang="scss" scoped></style>

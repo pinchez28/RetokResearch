@@ -1,38 +1,34 @@
 <template>
-  <div class="admin-layout flex flex-col min-h-screen bg-[#F5F1DC]">
-    <!-- Topbar always on top -->
-    <AdminTopbar class="fixed top-0 left-0 right-0 z-50" />
+  <div class="admin-layout flex min-h-screen bg-[#F5F1DC]">
+    <!-- Sidebar -->
+    <AdminSidebar
+      class="hidden md:flex flex-col w-64 bg-[#001BB7] text-[#F5F1DC] fixed top-0 bottom-0 z-40 shadow-lg"
+    />
 
-    <div class="flex flex-1 overflow-hidden pt-16">
-      <!-- Sidebar fixed height, never scrolls -->
-      <AdminSidebar
-        class="hidden md:flex flex-col w-64 bg-[#001BB7] text-white min-h-screen z-40"
-      />
+    <div class="flex-1 flex flex-col min-h-screen ml-0 md:ml-64">
+      <!-- Topbar -->
+      <AdminTopbar class="fixed top-0 left-0 right-0 z-50 md:left-64" />
 
-      <!-- Main content scrolls independently -->
-      <main class="flex-1 overflow-y-auto p-6">
+      <!-- Main Content -->
+      <main class="flex-1 overflow-y-auto pt-16 p-6">
         <div class="content-wrapper pb-24">
           <router-view />
         </div>
       </main>
-    </div>
 
-    <!-- Footer always at bottom -->
-    <Footer class="flex-shrink-0" />
+      <!-- Footer -->
+      <Footer class="flex-shrink-0" />
+    </div>
   </div>
 </template>
 
 <script setup>
-import AdminSidebar from "@/pages/admin/AdminSidebar.vue";
-import AdminTopbar from "@/pages/admin/AdminTopbar.vue";
-import Footer from "@/components/footer/Footer.vue";
+import AdminSidebar from '@/pages/admin/AdminSidebar.vue';
+import AdminTopbar from '@/pages/admin/AdminTopbar.vue';
+import Footer from '@/components/footer/Footer.vue';
 </script>
 
 <style scoped>
-.admin-layout {
-  min-height: 100vh;
-}
-
 /* Scrollbar for main content */
 main::-webkit-scrollbar {
   width: 8px;
@@ -46,8 +42,8 @@ main {
   scrollbar-color: #0046ff #f5f1dc;
 }
 
-/* Footer padding for main content */
+/* Footer padding */
 .content-wrapper {
-  padding-bottom: 4rem; /* matches footer height */
+  padding-bottom: 4rem;
 }
 </style>

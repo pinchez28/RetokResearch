@@ -2,8 +2,11 @@
   <header class="bg-[#001BB7] text-white shadow-md sticky top-0 z-50">
     <div class="max-w-full px-6 py-3 flex items-center justify-between">
       <!-- LOGO / TITLE -->
-      <RouterLink to="/admin" class="text-xl font-semibold tracking-wide">
-        Admin Panel
+      <RouterLink
+        to="/client/dashboard"
+        class="text-xl font-semibold tracking-wide"
+      >
+        Client Panel
       </RouterLink>
 
       <!-- RIGHT SIDE ACTIONS -->
@@ -47,10 +50,10 @@
             @click="toggleUserMenu"
           >
             <img
-              src="https://ui-avatars.com/api/?name=Admin&background=0046FF&color=fff"
+              src="https://ui-avatars.com/api/?name=Client&background=0046FF&color=fff"
               class="w-8 h-8 rounded-full border-2 border-white"
             />
-            <span class="font-medium hidden md:inline">Admin</span>
+            <span class="font-medium hidden md:inline">Client</span>
           </div>
 
           <!-- USER DROPDOWN -->
@@ -58,12 +61,15 @@
             v-if="showUserMenu"
             class="absolute right-0 mt-2 bg-white text-black rounded shadow-lg w-40 py-2"
           >
-            <RouterLink to="/admin" class="block px-4 py-2 hover:bg-[#F5F1DC]">
-              Dashboard
+            <RouterLink
+              to="/client/profile"
+              class="block px-4 py-2 hover:bg-[#F5F1DC]"
+            >
+              Profile
             </RouterLink>
 
             <RouterLink
-              to="/admin/guest-support"
+              to="/client/support"
               class="block px-4 py-2 hover:bg-[#F5F1DC]"
             >
               Support
@@ -95,11 +101,11 @@ export default {
     const showNotifications = ref(false);
     const showUserMenu = ref(false);
 
-    const notifications = ref(3); // placeholder
+    const notifications = ref(3); // placeholder dynamic value
     const notificationList = ref([
-      'New user registered',
-      'Service added',
-      'Message from client',
+      'Your order was reviewed',
+      'You have a message from support',
+      'A proposal was submitted',
     ]);
 
     const toggleNotifications = () => {
@@ -129,4 +135,6 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+/* Remove material-icons */
+</style>

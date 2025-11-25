@@ -11,7 +11,7 @@
     <div class="flex justify-center mb-12">
       <button
         @click="openRequestModal(null)"
-        class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-3xl font-bold shadow-lg transition-transform transform hover:scale-105"
+        class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#ff8040] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#ffb38a]"
       >
         Quickly Get Help with Research
       </button>
@@ -23,12 +23,12 @@
         v-for="branch in branches"
         :key="branch._id"
         @click="activeBranch = branch._id"
-        :class="
+        :class="[
+          'w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold transform transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           activeBranch === branch._id
-            ? 'bg-white text-blue-900'
-            : 'bg-blue-700 text-white'
-        "
-        class="px-5 py-2 rounded-full font-semibold transition-all"
+            ? 'active-branch'
+            : 'bg-blue-700 text-white shadow-xl hover:bg-blue-600 hover:-translate-y-1',
+        ]"
       >
         {{ branch.name }}
       </button>
@@ -166,5 +166,32 @@ const closeRequestModal = () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Active branch style */
+.active-branch {
+  background: linear-gradient(90deg, #facc15, #ec4899, #8b5cf6);
+  color: white;
+  box-shadow: 0 8px 20px rgba(255, 200, 50, 0.7),
+    0 4px 10px rgba(255, 200, 50, 0.4);
+  transform: scale(1.1);
+  animation: pulse-glow 1.5s infinite alternate;
+  border: 2px solid #fff;
+}
+
+/* Pulse & glow animation */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 8px 20px rgba(255, 200, 50, 0.7),
+      0 4px 10px rgba(255, 200, 50, 0.4);
+  }
+  50% {
+    box-shadow: 0 12px 28px rgba(255, 255, 100, 0.9),
+      0 6px 12px rgba(255, 255, 100, 0.5);
+  }
+  100% {
+    box-shadow: 0 8px 20px rgba(255, 200, 50, 0.7),
+      0 4px 10px rgba(255, 200, 50, 0.4);
+  }
 }
 </style>

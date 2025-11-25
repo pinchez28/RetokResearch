@@ -1,37 +1,21 @@
 <template>
-  <!-- Directly render the page content -->
-  <router-view />
+  <div id="app">
+    <!-- Main app content -->
+    <router-view />
+
+    <!-- Global Signup Overlay -->
+    <SignupOverlay ref="signupOverlay" />
+  </div>
 </template>
 
-<script setup></script>
-
-//
 <script setup>
-// import { computed } from 'vue';
-// import { useRoute } from 'vue-router';
+import { ref } from 'vue';
+import SignupOverlay from '@/pages/public/signup/SignupOverlay.vue';
 
-// // Import all layouts
-// import PublicLayout from '@/layouts/PublicLayout.vue';
-// import ClientLayout from '@/layouts/ClientLayout.vue';
-// import ExpertLayout from '@/layouts/ExpertLayout.vue';
-// import AdminLayout from '@/layouts/AdminLayout.vue';
+const signupOverlay = ref(null);
 
-// const route = useRoute();
-
-// // Choose layout based on route meta field
-// const layout = computed(() => {
-//   const layoutType = route.meta?.layout || 'public';
-
-//   switch (layoutType) {
-//     case 'client':
-//       return ClientLayout;
-//     case 'expert':
-//       return ExpertLayout;
-//     case 'admin':
-//       return AdminLayout;
-//     default:
-//       return PublicLayout;
-//   }
-// });
-//
+// Global function to open the overlay anywhere
+window.openSignupOverlay = () => {
+  signupOverlay.value?.openOverlay();
+};
 </script>

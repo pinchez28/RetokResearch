@@ -2,8 +2,11 @@
   <header class="bg-[#001BB7] text-white shadow-md sticky top-0 z-50">
     <div class="max-w-full px-6 py-3 flex items-center justify-between">
       <!-- LOGO / TITLE -->
-      <RouterLink to="/admin" class="text-xl font-semibold tracking-wide">
-        Admin Panel
+      <RouterLink
+        to="/expert/dashboard"
+        class="text-xl font-semibold tracking-wide"
+      >
+        Expert Panel
       </RouterLink>
 
       <!-- RIGHT SIDE ACTIONS -->
@@ -47,10 +50,10 @@
             @click="toggleUserMenu"
           >
             <img
-              src="https://ui-avatars.com/api/?name=Admin&background=0046FF&color=fff"
+              src="https://ui-avatars.com/api/?name=Expert&background=0046FF&color=fff"
               class="w-8 h-8 rounded-full border-2 border-white"
             />
-            <span class="font-medium hidden md:inline">Admin</span>
+            <span class="font-medium hidden md:inline">Expert</span>
           </div>
 
           <!-- USER DROPDOWN -->
@@ -58,12 +61,15 @@
             v-if="showUserMenu"
             class="absolute right-0 mt-2 bg-white text-black rounded shadow-lg w-40 py-2"
           >
-            <RouterLink to="/admin" class="block px-4 py-2 hover:bg-[#F5F1DC]">
-              Dashboard
+            <RouterLink
+              to="/expert/profile"
+              class="block px-4 py-2 hover:bg-[#F5F1DC]"
+            >
+              Profile
             </RouterLink>
 
             <RouterLink
-              to="/admin/guest-support"
+              to="/expert/support"
               class="block px-4 py-2 hover:bg-[#F5F1DC]"
             >
               Support
@@ -95,11 +101,11 @@ export default {
     const showNotifications = ref(false);
     const showUserMenu = ref(false);
 
-    const notifications = ref(3); // placeholder
+    // Example placeholder notifications
+    const notifications = ref(2);
     const notificationList = ref([
-      'New user registered',
-      'Service added',
-      'Message from client',
+      'A new job was assigned to you',
+      'You received a new message',
     ]);
 
     const toggleNotifications = () => {

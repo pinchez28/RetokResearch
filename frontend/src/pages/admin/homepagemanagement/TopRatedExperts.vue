@@ -17,15 +17,21 @@
       <div v-if="loading" class="text-center py-10 text-gray-500">
         Loading top experts...
       </div>
-      <div v-else-if="experts.length === 0" class="text-center py-10 text-gray-500">
+      <div
+        v-else-if="experts.length === 0"
+        class="text-center py-10 text-gray-500"
+      >
         No top-rated experts available.
       </div>
 
       <!-- Experts Grid -->
-      <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      <div
+        v-else
+        class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5"
+      >
         <div
           v-for="expert in experts"
-          :key="expert._id"
+          :key="expert.position"
           class="expert-card rounded-xl p-5 shadow-lg text-center bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 relative"
         >
           <!-- Delete Button -->
@@ -38,18 +44,18 @@
           </button>
 
           <img
-            :src="expert.meta?.avatarUrl || '/img/default-avatar.png'"
+            :src="expert.avatarUrl || '/img/default-avatar.png'"
             alt="Expert Avatar"
             class="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
           />
 
-          <h3 class="font-semibold text-lg mb-1">{{ expert.meta?.name }}</h3>
+          <h3 class="font-semibold text-lg mb-1">{{ expert.name }}</h3>
 
           <div class="flex justify-center items-center gap-1 mb-3">
             <span v-for="n in 5" :key="n" class="text-yellow-500">
               <i
                 :class="
-                  n <= Math.round(expert.meta?.rating || 0)
+                  n <= Math.round(expert.rating || 0)
                     ? 'fas fa-star'
                     : 'far fa-star'
                 "
@@ -57,14 +63,6 @@
             </span>
           </div>
 
-          <router-link
-            :to="`/experts/${expert.expertId}`"
-            class="inline-block mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
-          >
-            View Profile
-          </router-link>
-
-          <!-- Edit Button -->
           <button
             @click="openEditModal(expert)"
             class="mt-3 block w-full bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition text-sm"
@@ -85,9 +83,12 @@
 
         <div class="mb-4">
           <label class="block mb-1 font-medium">Expert</label>
-          <select v-model="newExpert.expertId" class="w-full border rounded px-3 py-2">
+          <select
+            v-model="newExpert.id"
+            class="w-full border rounded px-3 py-2"
+          >
             <option value="" disabled>Select an expert</option>
-            <option v-for="exp in allExperts" :key="exp._id" :value="exp._id">
+            <option v-for="exp in allExperts" :key="exp.id" :value="exp.id">
               {{ exp.name }}
             </option>
           </select>
@@ -133,9 +134,12 @@
 
         <div class="mb-4">
           <label class="block mb-1 font-medium">Expert</label>
-          <select v-model="editExpert.expertId" class="w-full border rounded px-3 py-2">
+          <select
+            v-model="editExpert.id"
+            class="w-full border rounded px-3 py-2"
+          >
             <option value="" disabled>Select an expert</option>
-            <option v-for="exp in allExperts" :key="exp._id" :value="exp._id">
+            <option v-for="exp in allExperts" :key="exp.id" :value="exp.id">
               {{ exp.name }}
             </option>
           </select>
@@ -161,107 +165,114 @@
 </template>
 
 <script>
-import axios from "@/utils/api.js"; // your axios instance
-
 export default {
-  name: "TopRatedExperts",
+  name: 'TopRatedExperts',
   data() {
     return {
+      loading: false,
       experts: [],
-      loading: true,
-      allExperts: [],
+
+      // Dummy all experts
+      allExperts: [
+        {
+          id: '1',
+          name: 'John Doe',
+          avatarUrl: '/img/default-avatar.png',
+          rating: 5,
+        },
+        {
+          id: '2',
+          name: 'Jane Smith',
+          avatarUrl: '/img/default-avatar.png',
+          rating: 4,
+        },
+        {
+          id: '3',
+          name: 'Alice Johnson',
+          avatarUrl: '/img/default-avatar.png',
+          rating: 5,
+        },
+        {
+          id: '4',
+          name: 'Bob Brown',
+          avatarUrl: '/img/default-avatar.png',
+          rating: 3,
+        },
+        {
+          id: '5',
+          name: 'Emma White',
+          avatarUrl: '/img/default-avatar.png',
+          rating: 4,
+        },
+      ],
 
       // Add Expert
       showAddModal: false,
-      newExpert: {
-        expertId: "",
-        position: 1,
-      },
+      newExpert: { id: '', position: 1 },
 
       // Edit Expert
       showEditModal: false,
-      editExpert: {
-        position: null,
-        expertId: "",
-      },
+      editExpert: { position: null, id: '' },
     };
   },
-  async mounted() {
-    await this.fetchExperts();
-    await this.fetchAllExperts();
+  mounted() {
+    this.loadDummyExperts();
   },
   methods: {
-    async fetchExperts() {
+    loadDummyExperts() {
       this.loading = true;
-      try {
-        const res = await axios.get("/top-rated-experts");
-        this.experts = res.data.experts || [];
-      } catch (err) {
-        console.error("Failed to load top experts", err);
-      } finally {
-        this.loading = false;
-      }
+      // Prepopulate top-rated experts for demo
+      this.experts = [
+        { position: 1, ...this.allExperts[0] },
+        { position: 2, ...this.allExperts[1] },
+        { position: 3, ...this.allExperts[2] },
+      ];
+      this.loading = false;
     },
-    async fetchAllExperts() {
-      try {
-        const res = await axios.get("/experts"); // returns all experts for dropdown
-        this.allExperts = res.data.experts || [];
-      } catch (err) {
-        console.error("Failed to fetch all experts", err);
-      }
+
+    addExpert() {
+      const expert = this.allExperts.find((e) => e.id === this.newExpert.id);
+      if (!expert) return alert('Select a valid expert');
+      this.experts.push({ position: this.newExpert.position, ...expert });
+      this.showAddModal = false;
+      this.newExpert = { id: '', position: 1 };
     },
-    // Add Expert
-    async addExpert() {
-      try {
-        await axios.post("/top-rated-experts", this.newExpert);
-        this.showAddModal = false;
-        this.newExpert = { expertId: "", position: 1 };
-        await this.fetchExperts();
-      } catch (err) {
-        alert(err.response?.data?.message || "Failed to add expert");
-      }
-    },
-    // Open Edit Modal
+
     openEditModal(expert) {
-      this.editExpert = {
-        position: expert.position,
-        expertId: expert.expertId,
-      };
+      this.editExpert = { ...expert };
       this.showEditModal = true;
     },
-    // Update Expert
-    async updateExpert() {
-      try {
-        await axios.put(`/top-rated-experts/${this.editExpert.position}`, {
-          expertId: this.editExpert.expertId,
-        });
-        this.showEditModal = false;
-        await this.fetchExperts();
-      } catch (err) {
-        alert(err.response?.data?.message || "Failed to update expert");
+
+    updateExpert() {
+      const idx = this.experts.findIndex(
+        (e) => e.position === this.editExpert.position
+      );
+      if (idx !== -1) {
+        const updatedExpert = this.allExperts.find(
+          (e) => e.id === this.editExpert.id
+        );
+        this.experts[idx] = {
+          position: this.editExpert.position,
+          ...updatedExpert,
+        };
       }
+      this.showEditModal = false;
     },
-    // Delete Expert
-    async deleteExpert(position) {
-      if (!confirm(`Are you sure you want to remove expert from position ${position}?`))
-        return;
-      try {
-        await axios.delete(`/top-rated-experts/${position}`);
-        await this.fetchExperts();
-      } catch (err) {
-        alert(err.response?.data?.message || "Failed to delete expert");
-      }
+
+    deleteExpert(position) {
+      if (!confirm(`Delete expert at position ${position}?`)) return;
+      this.experts = this.experts.filter((e) => e.position !== position);
     },
   },
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .expert-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  }
+}
+.expert-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 </style>

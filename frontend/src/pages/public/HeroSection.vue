@@ -45,18 +45,21 @@
         <div
           class="mt-6 flex flex-col sm:flex-row justify-center lg:justify-start gap-4 animate-fadeUp delay-300 w-full"
         >
-          <router-link
-            to="/signup"
+          <!-- Start Now Button -->
+          <button
             class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#ff8040] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#ffb38a]"
+            @click="() => openSignup('client')"
           >
             Start Now
-          </router-link>
-          <router-link
-            to="/about"
-            class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold border-2 border-white text-white hover:bg-white/20 backdrop-blur-xl transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/60"
+          </button>
+
+          <!-- Learn More Button -->
+          <button
+            class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold border-2 border-white text-white hover:bg-white/20 transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/60"
+            @click="scrollToSection('about')"
           >
             Learn More
-          </router-link>
+          </button>
         </div>
       </div>
 
@@ -77,25 +80,23 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { BookOpen, BarChart3, Lightbulb, Users } from 'lucide-vue-next';
+import { useRouter, useRoute } from 'vue-router';
 
 let uid = 0;
 const genId = () => ++uid;
-
 const floatingIcons = ref([]);
 
 function randomBetween(a, b) {
   return a + Math.random() * (b - a);
 }
 
-// Number of icons depending on screen size
 function computeCount() {
   const w = window.innerWidth;
-  if (w < 640) return 20; // mobile
-  if (w < 1024) return 45; // tablet/md
-  return 70; // desktop/lg
+  if (w < 640) return 20;
+  if (w < 1024) return 45;
+  return 70;
 }
 
-// Generate icons with random positions, drift vectors, size, delay
 function generateIcons() {
   const components = [BookOpen, BarChart3, Lightbulb, Users];
   const count = computeCount();
@@ -112,7 +113,6 @@ function generateIcons() {
       window.innerWidth < 640
         ? Math.round(randomBetween(12, 22))
         : Math.round(randomBetween(18, 36));
-    const rotate = Math.round(randomBetween(0, 360));
     const initialTop = Math.min(100, Math.max(0, Math.random() * 100));
     const initialLeft = Math.min(100, Math.max(0, Math.random() * 100));
     const delay = Math.round(Math.random() * duration * 1000);
@@ -126,13 +126,11 @@ function generateIcons() {
       dx,
       dy,
       duration,
-      rotate,
       delay,
     });
   }
 }
 
-// Mobile viewport fix: set --vh to handle mobile browser bars
 function setVh() {
   document.documentElement.style.setProperty(
     '--vh',
@@ -154,10 +152,32 @@ onMounted(() => {
     }
   });
 });
+
+const router = useRouter();
+const route = useRoute();
+
+// CTA click: open signup overlay
+const openSignup = (type = 'client') => {
+  if (window.openSignupOverlay) {
+    window.openSignupOverlay(type); // type: 'client' | 'provider'
+  } else {
+    console.warn('Signup overlay is not initialized');
+  }
+};
+
+// Scroll to a section
+const scrollToSection = async (id) => {
+  if (route.path === '/') {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  await router.push({ path: '/', query: { scrollTo: id } });
+};
 </script>
 
 <style scoped>
-/* Use --vh to fill full viewport on mobile */
 .hero-section {
   height: calc(var(--vh, 1vh) * 100);
 }
@@ -220,15 +240,13 @@ section {
 .floating-icon {
   animation: drift var(--dur) linear var(--delay) infinite;
 }
-
-/* Ensure child SVGs fill their container */
 .floating-icon > * {
   width: 100%;
   height: 100%;
   display: block;
 }
 
-/* Reduced motion accessibility */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .floating-icon,
   .animate-fadeUp {
