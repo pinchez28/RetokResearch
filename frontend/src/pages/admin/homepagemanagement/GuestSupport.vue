@@ -1,5 +1,6 @@
 <template>
-  <div class="p-6 bg-gray-50 rounded-2xl shadow-md mb-0">
+  <div class="flex flex-col h-full">
+    <!-- Page Title -->
     <h2 class="text-2xl font-bold mb-4">Guest User Support</h2>
 
     <!-- Loading -->
@@ -11,7 +12,7 @@
     </div>
 
     <!-- Guest Requests List -->
-    <ul v-else class="space-y-4 max-h-[500px] overflow-y-auto">
+    <ul v-else class="space-y-4 overflow-y-auto flex-1">
       <li
         v-for="msg in messages"
         :key="msg._id"
@@ -116,7 +117,6 @@
 <script>
 import axios from '@/utils/api.js';
 import { io } from 'socket.io-client';
-import { useRoute } from 'vue-router';
 
 export default {
   name: 'GuestSupport',
@@ -141,7 +141,7 @@ export default {
         this.messages = res.data.requests || [];
         this.totalPages = Math.ceil(res.data.total / this.limit);
 
-        // If a requestId was passed in query, open modal automatically
+        // Open modal if requestId query exists
         const requestId = this.$route.query.requestId;
         if (requestId) {
           const msg = this.messages.find((m) => m._id === requestId);
@@ -162,7 +162,6 @@ export default {
     },
     closeModal() {
       this.selectedMessage = null;
-      // Remove query param after opening
       if (this.$route.query.requestId) {
         this.$router.replace({ query: {} });
       }
@@ -207,8 +206,11 @@ export default {
 </script>
 
 <style scoped>
+.flex-1 {
+  flex: 1 1 auto;
+}
 ul {
-  max-height: 500px;
+  flex: 1 1 auto;
   overflow-y: auto;
 }
 </style>

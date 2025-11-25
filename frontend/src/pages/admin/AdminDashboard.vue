@@ -5,8 +5,10 @@
       class="bg-[#001BB7] text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-center"
     >
       <div>
-        <h1 class="text-3xl md:text-4xl font-bold">Welcome, Admin 👋</h1>
-        <p class="mt-2 text-sm md:text-base opacity-90">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-white">
+          Welcome, Admin 👋
+        </h1>
+        <p class="mt-2 text-2xl md:text-base opacity-90 text-white">
           Manage clients, experts, requests, and homepage content efficiently.
         </p>
       </div>

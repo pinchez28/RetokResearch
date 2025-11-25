@@ -1,11 +1,11 @@
 <template>
-  <div class="p-6 md:p-10 space-y-8">
+  <div class="p-6 md:p-10 space-y-8 bg-gray-100 min-h-screen">
     <!-- Welcome Header -->
     <div class="flex flex-col md:flex-row md:justify-between md:items-center">
       <h1 class="text-3xl md:text-4xl font-bold text-[#001BB7]">
         Welcome, {{ user.name || 'Expert' }}
       </h1>
-      <p class="mt-2 md:mt-0 text-gray-500">
+      <p class="mt-2 md:mt-0 text-gray-600">
         Here’s a summary of your current activity
       </p>
     </div>
@@ -14,9 +14,13 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Total Assignments -->
       <div
-        class="p-6 bg-white rounded-2xl shadow-lg flex items-center space-x-4 hover:shadow-xl transition"
+        class="p-6 rounded-2xl flex items-center space-x-4 shadow-lg hover:shadow-2xl transition"
+        style="
+          background: linear-gradient(to right, #6a11cb, #2575fc);
+          color: white;
+        "
       >
-        <div class="p-4 bg-[#001BB7] text-white rounded-full">
+        <div class="p-4 bg-white text-[#6a11cb] rounded-full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6"
@@ -33,18 +37,20 @@
           </svg>
         </div>
         <div>
-          <h2 class="font-semibold text-lg text-[#001BB7]">
-            Total Assignments
-          </h2>
+          <h2 class="font-semibold text-lg">Total Assignments</h2>
           <p class="mt-1 text-2xl font-bold">{{ assignments.length }}</p>
         </div>
       </div>
 
       <!-- Active Jobs -->
       <div
-        class="p-6 bg-white rounded-2xl shadow-lg flex items-center space-x-4 hover:shadow-xl transition"
+        class="p-6 rounded-2xl flex items-center space-x-4 shadow-lg hover:shadow-2xl transition"
+        style="
+          background: linear-gradient(to right, #ff512f, #dd2476);
+          color: white;
+        "
       >
-        <div class="p-4 bg-[#FF8040] text-white rounded-full">
+        <div class="p-4 bg-white text-[#ff512f] rounded-full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6"
@@ -61,16 +67,20 @@
           </svg>
         </div>
         <div>
-          <h2 class="font-semibold text-lg text-[#001BB7]">Active Jobs</h2>
+          <h2 class="font-semibold text-lg">Active Jobs</h2>
           <p class="mt-1 text-2xl font-bold">{{ jobs.length }}</p>
         </div>
       </div>
 
       <!-- Earnings -->
       <div
-        class="p-6 bg-white rounded-2xl shadow-lg flex items-center space-x-4 hover:shadow-xl transition"
+        class="p-6 rounded-2xl flex items-center space-x-4 shadow-lg hover:shadow-2xl transition"
+        style="
+          background: linear-gradient(to right, #11998e, #38ef7d);
+          color: white;
+        "
       >
-        <div class="p-4 bg-green-500 text-white rounded-full">
+        <div class="p-4 bg-white text-[#11998e] rounded-full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6"
@@ -93,7 +103,7 @@
           </svg>
         </div>
         <div>
-          <h2 class="font-semibold text-lg text-[#001BB7]">Earnings</h2>
+          <h2 class="font-semibold text-lg">Earnings</h2>
           <p class="mt-1 text-2xl font-bold">${{ earnings }}</p>
         </div>
       </div>
@@ -168,7 +178,6 @@ const assignments = ref([]);
 const jobs = ref([]);
 const earnings = ref(0);
 
-// Example projects data
 const allProjects = ref([
   {
     id: 1,
@@ -210,10 +219,8 @@ const allProjects = ref([
     budget: 800,
     dueDate: '2025-12-08',
   },
-  // add more as needed
 ]);
 
-// Pagination
 const currentPage = ref(1);
 const pageSize = 3;
 const totalPages = computed(() =>
@@ -239,7 +246,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Smooth hover shadow transition */
 tr:hover {
   transition: background-color 0.2s;
 }

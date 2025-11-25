@@ -44,6 +44,7 @@
           {{ error }}
         </div>
 
+        <!-- Submit -->
         <button
           type="submit"
           :disabled="loading"
@@ -74,7 +75,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import api from '@/utils/api.js';
 
 const router = useRouter();
 
@@ -93,29 +94,34 @@ const handleLogin = async () => {
   loading.value = true;
 
   try {
-    // Determine backend route based on saved role (optional: can add a toggle)
-    const roleRoute = localStorage.getItem('loginRole') || 'clients'; // default to client
-    const url = `/api/auth/${roleRoute}/login`;
-
-    const { data } = await axios.post(url, {
+    // Send request to backend login endpoint
+    const { data } = await api.post('/auth/login', {
       email: email.value,
       password: password.value,
     });
 
-    // Save token & user info
+    // Save JWT and user info
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
 
     // Redirect based on role
-    if (data.user.role === 'admin') router.push('/admin');
-    else if (data.user.role === 'client') router.push('/client');
-    else if (data.user.role === 'expert') router.push('/expert');
-    else router.push('/'); // fallback
+    switch (data.user.role) {
+      case 'admin':
+        router.push('/admin');
+        break;
+      case 'client':
+        router.push('/client');
+        break;
+      case 'expert':
+        router.push('/expert');
+        break;
+      default:
+        router.push('/');
+    }
   } catch (err) {
     console.error(err);
     error.value =
-      err.response?.data?.message ||
-      'Unable to reach server. Please try again.';
+      err.response?.data?.message || 'Login failed. Please try again.';
   } finally {
     loading.value = false;
   }
@@ -123,6 +129,21 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  outline: none;
+  background-color: #f9fafb;
+  transition: box-shadow 0.2s, border-color 0.2s, background-color 0.2s;
+}
+.input:focus {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+  background-color: #ffffff;
+}
+
 div.min-h-screen {
   animation: fadeIn 0.8s ease-out;
 }

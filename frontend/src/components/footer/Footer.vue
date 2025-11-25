@@ -19,21 +19,20 @@
         </div>
 
         <!-- Footer links -->
-        <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4">
-          <div v-for="(section, index) in links" :key="index">
-            <h4 class="font-semibold mb-3 text-[#FFD700]">
-              {{ section.title }}
-            </h4>
-            <ul class="space-y-2 text-gray-200">
-              <li
-                v-for="(link, lIndex) in section.items"
-                :key="lIndex"
-                class="hover:text-[#FF8040] transition-colors cursor-pointer"
-              >
-                {{ link }}
-              </li>
-            </ul>
-          </div>
+        <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4"></div>
+        <div v-for="(section, index) in links" :key="index">
+          <h4 class="font-semibold mb-3 text-[#FFD700]">
+            {{ section.title }}
+          </h4>
+          <ul class="space-y-2 text-gray-200">
+            <li
+              v-for="(link, lIndex) in section.items"
+              :key="lIndex"
+              class="hover:text-[#FF8040] transition-colors cursor-pointer"
+            >
+              {{ link }}
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -41,7 +40,7 @@
       <div
         class="border-t border-blue-500 mt-8 pt-6 text-center text-gray-300 text-sm"
       >
-        &copy; 2025 Academin Research. All rights reserved.
+        &copy; 2025 RETOK Researchers. All rights reserved.
       </div>
     </div>
   </footer>
@@ -63,6 +62,7 @@ const links = [
       'Market Research',
     ],
   },
+
   {
     title: 'Resources',
     items: ['Help Center', 'Guides', 'FAQs', 'Case Studies'],
@@ -70,6 +70,10 @@ const links = [
   {
     title: 'Social',
     items: ['Twitter', 'LinkedIn', 'Facebook', 'Instagram'],
+  },
+  {
+    title: 'Contcts',
+    items: ['0700000000', 'admin@retok.ke'],
   },
 ];
 </script>

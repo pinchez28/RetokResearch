@@ -8,11 +8,10 @@
     >
       <!-- Modal container -->
       <div
-        class="relative p-10 rounded-2xl w-96 max-w-[90%] text-center shadow-2xl transform transition-transform hover:scale-105 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400"
+        class="relative p-10 rounded-2xl w-96 max-w-[90%] text-center shadow-2xl transform transition-transform hover:scale-105 bg-transparent"
         @click.stop
       >
-        <h2 class="text-3xl font-extrabold text-white mb-4">Signing Up</h2>
-        <p class="text-white text-2xl mb-6">Join as a:</p>
+        <h2 class="text-3xl font-extrabold text-white mb-4">Join us as:</h2>
 
         <!-- Buttons -->
         <button

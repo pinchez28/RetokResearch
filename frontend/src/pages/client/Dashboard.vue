@@ -2,10 +2,10 @@
   <div class="p-6 md:p-10 space-y-8">
     <!-- WELCOME SECTION -->
     <section class="bg-[#001BB7] text-[#F5F1DC] rounded-2xl p-6 shadow-lg">
-      <h2 class="text-2xl md:text-3xl font-bold">
+      <h2 class="text-3xl text-white md:text-3xl font-extrabold">
         Welcome back, {{ clientName }} 👋
       </h2>
-      <p class="mt-2 text-sm md:text-base opacity-90">
+      <p class="mt-2 text-sm md:text-base opacity-90 text-white uppercase">
         Track assignments, manage payments, and communicate with experts easily.
       </p>
     </section>
