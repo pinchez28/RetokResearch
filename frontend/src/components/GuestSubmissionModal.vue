@@ -1,15 +1,17 @@
 <script setup>
-import { reactive, watch } from 'vue';
-import api from '@/utils/api.js'; // your axios instance
+import { reactive, watch, ref } from 'vue';
+import api from '@/utils/api.js'; // Axios instance
 
-const { visible, service } = defineProps({
+const props = defineProps({
   visible: Boolean,
   service: { type: Object, default: null },
 });
 
 const emit = defineEmits(['close']);
 
-// Form state using reactive
+const loading = ref(false);
+
+// Reactive form state
 const guestForm = reactive({
   name: '',
   email: '',
@@ -22,7 +24,7 @@ const guestForm = reactive({
 
 // Reset form when modal opens or service changes
 watch(
-  () => [visible, service],
+  () => [props.visible, props.service],
   ([isVisible, svc]) => {
     if (isVisible) {
       guestForm.name = '';
@@ -36,29 +38,64 @@ watch(
   }
 );
 
+// Simple email validation
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 // Submit handler
 const submitGuestRequest = async () => {
+  // Basic validation
+  if (
+    !guestForm.name.trim() ||
+    !guestForm.email.trim() ||
+    !guestForm.phone.trim() ||
+    !guestForm.topic.trim() ||
+    !guestForm.description.trim() ||
+    !guestForm.deadline.trim()
+  ) {
+    alert('Please fill in all required fields.');
+    return;
+  }
+
+  if (!isValidEmail(guestForm.email)) {
+    alert('Please enter a valid email address.');
+    return;
+  }
+
+  loading.value = true;
+
   try {
     const payload = {
-      name: guestForm.name,
-      email: guestForm.email,
-      topic: guestForm.topic,
-      description: guestForm.description,
-      phone: guestForm.phone,
-      deadline: guestForm.deadline,
-      service: service?.title || 'Quick Request',
-      proposedPrice: guestForm.proposedPrice || null,
+      name: guestForm.name.trim(),
+      email: guestForm.email.trim(),
+      phone: guestForm.phone.trim(),
+      topic: guestForm.topic.trim(),
+      description: guestForm.description.trim(),
+      deadline: guestForm.deadline.trim(),
+      service: props.service?.title || 'Quick Request',
+      proposedPrice: guestForm.proposedPrice?.trim() || null,
     };
 
     await api.post('/guest-requests', payload);
 
     alert(
-      'Your Request has been submitted and recorded successfuly!\nA Service Provider will get in touch with you shortly .'
+      'Your request has been submitted successfully!\nA Service Provider will contact you shortly.'
     );
+
+    // Reset form
+    guestForm.name = '';
+    guestForm.email = '';
+    guestForm.phone = '';
+    guestForm.topic = '';
+    guestForm.description = '';
+    guestForm.deadline = '';
+    guestForm.proposedPrice = '';
+
     emit('close');
   } catch (err) {
     console.error('Error submitting request:', err);
     alert(err.response?.data?.message || 'Failed to submit request.');
+  } finally {
+    loading.value = false;
   }
 };
 </script>
@@ -83,8 +120,8 @@ const submitGuestRequest = async () => {
 
         <h3 class="text-2xl font-bold mb-6 text-gray-900 text-center">
           {{
-            service?.title
-              ? `Request "${service.title}"`
+            props.service?.title
+              ? `Request "${props.service.title}"`
               : 'Quick Research Request'
           }}
         </h3>
@@ -99,8 +136,8 @@ const submitGuestRequest = async () => {
               <input
                 v-model="guestForm.name"
                 type="text"
-                required
                 placeholder="Enter your full name"
+                required
                 class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
               />
             </div>
@@ -111,8 +148,8 @@ const submitGuestRequest = async () => {
               <input
                 v-model="guestForm.email"
                 type="email"
-                required
                 placeholder="Enter your email"
+                required
                 class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
               />
             </div>
@@ -127,8 +164,8 @@ const submitGuestRequest = async () => {
               <input
                 v-model="guestForm.phone"
                 type="text"
-                required
                 placeholder="Enter your phone number"
+                required
                 class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
               />
             </div>
@@ -139,8 +176,8 @@ const submitGuestRequest = async () => {
               <input
                 v-model="guestForm.deadline"
                 type="text"
-                required
                 placeholder="Enter timeline / deadline"
+                required
                 class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
               />
             </div>
@@ -154,8 +191,8 @@ const submitGuestRequest = async () => {
             <input
               v-model="guestForm.topic"
               type="text"
-              required
               placeholder="Topic of research"
+              required
               class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
             />
           </div>
@@ -166,10 +203,10 @@ const submitGuestRequest = async () => {
             >
             <textarea
               v-model="guestForm.description"
-              required
               placeholder="Describe your request"
-              class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+              required
               rows="3"
+              class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
             ></textarea>
           </div>
 
@@ -186,27 +223,15 @@ const submitGuestRequest = async () => {
             />
           </div>
 
+          <!-- Submit -->
           <button
             type="submit"
+            :disabled="loading"
             class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl w-full"
           >
-            Submit Request
+            {{ loading ? 'Submitting...' : 'Submit Request' }}
           </button>
         </form>
-
-        <div
-          class="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 text-gray-800 text-sm"
-        >
-          <h4 class="font-semibold text-gray-900 mb-2">Why Register?</h4>
-          <ul class="list-disc list-inside space-y-1">
-            <li>Track your request progress</li>
-            <li>Receive instant updates</li>
-            <li>Manage multiple submissions</li>
-          </ul>
-          <p class="mt-2 text-gray-700">
-            Registration gives you a dashboard and faster support.
-          </p>
-        </div>
       </div>
     </div>
   </transition>

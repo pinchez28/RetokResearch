@@ -1,209 +1,182 @@
 <template>
-  <section class="admin-about py-10 max-w-6xl mx-auto px-4">
-    <div class="flex justify-between items-center mb-8">
-      <h2 class="text-3xl font-bold">About Page Management</h2>
-
-      <!-- Delete Entire About Page -->
-      <button
-        @click="deleteAllAbout"
-        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-      >
-        Delete Entire About Page
-      </button>
-    </div>
-
-    <!-- Editing Notice -->
-    <div v-if="isEditing" class="mb-6">
+  <div class="min-h-screen bg-gray-100 py-10 px-6 relative">
+    <!-- Loading overlay -->
+    <div
+      v-if="loading"
+      class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+    >
       <div
-        class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-semibold flex items-center"
-      >
-        <span class="mr-2">✏️</span> You are editing the About Page
-      </div>
+        class="loader border-4 border-blue-500 border-t-transparent rounded-full w-16 h-16 animate-spin"
+      ></div>
     </div>
 
-    <!-- Mission -->
     <div
-      class="mb-6 p-5 bg-blue-50 rounded-xl shadow-lg border-2 transition"
-      :class="isEditing ? 'border-blue-500' : 'border-transparent'"
+      class="max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-8 relative z-10"
     >
-      <div class="flex justify-between items-center mb-2">
-        <h3 class="font-semibold text-lg">Mission</h3>
-        <span v-if="isEditing" class="text-sm text-blue-700 font-medium"
-          >Editing</span
-        >
-      </div>
+      <h1 class="text-3xl font-bold text-[#001bb7] mb-8">Manage About Page</h1>
 
-      <textarea
-        v-model="mission"
-        rows="3"
-        class="w-full border rounded p-2"
-        @input="startEditing"
-      ></textarea>
-    </div>
+      <!-- Mission -->
+      <section class="mb-10">
+        <h2 class="text-xl font-semibold text-gray-800 mb-2">Mission</h2>
+        <textarea
+          v-model="mission"
+          rows="4"
+          class="w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#001bb7]"
+          placeholder="Enter mission text..."
+        ></textarea>
+      </section>
 
-    <!-- Vision -->
-    <div
-      class="mb-6 p-5 bg-blue-50 rounded-xl shadow-lg border-2 transition"
-      :class="isEditing ? 'border-blue-500' : 'border-transparent'"
-    >
-      <div class="flex justify-between items-center mb-2">
-        <h3 class="font-semibold text-lg">Vision</h3>
-        <span v-if="isEditing" class="text-sm text-blue-700 font-medium"
-          >Editing</span
-        >
-      </div>
+      <!-- Vision -->
+      <section class="mb-10">
+        <h2 class="text-xl font-semibold text-gray-800 mb-2">Vision</h2>
+        <textarea
+          v-model="vision"
+          rows="4"
+          class="w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#001bb7]"
+          placeholder="Enter vision text..."
+        ></textarea>
+      </section>
 
-      <textarea
-        v-model="vision"
-        rows="3"
-        class="w-full border rounded p-2"
-        @input="startEditing"
-      ></textarea>
-    </div>
+      <!-- Core Values -->
+      <section>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-800">Core Values</h2>
+          <button
+            @click="addCoreValue"
+            class="px-4 py-2 bg-[#001bb7] text-white rounded-lg hover:bg-blue-900"
+          >
+            + Add Value
+          </button>
+        </div>
 
-    <!-- Core Values -->
-    <div class="mb-6">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold">Core Values</h3>
-        <button
-          @click="addCoreValue"
-          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          + Add Core Value
-        </button>
-      </div>
+        <div v-if="coreValues.length === 0" class="text-gray-500 text-sm">
+          No core values added yet.
+        </div>
 
-      <div class="grid md:grid-cols-3 gap-5">
         <div
           v-for="(value, index) in coreValues"
           :key="index"
-          class="p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg border-2 relative transition"
-          :class="isEditing ? 'border-blue-500' : 'border-transparent'"
+          class="bg-gray-50 border rounded-xl p-6 mb-4"
         >
-          <button
-            @click="deleteCoreValue(index)"
-            class="absolute top-2 right-2 text-red-500 hover:text-red-700"
-            title="Delete"
-          >
-            🗑
-          </button>
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-semibold text-gray-700">
+              Core Value {{ index + 1 }}
+            </h3>
+            <button
+              @click="removeCoreValue(index)"
+              class="text-red-500 font-medium hover:underline"
+            >
+              Remove
+            </button>
+          </div>
 
           <input
             v-model="value.title"
+            class="w-full p-3 mb-3 border rounded-lg"
             placeholder="Title"
-            class="w-full border rounded px-2 py-1 mb-2"
-            @input="startEditing"
           />
 
           <textarea
             v-model="value.description"
-            placeholder="Description"
             rows="3"
-            class="w-full border rounded px-2 py-1"
-            @input="startEditing"
+            class="w-full p-3 border rounded-lg"
+            placeholder="Description"
           ></textarea>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- Save Button -->
-    <div class="text-center mt-8">
+      <!-- Save Button -->
       <button
-        @click="saveAbout"
-        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-lg font-semibold"
+        @click="saveChanges"
+        class="w-full mt-8 py-3 bg-[#FF8040] text-white font-semibold rounded-lg hover:bg-orange-600"
       >
         Save Changes
       </button>
     </div>
-  </section>
+  </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
 import axios from '@/utils/api.js';
+import { toast } from 'vue-sonner';
 
-export default {
-  name: 'AdminAboutPage',
-  data() {
-    return {
-      mission: '',
-      vision: '',
-      coreValues: [],
-      isEditing: false,
-    };
-  },
+const mission = ref('');
+const vision = ref('');
+const coreValues = ref([]);
+const loading = ref(false);
 
-  async mounted() {
-    await this.fetchAbout();
-  },
+// Fetch About content
+const fetchAbout = async () => {
+  try {
+    const res = await axios.get('/about');
+    const data = res.data.about;
 
-  methods: {
-    async fetchAbout() {
-      try {
-        const res = await axios.get('/about');
-        const about = res.data.about;
-
-        if (about) {
-          this.mission = about.mission;
-          this.vision = about.vision;
-          this.coreValues = about.coreValues || [];
-        }
-      } catch (err) {
-        console.error('Failed to fetch About page', err);
-      }
-    },
-
-    startEditing() {
-      this.isEditing = true;
-    },
-
-    addCoreValue() {
-      this.coreValues.push({ title: '', description: '' });
-      this.startEditing();
-    },
-
-    deleteCoreValue(index) {
-      this.coreValues.splice(index, 1);
-      this.startEditing();
-    },
-
-    async deleteAllAbout() {
-      if (!confirm('Are you sure you want to delete the entire About page?'))
-        return;
-
-      try {
-        await axios.delete('/about');
-        alert('About page deleted completely.');
-
-        // Clear UI
-        this.mission = '';
-        this.vision = '';
-        this.coreValues = [];
-        this.isEditing = false;
-      } catch (err) {
-        alert('Failed to delete About page');
-      }
-    },
-
-    async saveAbout() {
-      try {
-        await axios.post('/about', {
-          mission: this.mission,
-          vision: this.vision,
-          coreValues: this.coreValues,
-        });
-
-        alert('About page updated successfully!');
-        this.isEditing = false;
-      } catch (err) {
-        alert(err.response?.data?.message || 'Failed to save changes');
-      }
-    },
-  },
+    if (data) {
+      mission.value = data.mission || '';
+      vision.value = data.vision || '';
+      coreValues.value = data.coreValues || [];
+    }
+  } catch (err) {
+    console.error('Failed to fetch about data:', err);
+    toast.error('Failed to load About section');
+  }
 };
+
+// Add/remove core values
+const addCoreValue = () =>
+  coreValues.value.push({ title: '', description: '' });
+const removeCoreValue = (index) => coreValues.value.splice(index, 1);
+
+// Save changes
+const saveChanges = async () => {
+  loading.value = true;
+
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Please log in as admin.');
+
+    await axios.put(
+      '/about',
+      {
+        mission: mission.value,
+        vision: vision.value,
+        coreValues: coreValues.value,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    toast.success('About section updated successfully!');
+
+    // Clear fields
+    mission.value = '';
+    vision.value = '';
+    coreValues.value = [];
+  } catch (err) {
+    console.error('Failed to save:', err);
+    toast.error(
+      err.response?.data?.message || 'Failed to update About section'
+    );
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(fetchAbout);
 </script>
 
 <style scoped>
-textarea {
-  resize: vertical;
+/* Loading spinner */
+.loader {
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

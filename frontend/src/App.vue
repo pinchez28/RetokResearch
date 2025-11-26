@@ -2,6 +2,7 @@
   <div id="app">
     <!-- Main app content -->
     <router-view />
+    <Toaster richColors />
 
     <!-- Global Signup Overlay -->
     <SignupOverlay ref="signupOverlay" />

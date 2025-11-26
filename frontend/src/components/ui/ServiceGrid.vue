@@ -4,20 +4,17 @@
       v-for="(service, index) in services"
       :key="service._id"
       :service="service"
-      :branch-type="branchType"
-      class="animate-fadeIn cursor-pointer"
       :style="{ animationDelay: `${index * 0.1}s` }"
-      @click="$emit('click', service)"
+      @click="$emit('select-service', service)"
     />
   </div>
 </template>
 
 <script setup>
-import ServiceCard from "./ServiceCard.vue";
+import ServiceCard from './ServiceCard.vue';
 
 const props = defineProps({
   services: { type: Array, required: true },
-  branchType: { type: String, default: "academic" },
 });
 </script>
 

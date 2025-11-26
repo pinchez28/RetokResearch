@@ -5,12 +5,19 @@ import App from './App.vue';
 import router from './router';
 import { createPinia } from 'pinia';
 
-// Import global signup overlay function
-import './globalSignup.js'; // <-- add this
+// Global signup overlay
+import './globalSignup.js';
+
+// ✅ Vue Sonner Toasts
+import { Toaster } from 'vue-sonner';
+import 'vue-sonner/style.css';
 
 const app = createApp(App);
 
 app.use(router);
 app.use(createPinia());
+
+// Register Toaster globally
+app.component('Toaster', Toaster);
 
 app.mount('#app');

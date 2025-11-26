@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/auth/User.js';
 
-export const protect = async (req, res, next) => {
+// JWT protection middleware
+export const authMiddleware = async (req, res, next) => {
   let token;
 
   if (
@@ -10,33 +11,31 @@ export const protect = async (req, res, next) => {
   ) {
     try {
       token = req.headers.authorization.split(' ')[1];
-
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      req.user = await User.findById(decoded.id).populate('profile');
+      const user = await User.findById(decoded.id);
+      if (!user) return res.status(401).json({ message: 'Not authorized' });
 
-      if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized' });
-      }
+      if (user.role !== 'admin') await user.populate('profile');
+      req.user = user;
 
       next();
     } catch (err) {
       console.error(err);
-
       if (err.name === 'TokenExpiredError') {
-        return res
-          .status(401)
-          .json({ message: 'Token expired', roleAttempted: err?.role });
+        return res.status(401).json({ message: 'Token expired' });
       }
-
-      return res
-        .status(401)
-        .json({
-          message: 'Not authorized, token invalid',
-          roleAttempted: err?.role,
-        });
+      return res.status(401).json({ message: 'Not authorized, token invalid' });
     }
   } else {
     return res.status(401).json({ message: 'Not authorized, no token' });
   }
+};
+
+// Admin-only middleware
+export const adminOnly = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Forbidden: Admins only' });
+  }
+  next();
 };

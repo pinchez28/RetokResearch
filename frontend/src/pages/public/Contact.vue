@@ -1,9 +1,16 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Contact Hero -->
-    <section id="contact" class="bg-[#001bb7] text-white py-28 text-center rounded-b-3xl">
-      <h1 class="text-5xl md:text-6xl font-extrabold animate-fadeUp">Get in Touch</h1>
-      <p class="mt-6 text-lg md:text-xl text-[#f5f1dc] animate-fadeUp delay-150">
+    <section
+      id="contact"
+      class="bg-[#001bb7] text-white py-28 text-center rounded-b-3xl"
+    >
+      <h1 class="text-5xl text-white md:text-6xl font-extrabold animate-fadeUp">
+        Get in Touch
+      </h1>
+      <p
+        class="mt-6 text-lg md:text-xl text-[#f5f1dc] animate-fadeUp delay-150"
+      >
         Have questions or want to collaborate? Reach out to us!
       </p>
     </section>
@@ -39,7 +46,7 @@
           :disabled="loading"
           class="bg-[#FF8040] hover:bg-[#FFA366] text-[#333] font-bold py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl disabled:opacity-50"
         >
-          {{ loading ? "Sending..." : "Send Message" }}
+          {{ loading ? 'Sending...' : 'Send Message' }}
         </button>
       </form>
     </section>
@@ -47,35 +54,35 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import axios from "@/utils/api.js"; // Axios instance
+import { ref } from 'vue';
+import api from '@/utils/api.js'; // Axios instance pointing to your API
 
-const name = ref("");
-const email = ref("");
-const message = ref("");
+const name = ref('');
+const email = ref('');
+const message = ref('');
 const loading = ref(false);
 
 const submitContactForm = async () => {
   if (!name.value || !email.value || !message.value) return;
 
   loading.value = true;
+
   try {
-    // Send to new contact-messages endpoint
-    await axios.post("/contact-messages", {
+    await api.post('/guest-requests', {
       name: name.value,
       email: email.value,
-      message: message.value,
+      description: message.value,
+      service: 'Contact Message', // label it clearly
+      topic: 'Contact Form Submission', // optional for admin view
     });
 
-    // Clear form
-    name.value = "";
-    email.value = "";
-    message.value = "";
-
-    alert("Your message has been sent successfully!");
+    alert('Your message has been sent successfully!');
+    name.value = '';
+    email.value = '';
+    message.value = '';
   } catch (err) {
     console.error(err);
-    alert("Failed to send message. Please try again.");
+    alert('Failed to send message. Please try again.');
   } finally {
     loading.value = false;
   }

@@ -3,12 +3,12 @@
     id="services"
     class="py-24 px-6 md:px-12 lg:px-20 bg-blue-900 text-white"
   >
-    <h2 class="text-5xl font-extrabold text-center mb-12">
+    <h2 class="text-5xl text-white font-extrabold text-center mb-12">
       Our Core Research Services
     </h2>
 
     <!-- Quick Request CTA -->
-    <div class="flex justify-center mb-12">
+    <div class="flex justify-center mb-8">
       <button
         @click="openRequestModal(null)"
         class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#ff8040] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#ffb38a]"
@@ -17,58 +17,114 @@
       </button>
     </div>
 
+    <!-- Filters Row (ONLY SEARCH + CATEGORY) -->
+    <div
+      class="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+    >
+      <!-- Search with Lucide Icon -->
+      <div class="relative w-full md:w-96">
+        <Search
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+          :size="20"
+        />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search services..."
+          class="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 shadow-md focus:ring-2 focus:ring-[#001BB7]"
+        />
+      </div>
+
+      <!-- Category Dropdown Only -->
+      <select
+        v-model="selectedCategory"
+        class="px-4 py-3 rounded-xl text-gray-900 shadow-md focus:ring-2 focus:ring-[#001BB7]"
+      >
+        <option value="all">All Categories</option>
+        <option v-for="cat in availableCategories" :key="cat" :value="cat">
+          {{ cat }}
+        </option>
+      </select>
+    </div>
+
     <!-- Branch Tabs -->
-    <div class="flex justify-center gap-4 mb-12">
+    <div class="flex justify-center gap-4 mb-12 flex-wrap">
       <button
-        v-for="branch in branches"
-        :key="branch._id"
-        @click="activeBranch = branch._id"
         :class="[
           'w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold transform transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-          activeBranch === branch._id
+          activeBranch === 'all'
+            ? 'active-branch'
+            : 'bg-blue-700 text-white shadow-xl hover:bg-blue-600 hover:-translate-y-1',
+        ]"
+        @click="setActiveBranch('all')"
+      >
+        All
+      </button>
+
+      <button
+        v-for="branch in branchList"
+        :key="branch"
+        @click="setActiveBranch(branch)"
+        :class="[
+          'w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold transform transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          activeBranch === branch
             ? 'active-branch'
             : 'bg-blue-700 text-white shadow-xl hover:bg-blue-600 hover:-translate-y-1',
         ]"
       >
-        {{ branch.name }}
+        {{ branch }}
       </button>
     </div>
 
     <!-- Categories & Service Cards -->
-    <div v-if="currentBranch">
-      <div
-        v-for="category in currentBranch.categories"
-        :key="category._id"
-        class="mb-12"
-      >
-        <!-- Category Header -->
+    <div v-if="branchesToDisplay.length">
+      <div v-for="branch in branchesToDisplay" :key="branch._id" class="mb-12">
         <h3
           class="text-2xl font-bold text-white mb-6 border-l-4 border-green-400 pl-4 tracking-wide"
         >
-          {{ category.name }}
+          {{ branch.name }}
         </h3>
 
-        <!-- Service Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <ServiceCard
-            v-for="service in category.services"
-            :key="service._id"
-            :service="service"
-            @click="openServiceModal(service)"
-          />
+        <div
+          v-for="category in branch.categories"
+          :key="category._id"
+          class="mb-12"
+        >
+          <!-- Only categories with services -->
+          <h3
+            v-if="category.services && category.services.length"
+            class="text-2xl font-bold text-white mb-6 border-l-4 border-green-400 pl-4 tracking-wide"
+          >
+            {{ category.name }}
+          </h3>
+
+          <div
+            v-if="category.services && category.services.length"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <ServiceCard
+              v-for="service in category.services"
+              :key="service._id"
+              :service="service"
+              @click="openServiceModal(service)"
+            />
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Service Detail Modal -->
-    <ServiceDetailModal
+    <div v-else class="text-center text-white/80 mt-12">
+      No services match your filters.
+    </div>
+
+    <!-- Modals -->
+    <GuestServiceDetailsModal
       :visible="isServiceModalVisible"
       :service="selectedService"
       @close="closeServiceModal"
       @request="openRequestModal"
     />
 
-    <!-- Guest Submission Modal -->
     <GuestSubmissionModal
       :visible="isRequestModalVisible"
       :service="requestService"
@@ -79,119 +135,109 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '@/store';
+import { Search } from 'lucide-vue-next';
 import ServiceCard from '@/components/ui/ServiceCard.vue';
-import ServiceDetailModal from '@/components/ServiceDetailModal.vue';
+import GuestServiceDetailsModal from '@/components/GuestServiceDetailsModal.vue';
 import GuestSubmissionModal from '@/components/GuestSubmissionModal.vue';
 import api from '@/utils/api.js';
 
-const userStore = useUserStore();
-const router = useRouter();
+// state
+const allServices = ref([]);
+const activeBranch = ref('all');
+const selectedCategory = ref('all');
+const searchQuery = ref('');
 
-const branches = ref([]);
-const activeBranch = ref(null);
-const currentBranch = computed(() =>
-  branches.value.find((b) => b._id === activeBranch.value)
-);
+// fetch services
+onMounted(async () => {
+  const { data } = await api.get('/services');
+  allServices.value = Array.isArray(data) ? data : [];
+});
 
-// Fetch services and group by branch/category
-const fetchBranches = async () => {
-  try {
-    const { data } = await api.get('/services'); // flat array
-    const branchMap = {};
-    data.forEach((svc) => {
-      if (!branchMap[svc.branch]) {
-        branchMap[svc.branch] = {
-          _id: svc.branch,
-          name: svc.branch,
-          categories: {},
-        };
-      }
-      if (!branchMap[svc.branch].categories[svc.category]) {
-        branchMap[svc.branch].categories[svc.category] = {
-          _id: svc.category,
-          name: svc.category,
-          services: [],
-        };
-      }
-      branchMap[svc.branch].categories[svc.category].services.push(svc);
-    });
-    branches.value = Object.values(branchMap).map((b) => ({
-      ...b,
-      categories: Object.values(b.categories),
-    }));
-    activeBranch.value = branches.value.length ? branches.value[0]._id : null;
-  } catch (err) {
-    console.error('Failed to fetch services', err);
-  }
+// branches for tabs
+const branchList = computed(() => {
+  const set = new Set();
+  allServices.value.forEach((s) => s.branch && set.add(s.branch));
+  return Array.from(set);
+});
+
+// filtered flat
+const filteredFlat = computed(() => {
+  const q = searchQuery.value.toLowerCase().trim();
+  return allServices.value.filter((svc) => {
+    if (activeBranch.value !== 'all' && svc.branch !== activeBranch.value)
+      return false;
+    if (
+      selectedCategory.value !== 'all' &&
+      svc.category !== selectedCategory.value
+    )
+      return false;
+    if (q) {
+      const text = `${svc.title} ${svc.shortDescription || ''}`.toLowerCase();
+      if (!text.includes(q)) return false;
+    }
+    return true;
+  });
+});
+
+// available categories based on filtered
+const availableCategories = computed(() => {
+  const set = new Set();
+  filteredFlat.value.forEach((s) => s.category && set.add(s.category));
+  return Array.from(set);
+});
+
+// group into branch->category->services
+const branchesToDisplay = computed(() => {
+  const map = {};
+  filteredFlat.value.forEach((svc) => {
+    const b = svc.branch || 'Other';
+    const c = svc.category || 'General';
+    if (!map[b]) map[b] = { _id: b, name: b, categories: {} };
+    if (!map[b].categories[c])
+      map[b].categories[c] = { _id: c, name: c, services: [] };
+    map[b].categories[c].services.push(svc);
+  });
+  return Object.values(map).map((b) => ({
+    ...b,
+    categories: Object.values(b.categories),
+  }));
+});
+
+// UI handlers
+const setActiveBranch = (b) => {
+  activeBranch.value = b;
+  selectedCategory.value = 'all';
 };
 
-onMounted(fetchBranches);
-
-// Service Detail Modal state
+// modal states
 const isServiceModalVisible = ref(false);
 const selectedService = ref(null);
-
-const openServiceModal = (service) => {
-  selectedService.value = service;
-  isServiceModalVisible.value = true;
-};
-
-const closeServiceModal = () => {
-  selectedService.value = null;
-  isServiceModalVisible.value = false;
-};
-
-// GuestSubmissionModal state
 const isRequestModalVisible = ref(false);
 const requestService = ref(null);
 
-const openRequestModal = (service = null) => {
-  requestService.value = service;
+const openServiceModal = (s) => {
+  selectedService.value = s;
+  isServiceModalVisible.value = true;
+};
+const closeServiceModal = () => {
+  isServiceModalVisible.value = false;
+  selectedService.value = null;
+};
+const openRequestModal = (s = null) => {
+  requestService.value = s;
   isRequestModalVisible.value = true;
 };
-
 const closeRequestModal = () => {
-  requestService.value = null;
   isRequestModalVisible.value = false;
+  requestService.value = null;
 };
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Active branch style */
 .active-branch {
   background: linear-gradient(90deg, #facc15, #ec4899, #8b5cf6);
   color: white;
-  box-shadow: 0 8px 20px rgba(255, 200, 50, 0.7),
-    0 4px 10px rgba(255, 200, 50, 0.4);
   transform: scale(1.1);
-  animation: pulse-glow 1.5s infinite alternate;
-  border: 2px solid #fff;
-}
-
-/* Pulse & glow animation */
-@keyframes pulse-glow {
-  0% {
-    box-shadow: 0 8px 20px rgba(255, 200, 50, 0.7),
-      0 4px 10px rgba(255, 200, 50, 0.4);
-  }
-  50% {
-    box-shadow: 0 12px 28px rgba(255, 255, 100, 0.9),
-      0 6px 12px rgba(255, 255, 100, 0.5);
-  }
-  100% {
-    box-shadow: 0 8px 20px rgba(255, 200, 50, 0.7),
-      0 4px 10px rgba(255, 200, 50, 0.4);
-  }
+  border: 2px solid white;
 }
 </style>
