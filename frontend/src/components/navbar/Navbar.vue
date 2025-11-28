@@ -3,9 +3,7 @@
     class="fixed top-0 left-0 w-full z-50 shadow-md h-24"
     style="background-color: #001bb7"
   >
-    <div
-      class="flex items-center justify-between w-full px-4 sm:px-6 lg:px-12 h-full"
-    >
+    <div class="flex items-center justify-between w-full px-4 sm:px-6 lg:px-12 h-full">
       <!-- Logo -->
       <div class="logo flex-shrink-0 h-full flex items-center space-x-2">
         <img
@@ -41,9 +39,7 @@
         <div
           class="hidden lg:flex items-center space-x-3 sm:space-x-4 text-lg sm:text-xl lg:text-2xl font-extrabold"
         >
-          <router-link class="nav-link text-white" to="/login"
-            >Login</router-link
-          >
+          <router-link class="nav-link text-white" to="/login">Login</router-link>
           <button
             class="px-4 py-2 rounded-md font-semibold transition"
             :style="{ backgroundColor: ctaBg, color: ctaColor }"
@@ -102,9 +98,7 @@
         v-if="menuOpen && !isAuthPage"
         class="fixed inset-0 z-40 flex flex-col bg-[#001bb7] text-[#f5f1dc] p-6 pt-24 lg:hidden overflow-y-auto"
       >
-        <ul
-          class="flex flex-col space-y-6 font-semibold text-lg sm:text-xl list-none"
-        >
+        <ul class="flex flex-col space-y-6 font-semibold text-lg sm:text-xl list-none">
           <li v-for="id in sectionIds" :key="id">
             <a
               class="mobile-link"
@@ -141,43 +135,43 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const menuOpen = ref(false);
 const route = useRoute();
 const router = useRouter();
 const closeMenu = () => (menuOpen.value = false);
 
-const ctaBg = '#ee6983';
-const ctaColor = '#333';
-const hoverCTA = (e) => (e.target.style.backgroundColor = '#FF9966');
-const leaveCTA = (e) => (e.target.style.backgroundColor = '#FF8040');
+const ctaBg = "#ee6983";
+const ctaColor = "#333";
+const hoverCTA = (e) => (e.target.style.backgroundColor = "#FF9966");
+const leaveCTA = (e) => (e.target.style.backgroundColor = "#FF8040");
 
 // Mark auth pages based on path
 const isAuthPage = computed(() =>
-  ['/signup', '/login'].some((p) => route.path.startsWith(p))
+  ["/signup", "/login"].some((p) => route.path.startsWith(p))
 );
 
 // Active Section
-const activeSection = ref('');
+const activeSection = ref("");
 const sectionIds = [
-  'hero',
-  'howitworks',
-  'services',
-  'why-us',
-  'testimonials',
-  'about',
-  'contact',
+  "hero",
+  "about",
+  "howitworks",
+  "services",
+  "why-us",
+  "testimonials",
+  "contact",
 ];
 const sectionLabels = {
-  hero: 'Home',
-  howitworks: 'How it Works',
-  services: 'Services',
-  'why-us': 'Why Us',
-  testimonials: 'Testimonials',
-  about: 'About',
-  contact: 'Contact Us',
+  hero: "Home",
+  howitworks: "How it Works",
+  services: "Services",
+  "why-us": "Why Us",
+  testimonials: "Testimonials",
+  about: "About",
+  contact: "Contact Us",
 };
 
 const handleScroll = () => {
@@ -194,17 +188,17 @@ const handleScroll = () => {
   }
 };
 
-onMounted(() => window.addEventListener('scroll', handleScroll));
-onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+onMounted(() => window.addEventListener("scroll", handleScroll));
+onUnmounted(() => window.removeEventListener("scroll", handleScroll));
 
 const scrollToSection = async (id) => {
   activeSection.value = id;
-  if (route.path !== '/') {
-    await router.push({ path: '/', query: { scrollTo: id } });
+  if (route.path !== "/") {
+    await router.push({ path: "/", query: { scrollTo: id } });
     return;
   }
   const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   closeMenu();
 };
 
@@ -217,17 +211,24 @@ const openSignup = () => window.openSignupOverlay?.();
 .mobile-link {
   color: #f5f1dc;
   font-weight: 700;
-  transition: color 0.25s;
+  transition: color 0.25s, background-color 0.25s;
   text-decoration: none;
+  padding: 6px 14px; /* maintains alignment */
+  border-radius: 999px;
 }
+
 .nav-link.active,
 .mobile-link.active {
+  background-color: #facc15; /* Gold */
+  color: #001bb7 !important; /* Brand blue text */
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.55);
+}
+
+.nav-link:hover:not(.active),
+.mobile-link:hover:not(.active) {
   color: #00e0ff;
 }
-.nav-link:hover,
-.mobile-link:hover {
-  color: #00b2ff;
-}
+
 .mobile-btn {
   display: block;
   width: 100%;
@@ -237,6 +238,7 @@ const openSignup = () => window.openSignupOverlay?.();
   border-radius: 0.375rem;
   transition: background-color 0.2s;
 }
+
 .slide-enter-active,
 .slide-leave-active {
   transition: transform 0.28s ease;

@@ -1,12 +1,71 @@
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { Bell } from 'lucide-vue-next';
+import { socket } from '@/utils/socket.js'; // our socket instance
+
+const router = useRouter();
+
+const showNotifications = ref(false);
+const showUserMenu = ref(false);
+
+const notifications = ref(0);
+const notificationList = ref([]);
+
+// Toggle dropdowns
+const toggleNotifications = () => {
+  showNotifications.value = !showNotifications.value;
+  showUserMenu.value = false;
+};
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value;
+  showNotifications.value = false;
+};
+
+const logout = () => {
+  router.push('/login');
+};
+
+// Format notification timestamps (optional)
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
+// Connect to socket and listen for events
+onMounted(() => {
+  socket.connect();
+
+  // Join admin room
+  socket.emit('joinRoom', { role: 'admin' });
+
+  // Listen for new job posted by clients
+  socket.on('admin:new_job', (job) => {
+    notifications.value += 1;
+    notificationList.value.unshift(
+      `New job posted: ${job.title} (${formatDate(job.createdAt)})`
+    );
+  });
+
+  // Listen for other notifications (optional)
+  socket.on('admin:other_notification', (msg) => {
+    notifications.value += 1;
+    notificationList.value.unshift(msg);
+  });
+});
+
+onUnmounted(() => {
+  socket.disconnect();
+});
+</script>
+
 <template>
   <header class="bg-[#001BB7] text-white shadow-md sticky top-0 z-50">
     <div class="max-w-full px-6 py-3 flex items-center justify-between">
-      <!-- LOGO / TITLE -->
       <RouterLink to="/admin" class="text-xl font-semibold tracking-wide">
         Admin Panel
       </RouterLink>
 
-      <!-- RIGHT SIDE ACTIONS -->
       <div class="flex items-center space-x-6">
         <!-- NOTIFICATIONS -->
         <div class="relative cursor-pointer" @click="toggleNotifications">
@@ -19,7 +78,6 @@
             {{ notifications }}
           </span>
 
-          <!-- DROPDOWN -->
           <div
             v-if="showNotifications"
             class="absolute right-0 mt-2 w-64 bg-white text-black rounded shadow-lg p-3"
@@ -53,7 +111,6 @@
             <span class="font-medium hidden md:inline">Admin</span>
           </div>
 
-          <!-- USER DROPDOWN -->
           <div
             v-if="showUserMenu"
             class="absolute right-0 mt-2 bg-white text-black rounded shadow-lg w-40 py-2"
@@ -81,52 +138,5 @@
     </div>
   </header>
 </template>
-
-<script>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { Bell } from 'lucide-vue-next';
-
-export default {
-  components: { Bell },
-  setup() {
-    const router = useRouter();
-
-    const showNotifications = ref(false);
-    const showUserMenu = ref(false);
-
-    const notifications = ref(3); // placeholder
-    const notificationList = ref([
-      'New user registered',
-      'Service added',
-      'Message from client',
-    ]);
-
-    const toggleNotifications = () => {
-      showNotifications.value = !showNotifications.value;
-      showUserMenu.value = false;
-    };
-
-    const toggleUserMenu = () => {
-      showUserMenu.value = !showUserMenu.value;
-      showNotifications.value = false;
-    };
-
-    const logout = () => {
-      router.push('/login');
-    };
-
-    return {
-      notifications,
-      notificationList,
-      showNotifications,
-      showUserMenu,
-      toggleNotifications,
-      toggleUserMenu,
-      logout,
-    };
-  },
-};
-</script>
 
 <style scoped></style>

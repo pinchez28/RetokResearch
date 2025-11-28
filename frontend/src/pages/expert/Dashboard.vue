@@ -68,7 +68,7 @@
         </div>
         <div>
           <h2 class="font-semibold text-lg">Active Jobs</h2>
-          <p class="mt-1 text-2xl font-bold">{{ jobs.length }}</p>
+          <p class="mt-1 text-2xl font-bold">{{ availableJobs.length }}</p>
         </div>
       </div>
 
@@ -109,144 +109,175 @@
       </div>
     </div>
 
-    <!-- Recent Projects Table -->
-    <div class="bg-white rounded-2xl shadow-lg p-6">
-      <h2 class="font-bold text-xl text-[#001BB7] mb-4">Recent Projects</h2>
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead>
-            <tr class="bg-gray-50">
-              <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">
-                Project
-              </th>
-              <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">
-                Client
-              </th>
-              <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">
-                Status
-              </th>
-              <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">
-                Budget
-              </th>
-              <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">
-                Due
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr
-              v-for="project in projects"
-              :key="project.id"
-              class="hover:bg-gray-50"
-            >
-              <td class="px-4 py-2">{{ project.title }}</td>
-              <td class="px-4 py-2">{{ project.client }}</td>
-              <td class="px-4 py-2 capitalize">{{ project.status }}</td>
-              <td class="px-4 py-2">${{ project.budget }}</td>
-              <td class="px-4 py-2">{{ project.dueDate }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- Assignments Table -->
+    <div class="bg-white p-6 rounded-3xl shadow-2xl overflow-x-auto">
+      <h2 class="text-3xl font-bold text-[#001bb7] mb-4">My Assignments</h2>
+      <table class="w-full table-auto border-collapse text-left">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="px-4 py-2">Title</th>
+            <th class="px-4 py-2">Status</th>
+            <th class="px-4 py-2">Due Date</th>
+            <th class="px-4 py-2">Client</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(assignment, idx) in assignments"
+            :key="idx"
+            class="border-b hover:bg-gray-50 transition"
+          >
+            <td class="px-4 py-2">{{ assignment.title }}</td>
+            <td class="px-4 py-2">{{ assignment.status }}</td>
+            <td class="px-4 py-2">{{ assignment.dueDate }}</td>
+            <td class="px-4 py-2">{{ assignment.client }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- Pagination -->
-    <div class="flex justify-end space-x-2">
-      <button
-        @click="prevPage"
-        :disabled="currentPage === 1"
-        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
-      >
-        Previous
-      </button>
-      <button
-        @click="nextPage"
-        :disabled="currentPage === totalPages"
-        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
-      >
-        Next
-      </button>
+    <!-- Available Jobs (Live) -->
+    <div class="space-y-6">
+      <h1 class="text-3xl font-bold" style="color: #001bb7">Available Jobs</h1>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-4 mb-6">
+        <input
+          v-model="filters.keyword"
+          placeholder="Search jobs..."
+          class="input"
+        />
+        <select v-model="filters.category" class="input">
+          <option value="">All Categories</option>
+          <option v-for="cat in categories" :key="cat">{{ cat }}</option>
+        </select>
+        <select v-model="filters.experience" class="input">
+          <option value="">All Experience</option>
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Expert</option>
+        </select>
+      </div>
+
+      <!-- Job Cards -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div
+          v-for="job in filteredJobs"
+          :key="job._id"
+          class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
+        >
+          <h2 class="text-xl font-semibold mb-2" style="color: #001bb7">
+            {{ job.title }}
+          </h2>
+          <p class="text-gray-600 mb-2">
+            {{ job.description?.substring(0, 120) }}...
+          </p>
+          <div class="flex justify-between items-center text-sm text-gray-500">
+            <span>Budget: ${{ job.budget }}</span>
+            <span>Deadline: {{ job.deadline }}</span>
+          </div>
+          <button
+            class="mt-4 w-full bg-[#FF8040] text-white py-2 rounded-xl hover:bg-[#0046FF]"
+            @click="viewJob(job._id)"
+          >
+            View / Apply
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
+import { io } from 'socket.io-client';
 
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
+
+// Stats & assignments
 const assignments = ref([]);
-const jobs = ref([]);
 const earnings = ref(0);
 
-const allProjects = ref([
-  {
-    id: 1,
-    title: 'Website Redesign',
-    client: 'Acme Corp',
-    status: 'active',
-    budget: 500,
-    dueDate: '2025-12-05',
-  },
-  {
-    id: 2,
-    title: 'Mobile App Development',
-    client: 'Globex',
-    status: 'active',
-    budget: 1200,
-    dueDate: '2025-12-10',
-  },
-  {
-    id: 3,
-    title: 'Logo Design',
-    client: 'Initech',
-    status: 'completed',
-    budget: 300,
-    dueDate: '2025-11-30',
-  },
-  {
-    id: 4,
-    title: 'Marketing Campaign',
-    client: 'Hooli',
-    status: 'active',
-    budget: 1500,
-    dueDate: '2025-12-12',
-  },
-  {
-    id: 5,
-    title: 'Backend API',
-    client: 'Umbrella',
-    status: 'pending',
-    budget: 800,
-    dueDate: '2025-12-08',
-  },
-]);
+// Live jobs
+const availableJobs = ref([]);
+const filters = ref({ keyword: '', category: '', experience: '' });
+const categories = [
+  'AI',
+  'Data Science',
+  'Machine Learning',
+  'Writing',
+  'Research',
+];
 
-const currentPage = ref(1);
-const pageSize = 3;
-const totalPages = computed(() =>
-  Math.ceil(allProjects.value.length / pageSize)
-);
-const projects = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  return allProjects.value.slice(start, start + pageSize);
+const filteredJobs = computed(() => {
+  if (!Array.isArray(availableJobs.value)) return [];
+  return availableJobs.value.filter((job) => {
+    const matchesKeyword = job.title
+      ?.toLowerCase()
+      .includes(filters.value.keyword.toLowerCase());
+    const matchesCategory = filters.value.category
+      ? job.category === filters.value.category
+      : true;
+    const matchesExperience = filters.value.experience
+      ? job.experience === filters.value.experience
+      : true;
+    return matchesKeyword && matchesCategory && matchesExperience;
+  });
 });
 
-const prevPage = () => {
-  if (currentPage.value > 1) currentPage.value--;
-};
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++;
+const fetchData = async () => {
+  try {
+    // Fetch assignments
+    const assignmentsRes = await axios.get('/api/expert/assignments');
+    assignments.value = Array.isArray(assignmentsRes.data.assignments)
+      ? assignmentsRes.data.assignments
+      : [];
+
+    // Fetch earnings
+    const earningsRes = await axios.get('/api/expert/earnings');
+    earnings.value = earningsRes.data.total || 0;
+
+    // Fetch available jobs
+    const jobsRes = await axios.get('/api/expert/jobs');
+    availableJobs.value = Array.isArray(jobsRes.data.jobs)
+      ? jobsRes.data.jobs
+      : [];
+  } catch (err) {
+    console.error('Error fetching dashboard data:', err);
+    assignments.value = [];
+    earnings.value = 0;
+    availableJobs.value = [];
+  }
 };
 
 onMounted(() => {
-  assignments.value = [{ id: 1 }, { id: 2 }];
-  jobs.value = [{ id: 1 }, { id: 2 }, { id: 3 }];
-  earnings.value = 1200;
+  fetchData();
+
+  const socket = io(import.meta.env.VITE_SOCKET_URL);
+  socket.emit('joinRoom', { role: 'expert', userId: user.value.id || '123' });
+
+  socket.on('new-job', (job) => {
+    if (job && job._id) availableJobs.value.unshift(job);
+  });
 });
+
+const viewJob = (id) => alert(`View / Apply job ID: ${id}`);
 </script>
 
 <style scoped>
-tr:hover {
-  transition: background-color 0.2s;
+.input {
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d1d5db;
+  outline: none;
+}
+.input:focus {
+  border-color: #001bb7;
+  box-shadow: 0 0 0 2px rgba(0, 27, 183, 0.2);
+}
+div.bg-white:hover {
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
 }
 </style>

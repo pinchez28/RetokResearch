@@ -47,12 +47,64 @@ import Profile from '@/pages/client/Profile.vue';
 import Support from '@/pages/client/Support.vue';
 
 /* ============================
+   ADMIN PAGES - Homepage Management
+============================ */
+const AdminHomepage = () =>
+  import('@/pages/admin/homepagemanagement/HomepageManagement.vue');
+const AdminHomeServices = () =>
+  import('@/pages/admin/homepagemanagement/ServiceSection.vue');
+const AdminHomeExperts = () =>
+  import('@/pages/admin/homepagemanagement/TopRatedExperts.vue');
+const AdminHomeAbout = () =>
+  import('@/pages/admin/homepagemanagement/AboutSection.vue');
+const AdminHomeContact = () =>
+  import('@/pages/admin/homepagemanagement/PublicContactSection.vue');
+
+/* ============================
+   ADMIN PAGES - Support
+============================ */
+const AdminGuestSupport = () =>
+  import('@/pages/admin/homepagemanagement/GuestSupport.vue');
+const AdminClientSupport = () =>
+  import('@/pages/admin/homepagemanagement/ClientSupport.vue');
+const AdminExpertSupport = () =>
+  import('@/pages/admin/homepagemanagement/ExpertSupport.vue');
+
+/* ============================
+   ADMIN PAGES - Jobs
+============================ */
+const ActiveJobs = () => import('@/pages/admin/activeJobs/ActiveJobs.vue');
+const ActiveJobDetails = () =>
+  import('@/pages/admin/activeJobs/ActiveJobDetails.vue');
+const CompletedJobs = () =>
+  import('@/pages/admin/activeJobs/CompletedJobs.vue');
+const JobDisputes = () => import('@/pages/admin/activeJobs/JobDisputes.vue');
+
+/* ============================
+   ADMIN PAGES - Clients
+============================ */
+const ClientList = () => import('@/pages/admin/clients/ClientList.vue');
+const ClientDetails = () => import('@/pages/admin/clients/ClientDetails.vue');
+const ClientActivityLogs = () =>
+  import('@/pages/admin/clients/ClientActivityLogs.vue');
+
+/* ============================
+   ADMIN PAGES - Experts
+============================ */
+const ExpertApproval = () => import('@/pages/admin/experts/ExpertApproval.vue');
+const ExpertList = () => import('@/pages/admin/experts/ExpertList.vue');
+const ExpertDetails = () => import('@/pages/admin/experts/ExpertDetails.vue');
+
+/* ============================
+   ADMIN PAGES - Dashboard
+============================ */
+const AdminDashboard = () => import('@/pages/admin/AdminDashboard.vue');
+
+/* ============================
    ROUTES
 ============================ */
 const routes = [
-  /* ============================
-     PUBLIC ROUTES
-  ============================ */
+  /* PUBLIC ROUTES */
   {
     path: '/',
     component: PublicLayout,
@@ -67,16 +119,13 @@ const routes = [
         component: ForgotPassword,
       },
 
-      // Signup routes
       { path: 'signup', name: 'SignupOverlay', component: SignupOverlay },
       { path: 'signup/client', name: 'ClientSignup', component: ClientSignup },
       { path: 'signup/expert', name: 'ExpertSignup', component: ExpertSignup },
     ],
   },
 
-  /* ============================
-     CLIENT ROUTES (Upwork-style)
-  ============================ */
+  /* CLIENT ROUTES */
   {
     path: '/client',
     component: ClientLayout,
@@ -93,9 +142,7 @@ const routes = [
     ],
   },
 
-  /* ============================
-     EXPERT ROUTES
-  ============================ */
+  /* EXPERT ROUTES */
   {
     path: '/expert',
     component: ExpertLayout,
@@ -118,76 +165,96 @@ const routes = [
     ],
   },
 
-  /* ============================
-     ADMIN ROUTES
-  ============================ */
+  /* ADMIN ROUTES */
   {
     path: '/admin',
     component: AdminLayout,
     children: [
-      {
-        path: '',
-        name: 'AdminDashboard',
-        component: () => import('@/pages/admin/AdminDashboard.vue'),
-      },
+      { path: '', name: 'AdminDashboard', component: AdminDashboard },
 
       // Homepage Management
-      {
-        path: 'homepage',
-        name: 'AdminHomepage',
-        component: () =>
-          import('@/pages/admin/homepagemanagement/HomepageManagement.vue'),
-      },
+      { path: 'homepage', name: 'AdminHomepage', component: AdminHomepage },
       {
         path: 'homepage/services',
         name: 'AdminHomeServices',
-        component: () =>
-          import('@/pages/admin/homepagemanagement/ServiceSection.vue'),
+        component: AdminHomeServices,
       },
       {
         path: 'homepage/experts',
         name: 'AdminHomeExperts',
-        component: () =>
-          import('@/pages/admin/homepagemanagement/TopRatedExperts.vue'),
+        component: AdminHomeExperts,
       },
       {
         path: 'homepage/about',
         name: 'AdminHomeAbout',
-        component: () =>
-          import('@/pages/admin/homepagemanagement/AboutSection.vue'),
+        component: AdminHomeAbout,
       },
       {
         path: 'homepage/contact',
         name: 'AdminHomeContact',
-        component: () =>
-          import('@/pages/admin/homepagemanagement/PublicContactSection.vue'),
+        component: AdminHomeContact,
       },
 
-      // Support Pages
+      // Jobs & Workflow
+      { path: 'jobs/active', name: 'ActiveJobs', component: ActiveJobs },
+      {
+        path: 'jobs/active/:id',
+        name: 'ActiveJobDetails',
+        component: ActiveJobDetails,
+      },
+      {
+        path: 'jobs/completed',
+        name: 'CompletedJobs',
+        component: CompletedJobs,
+      },
+      { path: 'jobs/disputes', name: 'JobDisputes', component: JobDisputes },
+
+      // Client Management
+      { path: 'clients', name: 'ClientList', component: ClientList },
+      {
+        path: 'clients/profiles',
+        name: 'ClientDetails',
+        component: ClientDetails,
+      },
+      {
+        path: 'clients/logs',
+        name: 'ClientActivityLogs',
+        component: ClientActivityLogs,
+      },
+
+      // Expert Management
+      {
+        path: 'experts/pending',
+        name: 'ExpertApproval',
+        component: ExpertApproval,
+      },
+      { path: 'experts', name: 'ExpertList', component: ExpertList },
+      {
+        path: 'experts/performance',
+        name: 'ExpertDetails',
+        component: ExpertDetails,
+      },
+
+      // Support
       {
         path: 'guest-support',
         name: 'AdminGuestSupport',
-        component: () =>
-          import('@/pages/admin/homepagemanagement/GuestSupport.vue'),
+        component: AdminGuestSupport,
       },
       {
         path: 'client-support',
         name: 'AdminClientSupport',
-        component: () =>
-          import('@/pages/admin/homepagemanagement/ClientSupport.vue'),
+        component: AdminClientSupport,
       },
       {
         path: 'expert-support',
         name: 'AdminExpertSupport',
-        component: () =>
-          import('@/pages/admin/homepagemanagement/ExpertSupport.vue'),
+        component: AdminExpertSupport,
       },
     ],
   },
 
-  /* ============================
-     FALLBACK
-  ============================ */
+  /* FALLBACK */
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 

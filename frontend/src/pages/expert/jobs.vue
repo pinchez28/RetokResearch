@@ -25,22 +25,24 @@
     <div class="grid md:grid-cols-2 gap-6">
       <div
         v-for="job in filteredJobs"
-        :key="job.id"
+        :key="job._id"
         class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
       >
         <h2 class="text-xl font-semibold mb-2" style="color: #001bb7">
           {{ job.title }}
         </h2>
         <p class="text-gray-600 mb-2">
-          {{ job.description.substring(0, 120) }}...
+          {{ job.description?.substring(0, 120) }}...
         </p>
         <div class="flex justify-between items-center text-sm text-gray-500">
           <span>Budget: ${{ job.budget }}</span>
-          <span>Deadline: {{ job.deadline }}</span>
+          <span
+            >Deadline: {{ new Date(job.deadline).toLocaleDateString() }}</span
+          >
         </div>
         <button
           class="mt-4 w-full bg-[#FF8040] text-white py-2 rounded-xl hover:bg-[#0046FF]"
-          @click="viewJob(job.id)"
+          @click="viewJob(job._id)"
         >
           View / Apply
         </button>
@@ -50,42 +52,34 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
 
-const jobs = ref([
-  {
-    id: 1,
-    title: 'AI Research',
-    description: 'Build a model...',
-    budget: 500,
-    deadline: '2025-12-01',
-    category: 'AI',
-    experience: 'Expert',
-  },
-  {
-    id: 2,
-    title: 'Data Analysis',
-    description: 'Analyze survey...',
-    budget: 200,
-    deadline: '2025-11-28',
-    category: 'Data Science',
-    experience: 'Intermediate',
-  },
-]);
-
+const availableJobs = ref([]);
 const filters = ref({ keyword: '', category: '', experience: '' });
-const categories = [
-  'AI',
-  'Data Science',
-  'Machine Learning',
-  'Writing',
-  'Research',
-];
+const categories = ref([]);
 
+// Fetch jobs from server
+const fetchJobs = async () => {
+  try {
+    const res = await axios.get('/api/expert/jobs'); // your backend endpoint
+    if (Array.isArray(res.data.jobs)) {
+      availableJobs.value = res.data.jobs;
+      // Extract unique categories
+      categories.value = [...new Set(res.data.jobs.map((j) => j.category))];
+    }
+  } catch (err) {
+    console.error('Error fetching jobs:', err);
+  }
+};
+
+onMounted(fetchJobs);
+
+// Filtered jobs
 const filteredJobs = computed(() => {
-  return jobs.value.filter((job) => {
+  return availableJobs.value.filter((job) => {
     const matchesKeyword = job.title
-      .toLowerCase()
+      ?.toLowerCase()
       .includes(filters.value.keyword.toLowerCase());
     const matchesCategory = filters.value.category
       ? job.category === filters.value.category
@@ -97,7 +91,10 @@ const filteredJobs = computed(() => {
   });
 });
 
-const viewJob = (id) => alert(`View details for job ID: ${id}`);
+const viewJob = (id) => {
+  console.log('View / Apply for job:', id);
+  // Navigate or open modal
+};
 </script>
 
 <style scoped>

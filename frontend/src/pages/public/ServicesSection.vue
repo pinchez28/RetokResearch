@@ -3,7 +3,7 @@
     id="services"
     class="py-24 px-6 md:px-12 lg:px-20 bg-blue-900 text-white"
   >
-    <h2 class="text-5xl text-white font-extrabold text-center mb-12">
+    <h2 class="text-3xl text-white font-extrabold text-center mb-12">
       Our Core Research Services
     </h2>
 

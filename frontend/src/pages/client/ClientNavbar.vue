@@ -1,97 +1,9 @@
-<template>
-  <header class="bg-[#001BB7] text-white shadow-md sticky top-0 z-50">
-    <div class="max-w-full px-6 py-3 flex items-center justify-between">
-      <!-- LOGO / TITLE -->
-      <RouterLink
-        to="/client/dashboard"
-        class="text-xl font-semibold tracking-wide"
-      >
-        Client Panel
-      </RouterLink>
-
-      <!-- RIGHT SIDE ACTIONS -->
-      <div class="flex items-center space-x-6">
-        <!-- NOTIFICATIONS -->
-        <div class="relative cursor-pointer" @click="toggleNotifications">
-          <Bell class="w-6 h-6 text-white" />
-
-          <span
-            v-if="notifications > 0"
-            class="absolute -top-1 -right-1 bg-[#FF8040] text-white text-xs font-bold rounded-full px-1.5 py-0.5"
-          >
-            {{ notifications }}
-          </span>
-
-          <!-- DROPDOWN -->
-          <div
-            v-if="showNotifications"
-            class="absolute right-0 mt-2 w-64 bg-white text-black rounded shadow-lg p-3"
-          >
-            <p v-if="notifications === 0" class="text-sm text-gray-500">
-              No new notifications
-            </p>
-
-            <ul v-else class="space-y-2">
-              <li
-                v-for="(note, index) in notificationList"
-                :key="index"
-                class="text-sm border-b pb-2 last:border-none"
-              >
-                {{ note }}
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- USER MENU -->
-        <div class="relative">
-          <div
-            class="flex items-center space-x-2 cursor-pointer"
-            @click="toggleUserMenu"
-          >
-            <img
-              src="https://ui-avatars.com/api/?name=Client&background=0046FF&color=fff"
-              class="w-8 h-8 rounded-full border-2 border-white"
-            />
-            <span class="font-medium hidden md:inline">Client</span>
-          </div>
-
-          <!-- USER DROPDOWN -->
-          <div
-            v-if="showUserMenu"
-            class="absolute right-0 mt-2 bg-white text-black rounded shadow-lg w-40 py-2"
-          >
-            <RouterLink
-              to="/client/profile"
-              class="block px-4 py-2 hover:bg-[#F5F1DC]"
-            >
-              Profile
-            </RouterLink>
-
-            <RouterLink
-              to="/client/support"
-              class="block px-4 py-2 hover:bg-[#F5F1DC]"
-            >
-              Support
-            </RouterLink>
-
-            <button
-              @click="logout"
-              class="block w-full text-left px-4 py-2 hover:bg-[#F5F1DC] text-red-600"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-</template>
-
 <script>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Bell } from 'lucide-vue-next';
+import { socket } from '@/utils/socket.js'; // import socket instance
+import api from '@/utils/api.js';
 
 export default {
   components: { Bell },
@@ -100,17 +12,42 @@ export default {
 
     const showNotifications = ref(false);
     const showUserMenu = ref(false);
+    const notifications = ref(0);
+    const notificationList = ref([]);
 
-    const notifications = ref(3); // placeholder dynamic value
-    const notificationList = ref([
-      'Your order was reviewed',
-      'You have a message from support',
-      'A proposal was submitted',
-    ]);
+    // Fetch historical notifications from backend
+    const fetchNotifications = async () => {
+      try {
+        const res = await api.get('/client/notifications'); // new API endpoint
+        notificationList.value = res.data || [];
+        notifications.value = notificationList.value.length;
+      } catch (err) {
+        console.error('Failed to fetch notifications:', err);
+      }
+    };
+
+    onMounted(() => {
+      fetchNotifications();
+
+      // Connect socket
+      socket.connect();
+
+      // Listen for new notifications from backend
+      socket.on('client:new_notification', (data) => {
+        notificationList.value.unshift(data.message);
+        notifications.value += 1;
+      });
+    });
+
+    onUnmounted(() => {
+      socket.off('client:new_notification');
+      socket.disconnect();
+    });
 
     const toggleNotifications = () => {
       showNotifications.value = !showNotifications.value;
       showUserMenu.value = false;
+      notifications.value = 0; // reset unread count on open
     };
 
     const toggleUserMenu = () => {
@@ -134,7 +71,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-/* Remove material-icons */
-</style>

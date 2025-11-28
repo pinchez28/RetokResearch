@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/auth/User.js';
 
-// JWT protection middleware
+// ---------------------- UNIVERSAL PROTECT ----------------------
 export const authMiddleware = async (req, res, next) => {
   let token;
 
@@ -32,10 +32,27 @@ export const authMiddleware = async (req, res, next) => {
   }
 };
 
-// Admin-only middleware
-export const adminOnly = (req, res, next) => {
+// ---------------------- ROLE-BASED PROTECTORS ----------------------
+export const protectAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Forbidden: Admins only' });
   }
   next();
 };
+
+export const protectExpert = (req, res, next) => {
+  if (!req.user || req.user.role !== 'expert') {
+    return res.status(403).json({ message: 'Forbidden: Experts only' });
+  }
+  next();
+};
+
+export const protectClient = (req, res, next) => {
+  if (!req.user || req.user.role !== 'client') {
+    return res.status(403).json({ message: 'Forbidden: Clients only' });
+  }
+  next();
+};
+
+// ---------------------- ADMIN CHECK (existing) ----------------------
+export const adminOnly = protectAdmin;

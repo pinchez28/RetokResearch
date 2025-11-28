@@ -20,13 +20,25 @@ const io = new Server(server, {
   },
 });
 
+// Make io accessible in controllers
+app.set('io', io);
+
 // Handle socket connections
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
+  // Join room for real-time notifications
+  socket.on('joinRoom', ({ userId, role }) => {
+    if (role === 'admin') socket.join('admins');
+    else if (role === 'client') socket.join(`client_${userId}`);
+    else if (role === 'expert') socket.join(`expert_${userId}`);
+    console.log(`${role} ${userId} joined their room`);
+  });
+
+  // Example: guest messages (existing feature)
   socket.on('guest-message', (msg) => {
     console.log('Message from guest:', msg);
-    io.emit('guest-message', msg); // broadcast to all clients
+    io.emit('guest-message', msg);
   });
 
   socket.on('disconnect', () => {

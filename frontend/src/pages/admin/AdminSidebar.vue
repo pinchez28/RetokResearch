@@ -25,7 +25,7 @@
       </router-link>
 
       <!-- Homepage Management Section -->
-      <div class="mt-4 mb-2 px-2 text-sm font-semibold text-[#FFA366]">
+      <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">
         Homepage Management
       </div>
       <div class="ml-2 space-y-1">
@@ -44,10 +44,68 @@
         </router-link>
       </div>
 
-      <!-- Support Section -->
+      <!-- Jobs & Workflow Section -->
       <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">
-        Support
+        Jobs & Workflow
       </div>
+      <div class="ml-2 space-y-1">
+        <router-link
+          v-for="link in jobLinks"
+          :key="link.name"
+          :to="link.path"
+          class="block px-4 py-2 rounded-md font-medium transition-colors duration-200 text-sm no-underline"
+          :class="
+            isActive(link.path)
+              ? 'bg-[#FF8040] text-[#001BB7]'
+              : 'text-[#F5F1DC] hover:bg-[#0046FF] hover:text-[#F5F1DC]'
+          "
+        >
+          {{ link.name }}
+        </router-link>
+      </div>
+
+      <!-- Client Management Section -->
+      <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">
+        Client Management
+      </div>
+      <div class="ml-2 space-y-1">
+        <router-link
+          v-for="link in clientLinks"
+          :key="link.name"
+          :to="link.path"
+          class="block px-4 py-2 rounded-md font-medium transition-colors duration-200 text-sm no-underline"
+          :class="
+            isActive(link.path)
+              ? 'bg-[#FF8040] text-[#001BB7]'
+              : 'text-[#F5F1DC] hover:bg-[#0046FF] hover:text-[#F5F1DC]'
+          "
+        >
+          {{ link.name }}
+        </router-link>
+      </div>
+
+      <!-- Expert Management Section -->
+      <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">
+        Expert Management
+      </div>
+      <div class="ml-2 space-y-1">
+        <router-link
+          v-for="link in expertLinks"
+          :key="link.name"
+          :to="link.path"
+          class="block px-4 py-2 rounded-md font-medium transition-colors duration-200 text-sm no-underline"
+          :class="
+            isActive(link.path)
+              ? 'bg-[#FF8040] text-[#001BB7]'
+              : 'text-[#F5F1DC] hover:bg-[#0046FF] hover:text-[#F5F1DC]'
+          "
+        >
+          {{ link.name }}
+        </router-link>
+      </div>
+
+      <!-- Support Section -->
+      <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">Support</div>
       <div class="ml-2 space-y-1">
         <router-link
           v-for="link in supportLinks"
@@ -78,38 +136,51 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from "vue-router";
 const route = useRoute();
 const router = useRouter();
 
-// Homepage management links
 const homepageLinks = [
-  { name: 'Homepage', path: '/admin/homepage' },
-  { name: 'Services', path: '/admin/homepage/services' },
-  { name: 'Top Experts', path: '/admin/homepage/experts' },
-  { name: 'About Section', path: '/admin/homepage/about' },
-  { name: 'Contact Section', path: '/admin/homepage/contact' },
+  { name: "Homepage", path: "/admin/homepage" },
+  { name: "Services", path: "/admin/homepage/services" },
+  { name: "Top Experts", path: "/admin/homepage/experts" },
+  { name: "About Section", path: "/admin/homepage/about" },
+  { name: "Contact Section", path: "/admin/homepage/contact" },
 ];
 
-// Support links
+const jobLinks = [
+  { name: "Active Jobs", path: "/admin/jobs/active" },
+  { name: "Completed Jobs", path: "/admin/jobs/completed" },
+  { name: "Disputes", path: "/admin/jobs/disputes" },
+];
+
+const clientLinks = [
+  { name: "All Clients", path: "/admin/clients" },
+  { name: "Client Profiles", path: "/admin/clients/profiles" },
+  { name: "Client Activity Logs", path: "/admin/clients/logs" },
+];
+
+const expertLinks = [
+  { name: "Pending Approvals", path: "/admin/experts/pending" },
+  { name: "Approved Experts", path: "/admin/experts" },
+  { name: "Expert Performance", path: "/admin/experts/performance" },
+];
+
 const supportLinks = [
-  { name: 'Guest Support', path: '/admin/guest-support' },
-  { name: 'Client Support', path: '/admin/client-support' },
-  { name: 'Expert Support', path: '/admin/expert-support' },
+  { name: "Guest Support", path: "/admin/guest-support" },
+  { name: "Client Support", path: "/admin/client-support" },
+  { name: "Expert Support", path: "/admin/expert-support" },
 ];
 
-// Only active if route path exactly matches
 const isActive = (path) => route.path === path;
 
-const logout = () => router.push('/login');
+const logout = () => router.push("/login");
 </script>
 
 <style scoped>
 aside {
   z-index: 40;
 }
-
-/* Scrollbar for sidebar */
 nav::-webkit-scrollbar {
   width: 6px;
 }
@@ -121,8 +192,6 @@ nav {
   scrollbar-width: thin;
   scrollbar-color: #0046ff #001bb7;
 }
-
-/* Remove underlines globally from router-links in sidebar */
 a {
   text-decoration: none;
 }
