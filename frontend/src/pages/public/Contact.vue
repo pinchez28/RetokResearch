@@ -17,7 +17,7 @@
 
     <!-- Contact Form -->
     <section
-      class="py-24 max-w-3xl mx-auto px-6 bg-white rounded-3xl shadow-2xl shadow-black/20 animate-fadeUp delay-300 transform hover:-translate-y-1 transition-all duration-300 -mt-20 relative z-10"
+      class="py-24 max-w-3xl mx-auto px-6 bg-gray-300 rounded-3xl shadow-2xl shadow-black/20 animate-fadeUp delay-300 transform hover:-translate-y-1 transition-all duration-300 -mt-20 relative z-10"
     >
       <form @submit.prevent="submitContactForm" class="grid gap-6">
         <input

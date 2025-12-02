@@ -9,6 +9,7 @@
       Academin
     </div>
 
+    ```
     <!-- NAVIGATION LINKS -->
     <nav class="flex-1 px-4 py-6 overflow-y-auto">
       <!-- Dashboard -->
@@ -24,13 +25,13 @@
         Dashboard
       </router-link>
 
-      <!-- Homepage Management Section -->
+      <!-- Jobs & Workflow Section -->
       <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">
-        Homepage Management
+        Jobs & Workflow
       </div>
       <div class="ml-2 space-y-1">
         <router-link
-          v-for="link in homepageLinks"
+          v-for="link in jobLinks"
           :key="link.name"
           :to="link.path"
           class="block px-4 py-2 rounded-md font-medium transition-colors duration-200 text-sm no-underline"
@@ -44,13 +45,13 @@
         </router-link>
       </div>
 
-      <!-- Jobs & Workflow Section -->
+      <!-- Homepage Management Section -->
       <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">
-        Jobs & Workflow
+        Homepage Management
       </div>
       <div class="ml-2 space-y-1">
         <router-link
-          v-for="link in jobLinks"
+          v-for="link in homepageLinks"
           :key="link.name"
           :to="link.path"
           class="block px-4 py-2 rounded-md font-medium transition-colors duration-200 text-sm no-underline"
@@ -105,7 +106,9 @@
       </div>
 
       <!-- Support Section -->
-      <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">Support</div>
+      <div class="mt-6 mb-2 px-2 text-sm font-semibold text-[#FFA366]">
+        Support
+      </div>
       <div class="ml-2 space-y-1">
         <router-link
           v-for="link in supportLinks"
@@ -132,49 +135,52 @@
         Logout
       </button>
     </div>
+    ```
   </aside>
 </template>
 
 <script setup>
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 
 const homepageLinks = [
-  { name: "Homepage", path: "/admin/homepage" },
-  { name: "Services", path: "/admin/homepage/services" },
-  { name: "Top Experts", path: "/admin/homepage/experts" },
-  { name: "About Section", path: "/admin/homepage/about" },
-  { name: "Contact Section", path: "/admin/homepage/contact" },
+  { name: 'Homepage', path: '/admin/homepage' },
+  { name: 'Services', path: '/admin/homepage/services' },
+  { name: 'Top Experts', path: '/admin/homepage/experts' },
+  { name: 'About Section', path: '/admin/homepage/about' },
+  { name: 'Contact Section', path: '/admin/homepage/contact' },
 ];
 
 const jobLinks = [
-  { name: "Active Jobs", path: "/admin/jobs/active" },
-  { name: "Completed Jobs", path: "/admin/jobs/completed" },
-  { name: "Disputes", path: "/admin/jobs/disputes" },
+  { name: 'Pending Jobs', path: '/admin/jobs/pending' },
+  { name: 'Active Jobs', path: '/admin/jobs/active' },
+  { name: 'Completed Jobs', path: '/admin/jobs/completed' },
+  { name: 'Disputes', path: '/admin/jobs/disputes' },
 ];
 
 const clientLinks = [
-  { name: "All Clients", path: "/admin/clients" },
-  { name: "Client Profiles", path: "/admin/clients/profiles" },
-  { name: "Client Activity Logs", path: "/admin/clients/logs" },
+  { name: 'All Clients', path: '/admin/clients' },
+  { name: 'Client Profiles', path: '/admin/clients/profiles' },
+  { name: 'Client Activity Logs', path: '/admin/clients/logs' },
 ];
 
 const expertLinks = [
-  { name: "Pending Approvals", path: "/admin/experts/pending" },
-  { name: "Approved Experts", path: "/admin/experts" },
-  { name: "Expert Performance", path: "/admin/experts/performance" },
+  { name: 'Pending Approvals', path: '/admin/experts/pending' },
+  { name: 'Approved Experts', path: '/admin/experts' },
+  { name: 'Expert Performance', path: '/admin/experts/performance' },
 ];
 
 const supportLinks = [
-  { name: "Guest Support", path: "/admin/guest-support" },
-  { name: "Client Support", path: "/admin/client-support" },
-  { name: "Expert Support", path: "/admin/expert-support" },
+  { name: 'Guest Support', path: '/admin/guest-support' },
+  { name: 'Client Support', path: '/admin/client-support' },
+  { name: 'Expert Support', path: '/admin/expert-support' },
 ];
 
-const isActive = (path) => route.path === path;
+// Use startsWith so nested routes highlight parent
+const isActive = (path) => route.path.startsWith(path);
 
-const logout = () => router.push("/login");
+const logout = () => router.push('/login');
 </script>
 
 <style scoped>

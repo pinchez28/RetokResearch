@@ -207,6 +207,11 @@ const routes = [
         name: 'CompletedJobs',
         component: CompletedJobs,
       },
+      {
+        path: 'jobs/pending',
+        name: 'PendingJobs',
+        component: () => import('@/pages/admin/activeJobs/PendingJobs.vue'),
+      },
       { path: 'jobs/disputes', name: 'JobDisputes', component: JobDisputes },
 
       // Client Management

@@ -1,25 +1,24 @@
 <template>
   <div
-    class="rounded-3xl overflow-hidden shadow-2xl hover:shadow-[0_8px_35px_rgba(0,0,0,0.3)] transition-all duration-300 cursor-pointer border border-white/30 backdrop-blur-md"
+    class="rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer border border-white/20 backdrop-blur-lg"
     :style="{ background: cardGradient }"
     @click="$emit('click')"
   >
-    <div class="p-7 flex flex-col h-48 justify-between">
-      <div class="flex items-center justify-between">
-        <h4
-          class="text-xl font-extrabold text-gray-900 leading-snug drop-shadow-sm"
-        >
+    <div class="p-4 flex flex-col gap-2 min-h-[130px]">
+      <div class="flex items-start justify-between">
+        <h4 class="text-lg font-extrabold text-gray-900 leading-snug">
           {{ service.title || 'Untitled Service' }}
         </h4>
+
         <span
-          class="text-gray-900/90 text-sm font-bold bg-white/60 px-3 py-1 rounded-full shadow"
+          class="text-green-700 text-sm font-bold bg-white/70 px-2 py-1 rounded-full shadow"
         >
-          {{ service.priceRange || '' }}
+          {{ formattedPrice }}
         </span>
       </div>
 
       <p
-        class="text-gray-900 text-base leading-relaxed font-medium opacity-90 mt-2"
+        class="text-black text-sm leading-snug font-extrabold line-clamp-3 mt-1/2"
       >
         {{ service.shortDescription || 'No description available' }}
       </p>
@@ -28,14 +27,44 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
   service: { type: Object, required: true },
 
-  // 🌈 Brighter, more alive gradients — perfect against blue background
   cardGradient: {
     type: String,
     default:
-      'linear-gradient(135deg, rgba(255, 215, 255, 0.95), rgba(230, 240, 255, 0.95))',
+      'linear-gradient(135deg, rgba(255,140,200,0.9), rgba(90,180,255,0.9))',
   },
+});
+
+/*
+  Price Formatter → Always Output:
+  Ksh 1,000 – Ksh 5,000
+  OR
+  Ksh 2,500
+*/
+const formattedPrice = computed(() => {
+  if (!props.service.priceRange) return '';
+
+  let clean = props.service.priceRange.replace(/\$/g, '').trim();
+
+  // handle ranges like "1000-3000"
+  if (clean.includes('-')) {
+    const [min, max] = clean.split('-').map((n) => Number(n.trim()));
+    if (!isNaN(min) && !isNaN(max)) {
+      return `Ksh ${min.toLocaleString()} - Ksh ${max.toLocaleString()}`;
+    }
+  }
+
+  // handle single value
+  const numeric = Number(clean);
+  if (!isNaN(numeric)) {
+    return `Ksh ${numeric.toLocaleString()}`;
+  }
+
+  // fallback if it's a string
+  return `Ksh ${clean}`;
 });
 </script>

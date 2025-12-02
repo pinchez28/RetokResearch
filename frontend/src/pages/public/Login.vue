@@ -56,7 +56,7 @@
 
         <p class="text-sm text-gray-500 mt-4 text-center">
           Don't have an account?
-          <router-link to="/signup" class="text-blue-600 hover:underline"
+          <router-link to="/signup/client" class="text-blue-600 hover:underline"
             >Signup</router-link
           >
         </p>
@@ -106,13 +106,13 @@ const handleLogin = async () => {
 
     // Redirect based on role
     switch (data.user.role) {
-      case 'admin':
+      case 'Admin':
         router.push('/admin');
         break;
-      case 'client':
+      case 'Client':
         router.push('/client');
         break;
-      case 'expert':
+      case 'Expert':
         router.push('/expert');
         break;
       default:

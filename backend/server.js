@@ -1,44 +1,49 @@
-import dotenv from 'dotenv/config';
-import connectDB from './src/config/db.js';
-import app from './app.js';
 import http from 'http';
 import { Server } from 'socket.io';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import app from './app.js';
 
-// Connect DB
+dotenv.config();
+
+// -------------------- DATABASE CONNECTION --------------------
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  }
+};
 connectDB();
 
-const PORT = process.env.PORT || 5000;
-
-// Create HTTP server from Express app
+// -------------------- SERVER & SOCKET.IO --------------------
+const PORT = process.env.PORT || 4000;
 const server = http.createServer(app);
 
-// Attach Socket.IO
+// Socket.IO CORS (separate from Express)
 const io = new Server(server, {
   cors: {
-    origin: '*', // or your frontend URL
-    methods: ['GET', 'POST'],
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
   },
 });
-
-// Make io accessible in controllers
 app.set('io', io);
 
-// Handle socket connections
+// -------------------- SOCKET CONNECTION --------------------
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  // Join room for real-time notifications
   socket.on('joinRoom', ({ userId, role }) => {
     if (role === 'admin') socket.join('admins');
     else if (role === 'client') socket.join(`client_${userId}`);
-    else if (role === 'expert') socket.join(`expert_${userId}`);
+    else if (role === 'expert') {
+      socket.join(`expert_${userId}`);
+      socket.join('experts'); // global expert broadcast room
+    }
     console.log(`${role} ${userId} joined their room`);
-  });
-
-  // Example: guest messages (existing feature)
-  socket.on('guest-message', (msg) => {
-    console.log('Message from guest:', msg);
-    io.emit('guest-message', msg);
   });
 
   socket.on('disconnect', () => {
@@ -46,5 +51,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Start server
+// -------------------- START SERVER --------------------
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+export { server, io };

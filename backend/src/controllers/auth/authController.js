@@ -6,11 +6,12 @@ import generateToken from '../../../utils/generateToken.js';
 
 // Map roles to models for populate
 const roleModelMap = {
-  client: 'Client',
-  expert: 'Expert',
-  // admin has no profile
+  Client: 'Client',
+  Expert: 'Expert',
+  // Admin has no profile
 };
 
+// ---------------- Signup ----------------
 // ---------------- Signup ----------------
 export const signup = async (req, res) => {
   try {
@@ -27,33 +28,29 @@ export const signup = async (req, res) => {
       certifications,
     } = req.body;
 
-    // Normalize role to lowercase
-    role = role?.trim().toLowerCase();
+    if (!role || !name || !email || !password) {
+      return res.status(400).json({ message: 'Missing required fields.' });
+    }
 
-    // Validate role (only client/expert allowed via frontend)
+    // Normalize role
+    role = role.trim().toLowerCase();
     if (!['client', 'expert'].includes(role)) {
       return res
         .status(400)
         .json({ message: 'Invalid role. Only client or expert allowed.' });
     }
+    role = role.charAt(0).toUpperCase() + role.slice(1);
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Missing required fields.' });
-    }
-
-    // Check if user already exists
+    // Check if exists
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: 'Email already exists.' });
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create role-specific profile
+    // Create profile
     let profile;
-    if (role === 'client') {
+    if (role === 'Client') {
       profile = await Client.create({ name, phone });
-    } else if (role === 'expert') {
+    } else if (role === 'Expert') {
       if (!specialization || !bio || !experience || !education || !req.file) {
         return res
           .status(400)
@@ -74,15 +71,15 @@ export const signup = async (req, res) => {
       });
     }
 
-    // Create User
+    // Create User — RAW password, model will hash automatically
     const user = await User.create({
       email,
-      password: hashedPassword,
+      password, // model pre-save hook hashes this
       role,
       profile: profile._id,
     });
 
-    // Generate token
+    // Token
     const token = generateToken(user._id, role);
 
     // Populate profile
@@ -111,6 +108,7 @@ export const login = async (req, res) => {
 
     // Find user
     const user = await User.findOne({ email });
+
     if (!user) return res.status(400).json({ message: 'Invalid credentials.' });
 
     // Check password
@@ -118,17 +116,18 @@ export const login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: 'Invalid credentials.' });
 
-    // Generate token
-    const token = generateToken(user._id, user.role);
+    // Ensure role is proper case
+    const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
 
-    // Populate profile only for client/expert
-    let populatedUser;
-    if (user.role === 'admin') {
-      populatedUser = user; // no profile
-    } else {
+    // Generate token
+    const token = generateToken(user._id, role);
+
+    // Populate profile for client/expert
+    let populatedUser = user;
+    if (role !== 'Admin') {
       populatedUser = await User.findById(user._id).populate({
         path: 'profile',
-        model: roleModelMap[user.role],
+        model: roleModelMap[role],
       });
     }
 

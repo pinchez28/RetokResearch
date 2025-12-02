@@ -2,6 +2,7 @@
   <div class="space-y-6">
     <h1 class="text-3xl font-bold" style="color: #001bb7">Available Jobs</h1>
 
+    ```
     <!-- Filters -->
     <div class="flex flex-wrap gap-4 mb-6">
       <input
@@ -35,19 +36,66 @@
           {{ job.description?.substring(0, 120) }}...
         </p>
         <div class="flex justify-between items-center text-sm text-gray-500">
-          <span>Budget: ${{ job.budget }}</span>
+          <span>Budget: KSh {{ job.minPrice }} - KSh {{ job.maxPrice }}</span>
           <span
             >Deadline: {{ new Date(job.deadline).toLocaleDateString() }}</span
           >
         </div>
         <button
           class="mt-4 w-full bg-[#FF8040] text-white py-2 rounded-xl hover:bg-[#0046FF]"
-          @click="viewJob(job._id)"
+          @click="openProposalModal(job)"
         >
           View / Apply
         </button>
       </div>
     </div>
+
+    <!-- Proposal Modal -->
+    <div
+      v-if="selectedJob"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start overflow-auto z-50"
+    >
+      <div
+        class="bg-white mt-20 max-w-2xl w-full p-6 rounded-lg shadow-lg text-left"
+      >
+        <div class="flex justify-between items-start mb-4">
+          <h2 class="text-2xl font-bold">{{ selectedJob.title }}</h2>
+          <button
+            @click="closeProposalModal"
+            class="text-gray-400 hover:text-gray-600 font-bold text-xl"
+          >
+            &times;
+          </button>
+        </div>
+        <p class="mb-3">
+          <span class="font-semibold">Description:</span>
+          {{ selectedJob.description }}
+        </p>
+        <p class="mb-3">
+          <span class="font-semibold">Budget:</span> KSh
+          {{ selectedJob.minPrice }} - KSh
+          {{ selectedJob.maxPrice }}
+        </p>
+        <p class="mb-3">
+          <span class="font-semibold">Deadline:</span>
+          {{ new Date(selectedJob.deadline).toLocaleDateString() }}
+        </p>
+
+        <textarea
+          v-model="proposalText"
+          placeholder="Enter your full proposal here..."
+          class="w-full border rounded p-2 mb-4"
+          rows="6"
+        ></textarea>
+        <button
+          class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-500 transition"
+          @click="submitProposal(selectedJob._id)"
+        >
+          Submit Proposal
+        </button>
+      </div>
+    </div>
+    ```
   </div>
 </template>
 
@@ -58,14 +106,15 @@ import axios from 'axios';
 const availableJobs = ref([]);
 const filters = ref({ keyword: '', category: '', experience: '' });
 const categories = ref([]);
+const selectedJob = ref(null);
+const proposalText = ref('');
 
-// Fetch jobs from server
+// Fetch approved jobs
 const fetchJobs = async () => {
   try {
-    const res = await axios.get('/api/expert/jobs'); // your backend endpoint
+    const res = await axios.get('/api/expert/jobs'); // Backend should return only approved jobs
     if (Array.isArray(res.data.jobs)) {
       availableJobs.value = res.data.jobs;
-      // Extract unique categories
       categories.value = [...new Set(res.data.jobs.map((j) => j.category))];
     }
   } catch (err) {
@@ -75,7 +124,6 @@ const fetchJobs = async () => {
 
 onMounted(fetchJobs);
 
-// Filtered jobs
 const filteredJobs = computed(() => {
   return availableJobs.value.filter((job) => {
     const matchesKeyword = job.title
@@ -91,9 +139,31 @@ const filteredJobs = computed(() => {
   });
 });
 
-const viewJob = (id) => {
-  console.log('View / Apply for job:', id);
-  // Navigate or open modal
+const openProposalModal = (job) => {
+  selectedJob.value = job;
+  proposalText.value = '';
+};
+
+const closeProposalModal = () => {
+  selectedJob.value = null;
+  proposalText.value = '';
+};
+
+const submitProposal = async (jobId) => {
+  if (!proposalText.value.trim()) {
+    alert('Please enter a proposal.');
+    return;
+  }
+  try {
+    await axios.post(`/api/expert/jobs/${jobId}/proposal`, {
+      proposal: proposalText.value,
+    });
+    alert('Proposal submitted successfully!');
+    closeProposalModal();
+  } catch (err) {
+    console.error('Error submitting proposal:', err);
+    alert('Failed to submit proposal.');
+  }
 };
 </script>
 

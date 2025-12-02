@@ -1,144 +1,158 @@
 <template>
-  <div class="p-6 max-w-4xl mx-auto space-y-8">
-    <h1 class="text-3xl font-bold text-[#001BB7]">Post a New Job</h1>
-    <p class="text-gray-600">
-      Fill in the details below to post a project and connect with experts.
-    </p>
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Post a New Job</h1>
 
-    <form
-      @submit.prevent="submitJob"
-      class="space-y-6 bg-white p-8 rounded-2xl shadow-lg"
-    >
-      <!-- Project Title -->
+    ```
+    <form @submit.prevent="submitJob" class="space-y-5">
+      <!-- Job Title -->
       <div>
-        <label class="block text-gray-700 font-medium mb-2"
-          >Project Title</label
-        >
+        <label for="title" class="block font-semibold mb-1">Job Title</label>
         <input
+          id="title"
           v-model="title"
           type="text"
-          placeholder="Enter project title"
+          class="w-full border rounded p-3"
+          placeholder="Enter job title"
           required
-          class="w-full p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow"
         />
       </div>
 
-      <!-- Project Description -->
+      <!-- Description -->
       <div>
-        <label class="block text-gray-700 font-medium mb-2"
-          >Project Description</label
+        <label for="description" class="block font-semibold mb-1"
+          >Description</label
         >
         <textarea
+          id="description"
           v-model="description"
-          rows="6"
-          placeholder="Describe your project requirements"
+          class="w-full border rounded p-3"
+          rows="5"
+          placeholder="Describe your job in detail"
           required
-          class="w-full p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow"
         ></textarea>
-      </div>
-
-      <!-- Project Category / Service -->
-      <div>
-        <label class="block text-gray-700 font-medium mb-2"
-          >Category / Service</label
-        >
-        <select
-          v-model="service"
-          required
-          class="w-full p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow"
-        >
-          <option value="" disabled>Select a category</option>
-          <option value="Research">Research</option>
-          <option value="Analysis">Analysis</option>
-          <option value="Survey">Survey</option>
-          <option value="Report">Report</option>
-        </select>
       </div>
 
       <!-- Deadline -->
       <div>
-        <label class="block text-gray-700 font-medium mb-2">Deadline</label>
+        <label for="deadline" class="block font-semibold mb-1">Deadline</label>
         <input
+          id="deadline"
           v-model="deadline"
           type="date"
-          required
-          class="w-full p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow"
+          class="w-full border rounded p-3"
         />
       </div>
 
-      <!-- Proposed Budget -->
+      <!-- Attachments -->
       <div>
-        <label class="block text-gray-700 font-medium mb-2"
-          >Proposed Budget ($)</label
+        <label for="attachments" class="block font-semibold mb-1"
+          >Attachments (Optional)</label
         >
         <input
-          v-model="budget"
-          type="number"
-          min="0"
-          placeholder="Enter budget"
-          required
-          class="w-full p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow"
+          id="attachments"
+          type="file"
+          multiple
+          @change="handleAttachments"
+          class="w-full border rounded p-3"
         />
+        <ul class="mt-2 text-sm text-gray-600">
+          <li v-for="file in attachments" :key="file.name">{{ file.name }}</li>
+        </ul>
+      </div>
+
+      <!-- Budget (Optional) -->
+      <div>
+        <label class="block font-semibold mb-1"
+          >Proposed Budget (Optional)</label
+        >
+        <div class="flex items-center border rounded p-3">
+          <span class="mr-2 text-gray-600 font-semibold">KES</span>
+          <input
+            v-model.number="budget"
+            type="number"
+            min="0"
+            class="w-full outline-none"
+            placeholder="Enter proposed budget"
+          />
+        </div>
       </div>
 
       <!-- Submit Button -->
-      <div class="text-right">
-        <button
-          type="submit"
-          :disabled="loading"
-          class="bg-[#FF8040] hover:bg-[#FFA366] text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:-translate-y-1 disabled:opacity-50"
-        >
-          {{ loading ? 'Posting...' : 'Post Job' }}
-        </button>
-      </div>
+      <button
+        type="submit"
+        class="bg-blue-600 text-white px-6 py-3 rounded w-full font-semibold"
+        :disabled="loading"
+      >
+        {{ loading ? 'Posting...' : 'Post Job' }}
+      </button>
     </form>
+    ```
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import axios from '@/utils/api.js';
+import axios from 'axios';
 
 const title = ref('');
 const description = ref('');
-const service = ref('');
 const deadline = ref('');
-const budget = ref('');
+const attachments = ref([]);
+const budget = ref(null);
 const loading = ref(false);
 
+// Base backend URL from .env
+const backendURL = import.meta.env.VITE_API_BASE_URL;
+
+// Token from localStorage
+const token = localStorage.getItem('token');
+
+// Handle file input
+const handleAttachments = (e) => {
+  attachments.value = Array.from(e.target.files);
+};
+
+// Submit job
 const submitJob = async () => {
-  if (
-    !title.value ||
-    !description.value ||
-    !service.value ||
-    !deadline.value ||
-    !budget.value
-  )
+  if (!title.value || !description.value) {
+    alert('Please fill all required fields.');
     return;
+  }
 
   loading.value = true;
+
   try {
-    await axios.post('/guest-requests', {
-      name: 'Client User', // Replace with actual client info if available
-      email: 'client@example.com', // Replace with actual client email
-      topic: title.value,
-      description: description.value,
-      service: service.value,
-      deadline: deadline.value,
-      proposedPrice: budget.value,
+    const formData = new FormData();
+    formData.append('title', title.value);
+    formData.append('description', description.value);
+    if (deadline.value) formData.append('deadline', deadline.value);
+    if (budget.value) formData.append('budget', budget.value);
+
+    attachments.value.forEach((file) => {
+      formData.append('attachments', file); // must match backend field name
     });
 
-    // Clear form
-    title.value = '';
-    description.value = '';
-    service.value = '';
-    deadline.value = '';
-    budget.value = '';
+    const res = await axios.post(`${backendURL}/api/client/jobs`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-    alert('Job posted successfully!');
+    if (res.data?.success) {
+      title.value = '';
+      description.value = '';
+      deadline.value = '';
+      attachments.value = [];
+      budget.value = null;
+
+      alert('Job posted successfully! Awaiting admin approval.');
+    } else {
+      alert(res.data?.message || 'Failed to post job.');
+    }
   } catch (err) {
-    console.error('Failed to post job', err);
-    alert('Failed to post job. Please try again.');
+    console.error('Post job error:', err);
+    alert(err.response?.data?.message || 'Error posting job. Try again.');
   } finally {
     loading.value = false;
   }
@@ -146,5 +160,8 @@ const submitJob = async () => {
 </script>
 
 <style scoped>
-/* Tailwind styling applied; add any extra tweaks if needed */
+input:focus,
+textarea:focus {
+  outline: 2px solid #3b82f6;
+}
 </style>

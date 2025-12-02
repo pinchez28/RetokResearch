@@ -6,6 +6,7 @@ const clientSchema = new mongoose.Schema(
     phone: String,
     company: String,
     projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
+    role: { type: String, default: 'client' }, // <-- add this
   },
   { timestamps: true }
 );

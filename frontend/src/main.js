@@ -8,16 +8,24 @@ import { createPinia } from 'pinia';
 // Global signup overlay
 import './globalSignup.js';
 
-// ✅ Vue Sonner Toasts
+//  Vue Sonner Toasts
 import { Toaster } from 'vue-sonner';
 import 'vue-sonner/style.css';
+
+// Import auth store
+import { useAuthStore } from './store/auth.js';
 
 const app = createApp(App);
 
 app.use(router);
-app.use(createPinia());
+const pinia = createPinia();
+app.use(pinia);
 
 // Register Toaster globally
 app.component('Toaster', Toaster);
+
+// Initialize auth from localStorage
+const authStore = useAuthStore();
+authStore.initialize();
 
 app.mount('#app');

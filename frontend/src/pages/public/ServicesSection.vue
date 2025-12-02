@@ -3,25 +3,38 @@
     id="services"
     class="py-24 px-6 md:px-12 lg:px-20 bg-blue-900 text-white"
   >
-    <h2 class="text-3xl text-white font-extrabold text-center mb-12">
-      Our Core Research Services
+    <!-- Heading (matches How It Works typography) -->
+    <h2
+      class="animate-fadeUp font-extrabold text-white drop-shadow-lg mb-6 text-center"
+      style="font-size: clamp(2rem, 5vw, 4rem)"
+    >
+      Sample Research Services
     </h2>
 
+    ```
+    <p
+      class="mt-2 sm:mt-4 text-white animate-fadeUp delay-150 drop-shadow-md mx-auto text-center"
+      style="font-size: clamp(1rem, 2.5vw, 1.5rem); max-width: 40rem"
+    >
+      Explore a variety of high-quality academic and professional research
+      services.
+    </p>
+
     <!-- Quick Request CTA -->
-    <div class="flex justify-center mb-8">
+    <div class="flex justify-center my-8">
       <button
         @click="openRequestModal(null)"
-        class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#ff8040] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#ffb38a]"
+        class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#ff8040] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#ffb38a] animate-bounce"
       >
         Quickly Get Help with Research
       </button>
     </div>
 
-    <!-- Filters Row (ONLY SEARCH + CATEGORY) -->
+    <!-- Filters Row (Search + Category) -->
     <div
       class="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
     >
-      <!-- Search with Lucide Icon -->
+      <!-- Search -->
       <div class="relative w-full md:w-96">
         <Search
           class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
@@ -35,7 +48,7 @@
         />
       </div>
 
-      <!-- Category Dropdown Only -->
+      <!-- Category Dropdown -->
       <select
         v-model="selectedCategory"
         class="px-4 py-3 rounded-xl text-gray-900 shadow-md focus:ring-2 focus:ring-[#001BB7]"
@@ -54,7 +67,7 @@
           'w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold transform transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           activeBranch === 'all'
             ? 'active-branch'
-            : 'bg-blue-700 text-white shadow-xl hover:bg-blue-600 hover:-translate-y-1',
+            : 'bg-blue-700 text-white shadow-xl hover:bg-blue-600 hover:-translate-y-1 animate-pulse',
         ]"
         @click="setActiveBranch('all')"
       >
@@ -69,7 +82,7 @@
           'w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold transform transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           activeBranch === branch
             ? 'active-branch'
-            : 'bg-blue-700 text-white shadow-xl hover:bg-blue-600 hover:-translate-y-1',
+            : 'bg-blue-700 text-white shadow-xl hover:bg-blue-600 hover:-translate-y-1 animate-spin',
         ]"
       >
         {{ branch }}
@@ -90,7 +103,6 @@
           :key="category._id"
           class="mb-12"
         >
-          <!-- Only categories with services -->
           <h3
             v-if="category.services && category.services.length"
             class="text-2xl font-bold text-white mb-6 border-l-4 border-green-400 pl-4 tracking-wide"
@@ -130,6 +142,7 @@
       :service="requestService"
       @close="closeRequestModal"
     />
+    ```
   </section>
 </template>
 
@@ -141,26 +154,26 @@ import GuestServiceDetailsModal from '@/components/GuestServiceDetailsModal.vue'
 import GuestSubmissionModal from '@/components/GuestSubmissionModal.vue';
 import api from '@/utils/api.js';
 
-// state
+// State
 const allServices = ref([]);
 const activeBranch = ref('all');
 const selectedCategory = ref('all');
 const searchQuery = ref('');
 
-// fetch services
+// Fetch services
 onMounted(async () => {
   const { data } = await api.get('/services');
   allServices.value = Array.isArray(data) ? data : [];
 });
 
-// branches for tabs
+// Branch tabs
 const branchList = computed(() => {
   const set = new Set();
   allServices.value.forEach((s) => s.branch && set.add(s.branch));
   return Array.from(set);
 });
 
-// filtered flat
+// Filtered flat list
 const filteredFlat = computed(() => {
   const q = searchQuery.value.toLowerCase().trim();
   return allServices.value.filter((svc) => {
@@ -179,14 +192,14 @@ const filteredFlat = computed(() => {
   });
 });
 
-// available categories based on filtered
+// Available categories
 const availableCategories = computed(() => {
   const set = new Set();
   filteredFlat.value.forEach((s) => s.category && set.add(s.category));
   return Array.from(set);
 });
 
-// group into branch->category->services
+// Group by branch -> category -> services
 const branchesToDisplay = computed(() => {
   const map = {};
   filteredFlat.value.forEach((svc) => {
@@ -209,7 +222,7 @@ const setActiveBranch = (b) => {
   selectedCategory.value = 'all';
 };
 
-// modal states
+// Modal states
 const isServiceModalVisible = ref(false);
 const selectedService = ref(null);
 const isRequestModalVisible = ref(false);
@@ -239,5 +252,23 @@ const closeRequestModal = () => {
   color: white;
   transform: scale(1.1);
   border: 2px solid white;
+}
+
+/* Animations */
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeUp {
+  animation: fadeUp 1s ease-out forwards;
+}
+.delay-150 {
+  animation-delay: 0.15s;
 }
 </style>

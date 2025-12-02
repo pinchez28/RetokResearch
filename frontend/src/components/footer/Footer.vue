@@ -1,9 +1,9 @@
 <template>
   <footer class="bg-[#001BB7] text-white">
     <div class="max-w-7xl mx-auto px-6 py-12">
-      <div class="flex flex-col lg:flex-row justify-between gap-10">
-        <!-- Branding with logo -->
-        <div class="flex flex-col items-start space-y-4">
+      <div class="flex flex-col lg:flex-row justify-between gap-12">
+        <!-- Branding -->
+        <div class="flex flex-col items-start space-y-4 w-full lg:w-1/3">
           <div class="flex items-center space-x-3">
             <img
               src="@/assets/images/logo.jpg"
@@ -12,27 +12,40 @@
             />
             <h1 class="text-4xl font-extrabold text-[#FFD700]">Retok</h1>
           </div>
-          <p class="text-gray-200 max-w-sm">
+          <p class="text-gray-200 leading-relaxed">
             Connecting researchers and experts to deliver top-notch insights and
             guidance.
           </p>
         </div>
 
-        <!-- Footer links -->
-        <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4"></div>
-        <div v-for="(section, index) in links" :key="index">
-          <h4 class="font-semibold mb-3 text-[#FFD700]">
-            {{ section.title }}
-          </h4>
-          <ul class="space-y-2 text-gray-200">
-            <li
-              v-for="(link, lIndex) in section.items"
-              :key="lIndex"
-              class="hover:text-[#FF8040] transition-colors cursor-pointer"
+        <!-- Footer links evenly distributed -->
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-10 w-full"
+        >
+          <div v-for="(section, index) in links" :key="index">
+            <h4
+              class="font-semibold mb-3 text-[#FFD700] flex items-center gap-2"
             >
-              {{ link }}
-            </li>
-          </ul>
+              <!-- icon only for Contacts & Social -->
+              <component
+                :is="section.icon"
+                v-if="section.icon"
+                class="w-4 h-4"
+              />
+              {{ section.title }}
+            </h4>
+
+            <ul class="space-y-2 text-gray-200">
+              <li
+                v-for="(item, lIndex) in section.items"
+                :key="lIndex"
+                class="hover:text-[#FF8040] transition-colors cursor-pointer flex items-center gap-2"
+              >
+                <component :is="item.icon" v-if="item.icon" class="w-4 h-4" />
+                {{ item.label }}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -47,33 +60,60 @@
 </template>
 
 <script setup>
-// Footer links data
+import {
+  Phone,
+  Mail,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Instagram,
+} from 'lucide-vue-next';
+
 const links = [
   {
     title: 'Company',
-    items: ['About Us', 'Careers', 'Blog', 'Contact'],
+    items: [
+      { label: 'About Us' },
+      { label: 'Careers' },
+      { label: 'Blog' },
+      { label: 'Contact' },
+    ],
   },
   {
     title: 'Services',
     items: [
-      'Research Writing',
-      'Data Analysis',
-      'Consultations',
-      'Market Research',
+      { label: 'Research Writing' },
+      { label: 'Data Analysis' },
+      { label: 'Consultations' },
+      { label: 'Market Research' },
     ],
   },
-
   {
     title: 'Resources',
-    items: ['Help Center', 'Guides', 'FAQs', 'Case Studies'],
+    items: [
+      { label: 'Help Center' },
+      { label: 'Guides' },
+      { label: 'FAQs' },
+      { label: 'Case Studies' },
+    ],
   },
   {
     title: 'Social',
-    items: ['Twitter', 'LinkedIn', 'Facebook', 'Instagram'],
+    icon: Twitter,
+    items: [
+      { label: 'Twitter', icon: Twitter },
+      { label: 'LinkedIn', icon: Linkedin },
+      { label: 'Facebook', icon: Facebook },
+      { label: 'Instagram', icon: Instagram },
+    ],
   },
   {
-    title: 'Contcts',
-    items: ['0700000000', 'admin@retok.ke'],
+    title: 'Contacts',
+    icon: Phone,
+    items: [
+      { label: '0700000000', icon: Phone },
+      { label: 'admin@retok.ke', icon: Mail },
+    ],
   },
 ];
 </script>
@@ -81,17 +121,5 @@ const links = [
 <style scoped>
 footer {
   font-family: 'Inter', sans-serif;
-}
-
-footer h4 {
-  letter-spacing: 0.5px;
-}
-
-footer p {
-  letter-spacing: 0.25px;
-}
-
-footer img {
-  object-fit: cover;
 }
 </style>

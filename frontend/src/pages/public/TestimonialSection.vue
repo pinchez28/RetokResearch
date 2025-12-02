@@ -4,14 +4,15 @@
     class="py-12 px-6 md:px-12 lg:px-20 bg-gradient-to-br from-[#001BB7]/80 via-[#0046FF]/70 to-[#F5F1DC]/50 overflow-hidden relative"
   >
     <h2
-      class="text-4xl md:text-5xl font-extrabold text-center mb-8 text-white drop-shadow-lg"
+      class="animate-fadeUp font-extrabold text-white text-center drop-shadow-lg"
+      style="font-size: clamp(2rem, 5vw, 4rem)"
     >
       What Our Clients Say
     </h2>
 
-    <p class="text-center text-white/80 max-w-2xl mx-auto mb-14">
-      Hear from researchers and organizations who trust us with their academic and market
-      research needs.
+    <p class="text-center text-white/80 max-w-2xl mx-auto mb-14 mt-10">
+      Hear from researchers and organizations who trust us with their academic
+      and market research needs.
     </p>
 
     <!-- Scrolling container -->
@@ -62,26 +63,27 @@
 const testimonials = [
   {
     id: 1,
-    name: "Dr. Jane Mwangi",
-    role: "PhD Candidate, University of Nairobi",
-    photo: "https://i.pravatar.cc/150?img=32",
+    name: 'Dr. Jane Mwangi',
+    role: 'PhD Candidate, University of Nairobi',
+    photo: 'https://i.pravatar.cc/150?img=32',
     feedback:
-      "The team guided me through my dissertation with exceptional expertise and attention to detail.",
+      'The team guided me through my dissertation with exceptional expertise and attention to detail.',
   },
   {
     id: 2,
-    name: "Samuel Ochieng",
-    role: "Business Analyst, TechCorp Ltd",
-    photo: "https://i.pravatar.cc/150?img=12",
+    name: 'Samuel Ochieng',
+    role: 'Business Analyst, TechCorp Ltd',
+    photo: 'https://i.pravatar.cc/150?img=12',
     feedback:
-      "Their market research insights helped our company make confident, data-driven decisions.",
+      'Their market research insights helped our company make confident, data-driven decisions.',
   },
   {
     id: 3,
-    name: "Prof. Amina Ali",
-    role: "Research Supervisor, Strathmore University",
-    photo: "https://i.pravatar.cc/150?img=45",
-    feedback: "A reliable service for both students and researchers. Highly recommended.",
+    name: 'Prof. Amina Ali',
+    role: 'Research Supervisor, Strathmore University',
+    photo: 'https://i.pravatar.cc/150?img=45',
+    feedback:
+      'A reliable service for both students and researchers. Highly recommended.',
   },
 ];
 
@@ -89,13 +91,13 @@ const testimonials = [
 const getCardGradient = (id) => {
   switch (id) {
     case 1:
-      return "background: linear-gradient(135deg, #001BB7, #0046FF);";
+      return 'background: linear-gradient(135deg, #001BB7, #0046FF);';
     case 2:
-      return "background: linear-gradient(135deg, #FF8040, #F5F1DC);";
+      return 'background: linear-gradient(135deg, #FF8040, #F5F1DC);';
     case 3:
-      return "background: linear-gradient(135deg, #0046FF, #FF8040);";
+      return 'background: linear-gradient(135deg, #0046FF, #FF8040);';
     default:
-      return "background: linear-gradient(135deg, #001BB7, #0046FF);";
+      return 'background: linear-gradient(135deg, #001BB7, #0046FF);';
   }
 };
 </script>

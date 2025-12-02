@@ -10,7 +10,7 @@ const router = express.Router();
 
 /**
  * @route   GET /api/expert/jobs
- * @desc    Get all jobs assigned to the expert
+ * @desc    Get all jobs assigned to the expert (approved_for_bidding)
  * @access  Private (expert only)
  */
 router.get('/', authMiddleware, authorizeRoles('expert'), getAvailableJobs);

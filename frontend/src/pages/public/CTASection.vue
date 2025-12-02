@@ -32,7 +32,7 @@
     <!-- Content -->
     <div class="relative z-10 text-center px-6 md:px-12 max-w-4xl">
       <h2
-        class="text-4xl md:text-5xl font-extrabold text-white animate-fadeUp mb-4"
+        class="animate-fadeUp font-extrabold text-white drop-shadow-lg mb-6 text-center text-4xl"
       >
         Take Your Research To The Next Level
       </h2>
@@ -46,7 +46,7 @@
       >
         <!-- CTA Button -->
         <button
-          class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#e713a8] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#3a1ac9]"
+          class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#FF8040] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#3a1ac9]"
           @click="openSignup()"
         >
           Post a Research Assignment

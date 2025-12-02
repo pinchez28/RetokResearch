@@ -1,19 +1,34 @@
 import express from 'express';
-import { reviewJob } from '../../controllers/admin/jobController.js';
 import { authMiddleware } from '../../middleware/auth.js';
 import { authorizeRoles } from '../../middleware/roles.js';
+import {
+  getPendingJobs,
+  rejectJob,
+  reviewJob,
+  getActiveJobs,
+} from '../../controllers/admin/jobController.js';
 
 const router = express.Router();
 
-/**
- * @route   PUT /api/admin/jobs/:jobId/review
- * @desc    Admin reviews a job, sets pricing, selects experts
- * @access  Private (admin only)
- */
+// GET pending jobs
+router.get('/pending', authMiddleware, authorizeRoles('Admin'), getPendingJobs);
+
+// GET active jobs
+router.get('/active', authMiddleware, authorizeRoles('Admin'), getActiveJobs);
+
+// PATCH reject job
+router.patch(
+  '/reject/:jobId',
+  authMiddleware,
+  authorizeRoles('Admin'),
+  rejectJob
+);
+
+// PUT review job
 router.put(
   '/:jobId/review',
   authMiddleware,
-  authorizeRoles('admin'),
+  authorizeRoles('Admin'),
   reviewJob
 );
 

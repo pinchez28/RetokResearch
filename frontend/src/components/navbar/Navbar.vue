@@ -1,9 +1,84 @@
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+const menuOpen = ref(false);
+const route = useRoute();
+const router = useRouter();
+const closeMenu = () => (menuOpen.value = false);
+
+const ctaBg = '#ee6983';
+const ctaColor = '#333';
+const hoverCTA = (e) => (e.target.style.backgroundColor = '#FF9966');
+const leaveCTA = (e) => (e.target.style.backgroundColor = '#FF8040');
+
+const isAuthPage = computed(() =>
+  ['/signup', '/login'].some((p) => route.path.startsWith(p))
+);
+
+// ACTIVE SECTION & SCROLLING
+const activeSection = ref('');
+const sectionIds = [
+  'hero',
+  'about',
+  'howitworks',
+  'approved-jobs', // updated ID
+  'services',
+  'why-us',
+  'testimonials',
+  'contact',
+];
+const sectionLabels = {
+  hero: 'Home',
+  howitworks: 'How it Works',
+  services: 'Services',
+  'why-us': 'Why Us',
+  testimonials: 'Testimonials',
+  about: 'About',
+  'approved-jobs': 'Available Jobs', // updated key
+  contact: 'Contact Us',
+};
+
+const handleScroll = () => {
+  const scrollPosition = window.scrollY + 150;
+  for (const id of sectionIds) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const top = el.offsetTop;
+    const height = el.offsetHeight;
+    if (scrollPosition >= top && scrollPosition < top + height) {
+      activeSection.value = id;
+      break;
+    }
+  }
+};
+
+onMounted(() => window.addEventListener('scroll', handleScroll));
+onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+
+const scrollToSection = async (id) => {
+  activeSection.value = id;
+  if (route.path !== '/') {
+    await router.push({ path: '/', query: { scrollTo: id } });
+    return;
+  }
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  closeMenu();
+};
+
+// Signup Overlay (triggered from Navbar button)
+const openSignup = () => window.openSignupOverlay?.();
+</script>
+
 <template>
   <nav
     class="fixed top-0 left-0 w-full z-50 shadow-md h-24"
     style="background-color: #001bb7"
   >
-    <div class="flex items-center justify-between w-full px-4 sm:px-6 lg:px-12 h-full">
+    <div
+      class="flex items-center justify-between w-full px-4 sm:px-6 lg:px-12 h-full"
+    >
       <!-- Logo -->
       <div class="logo flex-shrink-0 h-full flex items-center space-x-2">
         <img
@@ -17,9 +92,9 @@
         </span>
       </div>
 
-      <!-- Non-auth pages -->
+      ```
+      <!-- Desktop Links -->
       <template v-if="!isAuthPage">
-        <!-- Desktop Links -->
         <ul
           class="hidden lg:flex flex-1 justify-center space-x-6 xl:space-x-8 font-medium list-none items-center"
         >
@@ -35,11 +110,12 @@
           </li>
         </ul>
 
-        <!-- Auth Buttons Desktop -->
         <div
           class="hidden lg:flex items-center space-x-3 sm:space-x-4 text-lg sm:text-xl lg:text-2xl font-extrabold"
         >
-          <router-link class="nav-link text-white" to="/login">Login</router-link>
+          <router-link class="nav-link text-white" to="/login"
+            >Login</router-link
+          >
           <button
             class="px-4 py-2 rounded-md font-semibold transition"
             :style="{ backgroundColor: ctaBg, color: ctaColor }"
@@ -98,7 +174,9 @@
         v-if="menuOpen && !isAuthPage"
         class="fixed inset-0 z-40 flex flex-col bg-[#001bb7] text-[#f5f1dc] p-6 pt-24 lg:hidden overflow-y-auto"
       >
-        <ul class="flex flex-col space-y-6 font-semibold text-lg sm:text-xl list-none">
+        <ul
+          class="flex flex-col space-y-6 font-semibold text-lg sm:text-xl list-none"
+        >
           <li v-for="id in sectionIds" :key="id">
             <a
               class="mobile-link"
@@ -108,11 +186,10 @@
               {{ sectionLabels[id] }}
             </a>
           </li>
-
           <li>
-            <router-link class="mobile-link" @click="closeMenu" to="/login">
-              Login
-            </router-link>
+            <router-link class="mobile-link" @click="closeMenu" to="/login"
+              >Login</router-link
+            >
           </li>
           <li>
             <button
@@ -131,80 +208,9 @@
         </ul>
       </div>
     </transition>
+    ```
   </nav>
 </template>
-
-<script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-
-const menuOpen = ref(false);
-const route = useRoute();
-const router = useRouter();
-const closeMenu = () => (menuOpen.value = false);
-
-const ctaBg = "#ee6983";
-const ctaColor = "#333";
-const hoverCTA = (e) => (e.target.style.backgroundColor = "#FF9966");
-const leaveCTA = (e) => (e.target.style.backgroundColor = "#FF8040");
-
-// Mark auth pages based on path
-const isAuthPage = computed(() =>
-  ["/signup", "/login"].some((p) => route.path.startsWith(p))
-);
-
-// Active Section
-const activeSection = ref("");
-const sectionIds = [
-  "hero",
-  "about",
-  "howitworks",
-  "services",
-  "why-us",
-  "testimonials",
-  "contact",
-];
-const sectionLabels = {
-  hero: "Home",
-  howitworks: "How it Works",
-  services: "Services",
-  "why-us": "Why Us",
-  testimonials: "Testimonials",
-  about: "About",
-  contact: "Contact Us",
-};
-
-const handleScroll = () => {
-  const scrollPosition = window.scrollY + 150;
-  for (const id of sectionIds) {
-    const el = document.getElementById(id);
-    if (!el) continue;
-    const top = el.offsetTop;
-    const height = el.offsetHeight;
-    if (scrollPosition >= top && scrollPosition < top + height) {
-      activeSection.value = id;
-      break;
-    }
-  }
-};
-
-onMounted(() => window.addEventListener("scroll", handleScroll));
-onUnmounted(() => window.removeEventListener("scroll", handleScroll));
-
-const scrollToSection = async (id) => {
-  activeSection.value = id;
-  if (route.path !== "/") {
-    await router.push({ path: "/", query: { scrollTo: id } });
-    return;
-  }
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  closeMenu();
-};
-
-// Global signup overlay trigger
-const openSignup = () => window.openSignupOverlay?.();
-</script>
 
 <style scoped>
 .nav-link,
@@ -213,14 +219,14 @@ const openSignup = () => window.openSignupOverlay?.();
   font-weight: 700;
   transition: color 0.25s, background-color 0.25s;
   text-decoration: none;
-  padding: 6px 14px; /* maintains alignment */
+  padding: 6px 14px;
   border-radius: 999px;
 }
 
 .nav-link.active,
 .mobile-link.active {
-  background-color: #facc15; /* Gold */
-  color: #001bb7 !important; /* Brand blue text */
+  background-color: #facc15;
+  color: #001bb7 !important;
   box-shadow: 0 0 10px rgba(250, 204, 21, 0.55);
 }
 

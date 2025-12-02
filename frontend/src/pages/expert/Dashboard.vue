@@ -129,16 +129,16 @@
           >
             <td class="px-4 py-2">{{ assignment.title }}</td>
             <td class="px-4 py-2">{{ assignment.status }}</td>
-            <td class="px-4 py-2">{{ assignment.dueDate }}</td>
+            <td class="px-4 py-2">{{ formatDate(assignment.dueDate) }}</td>
             <td class="px-4 py-2">{{ assignment.client }}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Available Jobs (Live) -->
+    <!-- Available Jobs Section -->
     <div class="space-y-6">
-      <h1 class="text-3xl font-bold" style="color: #001bb7">Available Jobs</h1>
+      <h1 class="text-3xl font-bold text-[#001bb7]">Available Jobs</h1>
 
       <!-- Filters -->
       <div class="flex flex-wrap gap-4 mb-6">
@@ -166,23 +166,69 @@
           :key="job._id"
           class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
         >
-          <h2 class="text-xl font-semibold mb-2" style="color: #001bb7">
+          <h2 class="text-xl font-semibold mb-2 text-[#001bb7]">
             {{ job.title }}
           </h2>
           <p class="text-gray-600 mb-2">
             {{ job.description?.substring(0, 120) }}...
           </p>
           <div class="flex justify-between items-center text-sm text-gray-500">
-            <span>Budget: ${{ job.budget }}</span>
-            <span>Deadline: {{ job.deadline }}</span>
+            <span
+              >Budget: KSh {{ job.pricingRange?.min }} - KSh
+              {{ job.pricingRange?.max }}</span
+            >
+            <span>Deadline: {{ formatDate(job.deadline) }}</span>
           </div>
           <button
             class="mt-4 w-full bg-[#FF8040] text-white py-2 rounded-xl hover:bg-[#0046FF]"
-            @click="viewJob(job._id)"
+            @click="openProposalModal(job)"
           >
             View / Apply
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Proposal Modal -->
+    <div
+      v-if="selectedJob"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start overflow-auto z-50"
+    >
+      <div
+        class="bg-white mt-20 max-w-2xl w-full p-6 rounded-lg shadow-lg text-left"
+      >
+        <div class="flex justify-between items-start mb-4">
+          <h2 class="text-2xl font-bold">{{ selectedJob.title }}</h2>
+          <button
+            @click="closeProposalModal"
+            class="text-gray-400 hover:text-gray-600 font-bold text-xl"
+          >
+            &times;
+          </button>
+        </div>
+        <p class="mb-3">
+          <strong>Description:</strong> {{ selectedJob.description }}
+        </p>
+        <p class="mb-3">
+          <strong>Budget:</strong> KSh {{ selectedJob.pricingRange?.min }} - KSh
+          {{ selectedJob.pricingRange?.max }}
+        </p>
+        <p class="mb-3">
+          <strong>Deadline:</strong> {{ formatDate(selectedJob.deadline) }}
+        </p>
+
+        <textarea
+          v-model="proposalText"
+          placeholder="Enter your full proposal here..."
+          class="w-full border rounded p-2 mb-4"
+          rows="6"
+        ></textarea>
+        <button
+          class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-500 transition"
+          @click="submitProposal(selectedJob._id)"
+        >
+          Submit Proposal
+        </button>
       </div>
     </div>
   </div>
@@ -191,27 +237,57 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
-import { io } from 'socket.io-client';
 
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
-
-// Stats & assignments
 const assignments = ref([]);
 const earnings = ref(0);
-
-// Live jobs
 const availableJobs = ref([]);
 const filters = ref({ keyword: '', category: '', experience: '' });
-const categories = [
-  'AI',
-  'Data Science',
-  'Machine Learning',
-  'Writing',
-  'Research',
-];
+const categories = ref([]);
+const selectedJob = ref(null);
+const proposalText = ref('');
 
+// Format date
+const formatDate = (dateStr) => {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+// Fetch assignments, earnings, and jobs
+const fetchData = async () => {
+  try {
+    const [assignRes, earnRes, jobsRes] = await Promise.all([
+      axios.get('/api/expert/assignments'),
+      axios.get('/api/expert/earnings'),
+      axios.get('/api/expert/jobs'),
+    ]);
+
+    assignments.value = Array.isArray(assignRes.data.assignments)
+      ? assignRes.data.assignments
+      : [];
+    earnings.value = earnRes.data.total || 0;
+    availableJobs.value = Array.isArray(jobsRes.data.jobs)
+      ? jobsRes.data.jobs
+      : [];
+
+    // Extract categories dynamically
+    categories.value = [
+      ...new Set(availableJobs.value.map((j) => j.category).filter(Boolean)),
+    ];
+  } catch (err) {
+    console.error('Error fetching dashboard data:', err);
+    assignments.value = [];
+    earnings.value = 0;
+    availableJobs.value = [];
+  }
+};
+
+// Computed filtered jobs
 const filteredJobs = computed(() => {
-  if (!Array.isArray(availableJobs.value)) return [];
   return availableJobs.value.filter((job) => {
     const matchesKeyword = job.title
       ?.toLowerCase()
@@ -226,43 +302,33 @@ const filteredJobs = computed(() => {
   });
 });
 
-const fetchData = async () => {
+// Proposal modal
+const openProposalModal = (job) => {
+  selectedJob.value = job;
+  proposalText.value = '';
+};
+const closeProposalModal = () => {
+  selectedJob.value = null;
+  proposalText.value = '';
+};
+
+// Submit proposal
+const submitProposal = async (jobId) => {
+  if (!proposalText.value.trim()) return alert('Please enter a proposal');
   try {
-    // Fetch assignments
-    const assignmentsRes = await axios.get('/api/expert/assignments');
-    assignments.value = Array.isArray(assignmentsRes.data.assignments)
-      ? assignmentsRes.data.assignments
-      : [];
-
-    // Fetch earnings
-    const earningsRes = await axios.get('/api/expert/earnings');
-    earnings.value = earningsRes.data.total || 0;
-
-    // Fetch available jobs
-    const jobsRes = await axios.get('/api/expert/jobs');
-    availableJobs.value = Array.isArray(jobsRes.data.jobs)
-      ? jobsRes.data.jobs
-      : [];
+    await axios.post(`/api/expert/jobs/${jobId}/apply`, {
+      coverLetter: proposalText.value,
+      quote: 0, // Optional: add input for quote if needed
+    });
+    alert('Proposal submitted successfully!');
+    closeProposalModal();
   } catch (err) {
-    console.error('Error fetching dashboard data:', err);
-    assignments.value = [];
-    earnings.value = 0;
-    availableJobs.value = [];
+    console.error(err);
+    alert('Failed to submit proposal.');
   }
 };
 
-onMounted(() => {
-  fetchData();
-
-  const socket = io(import.meta.env.VITE_SOCKET_URL);
-  socket.emit('joinRoom', { role: 'expert', userId: user.value.id || '123' });
-
-  socket.on('new-job', (job) => {
-    if (job && job._id) availableJobs.value.unshift(job);
-  });
-});
-
-const viewJob = (id) => alert(`View / Apply job ID: ${id}`);
+onMounted(fetchData);
 </script>
 
 <style scoped>

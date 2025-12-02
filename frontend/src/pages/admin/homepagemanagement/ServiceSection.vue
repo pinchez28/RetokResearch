@@ -14,6 +14,49 @@
       </button>
     </div>
 
+    <!-- Search + Filters -->
+    <div
+      class="mb-6 flex flex-col md:flex-row gap-4 justify-center items-center"
+    >
+      <!-- Search -->
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search services..."
+        class="w-full max-w-md px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+
+      <!-- Branch Filter -->
+      <select
+        v-model="branchFilter"
+        class="px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">All Branches</option>
+        <option
+          v-for="branch in availableBranches"
+          :key="branch"
+          :value="branch"
+        >
+          {{ branch }}
+        </option>
+      </select>
+
+      <!-- Category Filter -->
+      <select
+        v-model="categoryFilter"
+        class="px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">All Categories</option>
+        <option
+          v-for="category in availableCategories"
+          :key="category"
+          :value="category"
+        >
+          {{ category }}
+        </option>
+      </select>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center my-10">
       <div
@@ -21,15 +64,15 @@
       ></div>
     </div>
 
-    <!-- Empty State -->
+    <!-- Empty -->
     <div
-      v-else-if="services.length === 0"
+      v-else-if="filteredServices.length === 0"
       class="text-center text-gray-500 mt-20"
     >
-      No services available yet.
+      No services found.
     </div>
 
-    <!-- List View Grouped by Branch & Category -->
+    <!-- List View -->
     <div v-else>
       <div
         v-for="(branchServices, branchName) in groupedServices"
@@ -62,9 +105,9 @@
                   {{ service.shortDescription || 'No description' }}
                 </p>
               </div>
-              <span class="text-gray-700 font-medium">{{
-                service.priceRange || '-'
-              }}</span>
+              <span class="text-gray-700 font-medium">
+                {{ service.priceRange || '-' }}
+              </span>
             </li>
           </ul>
         </div>
@@ -107,7 +150,7 @@
       </div>
     </div>
 
-    <!-- Admin Modal -->
+    <!-- Modal -->
     <AdminServiceDetailsModal
       v-if="showModal"
       :visible="showModal"
@@ -130,37 +173,76 @@ const loading = ref(false);
 const selectedService = ref(null);
 const showModal = ref(false);
 
-// Pagination state
+const searchQuery = ref('');
+const branchFilter = ref('');
+const categoryFilter = ref('');
+
+// Pagination
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// Fetch services from API
+// Fetch services
 const fetchServices = async () => {
   loading.value = true;
   try {
     const { data } = await api.get('/services');
     services.value = Array.isArray(data) ? data : [];
-    currentPage.value = 1; // reset pagination
-  } catch (err) {
-    console.error('Fetch services error:', err);
+    currentPage.value = 1;
+  } catch {
     toast.error('Failed to fetch services');
   } finally {
     loading.value = false;
   }
 };
 
+// Filtered services
+const filteredServices = computed(() => {
+  let list = services.value;
+
+  // Search filter
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase();
+    list = list.filter((s) =>
+      [s.title, s.shortDescription, s.branch, s.category, s.priceRange]
+        .filter(Boolean)
+        .some((f) => f.toLowerCase().includes(q))
+    );
+  }
+
+  // Branch filter
+  if (branchFilter.value) {
+    list = list.filter((s) => s.branch === branchFilter.value);
+  }
+
+  // Category filter
+  if (categoryFilter.value) {
+    list = list.filter((s) => s.category === categoryFilter.value);
+  }
+
+  return list;
+});
+
+// Dynamic dropdown data
+const availableBranches = computed(() => [
+  ...new Set(services.value.map((s) => s.branch).filter(Boolean)),
+]);
+
+const availableCategories = computed(() => [
+  ...new Set(services.value.map((s) => s.category).filter(Boolean)),
+]);
+
 // Paginated slice
 const paginatedServices = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
-  return services.value.slice(start, start + pageSize.value);
+  return filteredServices.value.slice(start, start + pageSize.value);
 });
 
-// Pagination page count
+// Page count
 const totalPages = computed(() =>
-  Math.ceil(services.value.length / pageSize.value)
+  Math.ceil(filteredServices.value.length / pageSize.value)
 );
 
-// Group paginated services by branch + category
+// Group services
 const groupedServices = computed(() => {
   const groups = {};
   paginatedServices.value.forEach((service) => {
@@ -173,35 +255,29 @@ const groupedServices = computed(() => {
   return groups;
 });
 
-// Open modal for adding/editing service
+// Modal controls
 const openModal = (service = null) => {
   selectedService.value = service ? { ...service } : {};
   showModal.value = true;
 };
 
-// Close modal
 const closeModal = () => {
   selectedService.value = null;
   showModal.value = false;
 };
 
-// Update services after save
 const onSaved = (service) => {
   const index = services.value.findIndex((s) => s._id === service._id);
   if (index > -1) services.value[index] = service;
   else services.value.unshift(service);
-
-  currentPage.value = 1; // reset pagination
+  currentPage.value = 1;
   toast.success('Service saved successfully');
 };
 
-// Remove service after delete
 const onDeleted = (id) => {
   services.value = services.value.filter((s) => s._id !== id);
-
   if (currentPage.value > totalPages.value)
     currentPage.value = totalPages.value;
-
   toast.success('Service deleted successfully');
 };
 

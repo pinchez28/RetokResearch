@@ -16,15 +16,20 @@ export const authMiddleware = async (req, res, next) => {
       const user = await User.findById(decoded.id);
       if (!user) return res.status(401).json({ message: 'Not authorized' });
 
-      if (user.role !== 'admin') await user.populate('profile');
-      req.user = user;
+      // Only populate profile for non-admins
+      if (user.role !== 'Admin') {
+        await user.populate('profile');
+      }
 
+      req.user = user;
       next();
     } catch (err) {
-      console.error(err);
+      console.error('Auth error:', err);
+
       if (err.name === 'TokenExpiredError') {
         return res.status(401).json({ message: 'Token expired' });
       }
+
       return res.status(401).json({ message: 'Not authorized, token invalid' });
     }
   } else {
@@ -34,25 +39,39 @@ export const authMiddleware = async (req, res, next) => {
 
 // ---------------------- ROLE-BASED PROTECTORS ----------------------
 export const protectAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (!req.user || req.user.role !== 'Admin') {
     return res.status(403).json({ message: 'Forbidden: Admins only' });
   }
   next();
 };
 
 export const protectExpert = (req, res, next) => {
-  if (!req.user || req.user.role !== 'expert') {
+  if (!req.user || req.user.role !== 'Expert') {
     return res.status(403).json({ message: 'Forbidden: Experts only' });
   }
   next();
 };
 
 export const protectClient = (req, res, next) => {
-  if (!req.user || req.user.role !== 'client') {
+  if (!req.user || req.user.role !== 'Client') {
     return res.status(403).json({ message: 'Forbidden: Clients only' });
   }
   next();
 };
 
-// ---------------------- ADMIN CHECK (existing) ----------------------
-export const adminOnly = protectAdmin;
+// ---------------------- ROLE CHECK HELPER ----------------------
+export const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: 'Access forbidden: insufficient role',
+      });
+    }
+
+    next();
+  };
+};

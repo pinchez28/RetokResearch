@@ -6,13 +6,14 @@
     <!-- Section Title + CTA -->
     <div class="flex flex-col items-center mb-12 gap-6">
       <h2
-        class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#001BB7] animate-fadeUp text-center drop-shadow-xl"
+        class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#001BB7] animate-fadeUp text-center drop-shadow-xl mb-10"
+        style="font-size: clamp(2rem, 5vw, 4rem)"
       >
         Why Choose Us
       </h2>
 
       <button
-        class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-3xl font-extrabold bg-[#b35905] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#086b11]"
+        class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-3xl font-extrabold bg-[#b35905] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#086b11] animate-bounce"
         @mouseover="hoverCTA"
         @mouseleave="leaveCTA"
         @click="openSignup()"

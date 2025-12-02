@@ -5,7 +5,8 @@
   >
     <!-- Section Title -->
     <h2
-      class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-12 text-center text-white drop-shadow-lg animate-fadeUp"
+      class="animate-fadeUp font-extrabold text-white text-center drop-shadow-lg mb-16"
+      style="font-size: clamp(2rem, 5vw, 4rem)"
     >
       Top Rated Research Experts
     </h2>
