@@ -2,7 +2,6 @@
   <div class="p-6 bg-gray-50 min-h-screen">
     <h1 class="text-3xl font-bold mb-6">Pending Client Jobs</h1>
 
-    ```
     <div v-if="loading" class="text-gray-500 text-center">Loading...</div>
 
     <div v-else>
@@ -17,7 +16,8 @@
           <p class="text-gray-600 mt-1 truncate">{{ job.description }}</p>
           <p class="text-sm text-gray-400 mt-1">
             Submitted by: {{ job.client?.name || 'Unknown Client' }} | Email:
-            {{ job.client?.email || 'N/A' }} | Date:
+            {{ job.client?.email || 'N/A' }} | Phone:
+            {{ job.client?.phone || 'N/A' }} | Date:
             {{ formatDate(job.createdAt) }}
           </p>
         </div>
@@ -57,12 +57,59 @@
             {{ selectedJob.client?.email || 'N/A' }}
           </p>
           <p>
+            <span class="font-semibold">Phone:</span>
+            {{ selectedJob.client?.phone || 'N/A' }}
+          </p>
+          <p>
             <span class="font-semibold">Deadline:</span>
             {{ formatDate(selectedJob.deadline) || 'Not set' }}
           </p>
 
+          <!-- Branch Dropdown -->
+          <div class="mt-4">
+            <label class="font-semibold">Branch</label>
+            <select
+              v-model="adminBranch"
+              class="border rounded px-2 py-1 w-full mt-1"
+            >
+              <option value="">Select Branch</option>
+              <option v-for="b in branches" :key="b" :value="b">{{ b }}</option>
+            </select>
+          </div>
+
+          <!-- Category Dropdown -->
+          <div class="mt-4">
+            <label class="font-semibold">Category</label>
+
+            <!-- Academic -->
+            <div v-if="adminBranch === 'Academic Research'">
+              <select
+                v-model="adminCategory"
+                class="border rounded px-2 py-1 w-full mt-1"
+              >
+                <option value="">Select Category</option>
+                <option v-for="c in academicCategories" :key="c" :value="c">
+                  {{ c }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Industrial -->
+            <div v-if="adminBranch === 'Industrial Research'">
+              <select
+                v-model="adminCategory"
+                class="border rounded px-2 py-1 w-full mt-1"
+              >
+                <option value="">Select Category</option>
+                <option v-for="c in industrialCategories" :key="c" :value="c">
+                  {{ c }}
+                </option>
+              </select>
+            </div>
+          </div>
+
           <!-- Skills input for admin -->
-          <div class="mt-2">
+          <div class="mt-4">
             <label class="font-semibold mb-1"
               >Skills Required (comma-separated)</label
             >
@@ -113,7 +160,6 @@
         </div>
       </div>
     </div>
-    ```
   </div>
 </template>
 
@@ -126,23 +172,50 @@ const pendingJobs = ref([]);
 const loading = ref(true);
 const selectedJob = ref(null);
 
-// Admin-defined price range and skills
+// Admin-defined price, skills, branch, category
 const adminPrice = ref({ min: 0, max: 0 });
 const adminSkills = ref('');
+const adminBranch = ref('');
+const adminCategory = ref('');
 
+// Branches
+const branches = ['Academic Research', 'Industrial Research'];
+
+// Categories
+const academicCategories = [
+  'Essays',
+  'Thesis',
+  'Dissertations',
+  'SPSS',
+  'Statistics',
+  'Research Proposals',
+  'Assignments',
+  'Academic Editing',
+];
+
+const industrialCategories = [
+  'Data Analysis',
+  'AI & Machine Learning',
+  'Business Research',
+  'Technical Writing',
+  'Market Research',
+  'Software Development',
+  'Engineering Reports',
+  'Design & Prototyping',
+];
+
+// Format date
 const formatDate = (dateStr) =>
   dateStr ? new Date(dateStr).toLocaleDateString() : 'N/A';
 
+// Fetch pending jobs
 const fetchPendingJobs = async () => {
   loading.value = true;
   try {
     const response = await adminApi.getPendingJobs();
-    // Backend returns { success: true, data: [...] }
-    pendingJobs.value = Array.isArray(
-      response.data?.data || response.data?.data
-    )
+    pendingJobs.value = Array.isArray(response.data?.data)
       ? response.data.data
-      : response.data || [];
+      : [];
   } catch (err) {
     console.error('Failed to fetch pending jobs:', err);
     Swal.fire('Error', 'Failed to fetch pending jobs', 'error');
@@ -151,36 +224,52 @@ const fetchPendingJobs = async () => {
   }
 };
 
+// Open modal
 const openJobModal = (job) => {
   selectedJob.value = job;
-  adminPrice.value.min = job.clientProposedPrice || 0;
-  adminPrice.value.max = job.clientProposedPrice || 0;
+
+  adminPrice.value.min = job.pricingRange?.min || 0;
+  adminPrice.value.max = job.pricingRange?.max || 0;
+
   adminSkills.value = (job.skillsRequired || []).join(', ');
+
+  adminBranch.value = job.branch || '';
+  adminCategory.value = job.category || '';
 };
 
+// Close modal
 const closeJobModal = () => {
   selectedJob.value = null;
 };
 
+// Approve job
 const approveJob = async (job) => {
+  if (!adminBranch.value) {
+    Swal.fire('Validation Error', 'Please select a branch.', 'warning');
+    return;
+  }
+  if (!adminCategory.value) {
+    Swal.fire('Validation Error', 'Please select a category.', 'warning');
+    return;
+  }
   if (adminPrice.value.min <= 0 || adminPrice.value.max <= 0) {
-    Swal.fire(
-      'Validation Error',
-      'Please enter valid min and max prices.',
-      'warning'
-    );
+    Swal.fire('Validation Error', 'Enter valid price range.', 'warning');
     return;
   }
   if (!adminSkills.value.trim()) {
-    Swal.fire('Validation Error', 'Please specify skills required.', 'warning');
+    Swal.fire('Validation Error', 'Please specify required skills.', 'warning');
     return;
   }
+
   try {
     await adminApi.reviewJob(job._id, {
+      branch: adminBranch.value,
+      category: adminCategory.value,
       minPrice: adminPrice.value.min,
       maxPrice: adminPrice.value.max,
       skillsRequired: adminSkills.value.split(',').map((s) => s.trim()),
     });
+
     pendingJobs.value = pendingJobs.value.filter((j) => j._id !== job._id);
     closeJobModal();
     Swal.fire('Success', 'Job approved successfully', 'success');
@@ -190,6 +279,7 @@ const approveJob = async (job) => {
   }
 };
 
+// Reject job
 const rejectJob = async (job) => {
   const result = await Swal.fire({
     title: 'Are you sure?',
@@ -215,7 +305,8 @@ onMounted(fetchPendingJobs);
 </script>
 
 <style scoped>
-input:focus {
+input:focus,
+select:focus {
   outline: 2px solid #3b82f6;
 }
 </style>

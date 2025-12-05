@@ -6,19 +6,27 @@
   >
     <div class="p-4 flex flex-col gap-2 min-h-[130px]">
       <div class="flex items-start justify-between">
-        <h4 class="text-lg font-extrabold text-gray-900 leading-snug">
+        <!-- Title: Responsive font size using clamp -->
+        <h4
+          class="font-extrabold leading-snug"
+          :style="{ fontSize: 'clamp(1rem, 2vw, 1.5rem)', color: '#111' }"
+        >
           {{ service.title || 'Untitled Service' }}
         </h4>
 
+        <!-- Price: responsive text -->
         <span
-          class="text-green-700 text-sm font-bold bg-white/70 px-2 py-1 rounded-full shadow"
+          class="text-green-700 font-bold bg-white/70 px-2 py-1 rounded-full shadow"
+          :style="{ fontSize: 'clamp(0.75rem, 1.5vw, 1rem)' }"
         >
           {{ formattedPrice }}
         </span>
       </div>
 
+      <!-- Description: responsive -->
       <p
-        class="text-black text-sm leading-snug font-extrabold line-clamp-3 mt-1/2"
+        class="font-extrabold line-clamp-3 mt-1/2"
+        :style="{ fontSize: 'clamp(0.875rem, 1.8vw, 1.125rem)', color: '#000' }"
       >
         {{ service.shortDescription || 'No description available' }}
       </p>
@@ -39,18 +47,11 @@ const props = defineProps({
   },
 });
 
-/*
-  Price Formatter → Always Output:
-  Ksh 1,000 – Ksh 5,000
-  OR
-  Ksh 2,500
-*/
 const formattedPrice = computed(() => {
   if (!props.service.priceRange) return '';
 
   let clean = props.service.priceRange.replace(/\$/g, '').trim();
 
-  // handle ranges like "1000-3000"
   if (clean.includes('-')) {
     const [min, max] = clean.split('-').map((n) => Number(n.trim()));
     if (!isNaN(min) && !isNaN(max)) {
@@ -58,13 +59,11 @@ const formattedPrice = computed(() => {
     }
   }
 
-  // handle single value
   const numeric = Number(clean);
   if (!isNaN(numeric)) {
     return `Ksh ${numeric.toLocaleString()}`;
   }
 
-  // fallback if it's a string
   return `Ksh ${clean}`;
 });
 </script>

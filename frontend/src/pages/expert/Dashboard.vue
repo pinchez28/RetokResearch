@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <!-- Active Jobs -->
+      <!-- Available Jobs -->
       <div
         class="p-6 rounded-2xl flex items-center space-x-4 shadow-lg hover:shadow-2xl transition"
         style="
@@ -67,7 +67,7 @@
           </svg>
         </div>
         <div>
-          <h2 class="font-semibold text-lg">Active Jobs</h2>
+          <h2 class="font-semibold text-lg">Available Jobs</h2>
           <p class="mt-1 text-2xl font-bold">{{ availableJobs.length }}</p>
         </div>
       </div>
@@ -109,15 +109,15 @@
       </div>
     </div>
 
-    <!-- Assignments Table -->
+    <!-- My Assignments Table -->
     <div class="bg-white p-6 rounded-3xl shadow-2xl overflow-x-auto">
-      <h2 class="text-3xl font-bold text-[#001bb7] mb-4">My Assignments</h2>
+      <h2 class="text-3xl font-bold text-[#001BB7] mb-4">My Assignments</h2>
       <table class="w-full table-auto border-collapse text-left">
         <thead>
           <tr class="bg-gray-100">
             <th class="px-4 py-2">Title</th>
             <th class="px-4 py-2">Status</th>
-            <th class="px-4 py-2">Due Date</th>
+            <th class="px-4 py-2">Deadline</th>
             <th class="px-4 py-2">Client</th>
           </tr>
         </thead>
@@ -130,15 +130,15 @@
             <td class="px-4 py-2">{{ assignment.title }}</td>
             <td class="px-4 py-2">{{ assignment.status }}</td>
             <td class="px-4 py-2">{{ formatDate(assignment.dueDate) }}</td>
-            <td class="px-4 py-2">{{ assignment.client }}</td>
+            <td class="px-4 py-2">{{ assignment.client?.name || '-' }}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Available Jobs Section -->
+    <!-- Available Jobs List -->
     <div class="space-y-6">
-      <h1 class="text-3xl font-bold text-[#001bb7]">Available Jobs</h1>
+      <h2 class="text-3xl font-bold text-[#001BB7]">Available Jobs</h2>
 
       <!-- Filters -->
       <div class="flex flex-wrap gap-4 mb-6">
@@ -159,37 +159,40 @@
         </select>
       </div>
 
-      <!-- Job Cards -->
-      <div class="grid md:grid-cols-2 gap-6">
-        <div
-          v-for="job in filteredJobs"
-          :key="job._id"
-          class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
-        >
-          <h2 class="text-xl font-semibold mb-2 text-[#001bb7]">
-            {{ job.title }}
-          </h2>
-          <p class="text-gray-600 mb-2">
-            {{ job.description?.substring(0, 120) }}...
-          </p>
-          <div class="flex justify-between items-center text-sm text-gray-500">
-            <span
-              >Budget: KSh {{ job.pricingRange?.min }} - KSh
-              {{ job.pricingRange?.max }}</span
-            >
-            <span>Deadline: {{ formatDate(job.deadline) }}</span>
-          </div>
-          <button
-            class="mt-4 w-full bg-[#FF8040] text-white py-2 rounded-xl hover:bg-[#0046FF]"
-            @click="openProposalModal(job)"
+      <!-- Jobs as List -->
+      <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+        <ul>
+          <li
+            v-for="job in filteredJobs"
+            :key="job._id"
+            class="flex flex-col md:flex-row justify-between items-start md:items-center px-6 py-4 border-b hover:bg-gray-50 transition"
           >
-            View / Apply
-          </button>
-        </div>
+            <div class="flex-1 mb-2 md:mb-0">
+              <h3 class="text-lg font-semibold text-[#001BB7]">
+                {{ job.title }}
+              </h3>
+              <p class="text-gray-600 text-sm">
+                {{ job.description?.substring(0, 100) }}...
+              </p>
+              <p class="text-gray-500 text-sm mt-1">
+                Budget: KSh {{ job.pricingRange.min }} - KSh
+                {{ job.pricingRange.max }} | Deadline:
+                {{ formatDate(job.deadline) }} | Experience:
+                {{ job.experience }}
+              </p>
+            </div>
+            <button
+              class="mt-2 md:mt-0 bg-[#FF8040] text-white px-4 py-2 rounded-xl hover:bg-[#0046FF]"
+              @click="goToJob(job._id)"
+            >
+              View / Apply
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
 
-    <!-- Proposal Modal -->
+    <!-- Proposal Modal (kept, but not used from dashboard) -->
     <div
       v-if="selectedJob"
       class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start overflow-auto z-50"
@@ -210,11 +213,14 @@
           <strong>Description:</strong> {{ selectedJob.description }}
         </p>
         <p class="mb-3">
-          <strong>Budget:</strong> KSh {{ selectedJob.pricingRange?.min }} - KSh
-          {{ selectedJob.pricingRange?.max }}
+          <strong>Budget:</strong> KSh {{ selectedJob.pricingRange.min }} - KSh
+          {{ selectedJob.pricingRange.max }}
         </p>
         <p class="mb-3">
           <strong>Deadline:</strong> {{ formatDate(selectedJob.deadline) }}
+        </p>
+        <p class="mb-3">
+          <strong>Experience:</strong> {{ selectedJob.experience }}
         </p>
 
         <textarea
@@ -223,8 +229,15 @@
           class="w-full border rounded p-2 mb-4"
           rows="6"
         ></textarea>
+        <input
+          type="number"
+          v-model.number="proposalQuote"
+          placeholder="Enter your quote"
+          class="w-full border rounded p-2 mb-4"
+        />
+
         <button
-          class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-500 transition"
+          class="mt-4 w-full bg-[#FF8040] text-white py-2 rounded-xl hover:bg-[#0046FF]"
           @click="submitProposal(selectedJob._id)"
         >
           Submit Proposal
@@ -235,62 +248,49 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, onMounted, computed } from 'vue';
+import api from '@/utils/api.js';
+import { useRouter } from 'vue-router';
 
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 const assignments = ref([]);
-const earnings = ref(0);
 const availableJobs = ref([]);
-const filters = ref({ keyword: '', category: '', experience: '' });
-const categories = ref([]);
+const earnings = ref(0);
 const selectedJob = ref(null);
 const proposalText = ref('');
+const proposalQuote = ref(0);
+const filters = ref({ keyword: '', category: '', experience: '' });
+const categories = ref([]);
 
-// Format date
-const formatDate = (dateStr) => {
-  if (!dateStr) return '-';
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+const router = useRouter();
+
+const goToJob = (jobId) => {
+  router.push({ name: 'ExpertJobs', query: { jobId } });
 };
 
-// Fetch assignments, earnings, and jobs
-const fetchData = async () => {
+const formatDate = (dateStr) =>
+  dateStr ? new Date(dateStr).toLocaleDateString() : '-';
+
+const fetchDashboard = async () => {
   try {
-    const [assignRes, earnRes, jobsRes] = await Promise.all([
-      axios.get('/api/expert/assignments'),
-      axios.get('/api/expert/earnings'),
-      axios.get('/api/expert/jobs'),
-    ]);
+    const jobsRes = await api.get('/expert/jobs');
+    availableJobs.value = jobsRes.data.jobs || [];
 
-    assignments.value = Array.isArray(assignRes.data.assignments)
-      ? assignRes.data.assignments
-      : [];
-    earnings.value = earnRes.data.total || 0;
-    availableJobs.value = Array.isArray(jobsRes.data.jobs)
-      ? jobsRes.data.jobs
-      : [];
-
-    // Extract categories dynamically
     categories.value = [
       ...new Set(availableJobs.value.map((j) => j.category).filter(Boolean)),
     ];
   } catch (err) {
-    console.error('Error fetching dashboard data:', err);
-    assignments.value = [];
-    earnings.value = 0;
+    console.error('Dashboard fetch error:', err.response?.data || err.message);
     availableJobs.value = [];
   }
 };
 
-// Computed filtered jobs
-const filteredJobs = computed(() => {
-  return availableJobs.value.filter((job) => {
+onMounted(fetchDashboard);
+
+const filteredJobs = computed(() =>
+  availableJobs.value.filter((job) => {
     const matchesKeyword = job.title
-      ?.toLowerCase()
+      .toLowerCase()
       .includes(filters.value.keyword.toLowerCase());
     const matchesCategory = filters.value.category
       ? job.category === filters.value.category
@@ -299,36 +299,37 @@ const filteredJobs = computed(() => {
       ? job.experience === filters.value.experience
       : true;
     return matchesKeyword && matchesCategory && matchesExperience;
-  });
-});
+  })
+);
 
-// Proposal modal
 const openProposalModal = (job) => {
   selectedJob.value = job;
   proposalText.value = '';
+  proposalQuote.value = 0;
 };
 const closeProposalModal = () => {
   selectedJob.value = null;
   proposalText.value = '';
+  proposalQuote.value = 0;
 };
 
-// Submit proposal
 const submitProposal = async (jobId) => {
-  if (!proposalText.value.trim()) return alert('Please enter a proposal');
+  if (!proposalText.value.trim()) return alert('Please enter a proposal.');
   try {
-    await axios.post(`/api/expert/jobs/${jobId}/apply`, {
+    await api.post(`/expert/jobs/${jobId}/apply`, {
       coverLetter: proposalText.value,
-      quote: 0, // Optional: add input for quote if needed
+      quote: proposalQuote.value || 0,
     });
     alert('Proposal submitted successfully!');
     closeProposalModal();
   } catch (err) {
-    console.error(err);
+    console.error(
+      'Error submitting proposal:',
+      err.response?.data || err.message
+    );
     alert('Failed to submit proposal.');
   }
 };
-
-onMounted(fetchData);
 </script>
 
 <style scoped>
@@ -341,9 +342,5 @@ onMounted(fetchData);
 .input:focus {
   border-color: #001bb7;
   box-shadow: 0 0 0 2px rgba(0, 27, 183, 0.2);
-}
-div.bg-white:hover {
-  transform: translateY(-2px);
-  transition: all 0.2s ease;
 }
 </style>

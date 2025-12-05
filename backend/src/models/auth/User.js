@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken'; // ✅ import jwt
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,6 +18,7 @@ const userSchema = new mongoose.Schema(
     profile: {
       type: mongoose.Schema.Types.ObjectId,
       refPath: 'role', // resolves to Client, Expert, or Admin collection
+      required: true, // ✅ profile must exist
     },
   },
   { timestamps: true }
@@ -35,7 +37,7 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Optional: generate JWT from user
+// Generate JWT token
 userSchema.methods.generateToken = function () {
   return jwt.sign(
     { id: this._id, role: this.role, email: this.email },
@@ -44,4 +46,6 @@ userSchema.methods.generateToken = function () {
   );
 };
 
-export default mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+export default User;

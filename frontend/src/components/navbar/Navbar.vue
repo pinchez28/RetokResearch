@@ -2,27 +2,30 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+// State
 const menuOpen = ref(false);
 const route = useRoute();
 const router = useRouter();
 const closeMenu = () => (menuOpen.value = false);
 
+// CTA button styles
 const ctaBg = '#ee6983';
 const ctaColor = '#333';
 const hoverCTA = (e) => (e.target.style.backgroundColor = '#FF9966');
 const leaveCTA = (e) => (e.target.style.backgroundColor = '#FF8040');
 
+// Detect auth pages
 const isAuthPage = computed(() =>
   ['/signup', '/login'].some((p) => route.path.startsWith(p))
 );
 
-// ACTIVE SECTION & SCROLLING
+// Sections for scrolling
 const activeSection = ref('');
 const sectionIds = [
   'hero',
   'about',
   'howitworks',
-  'approved-jobs', // updated ID
+  'approved-jobs',
   'services',
   'why-us',
   'testimonials',
@@ -35,10 +38,11 @@ const sectionLabels = {
   'why-us': 'Why Us',
   testimonials: 'Testimonials',
   about: 'About',
-  'approved-jobs': 'Available Jobs', // updated key
+  'approved-jobs': 'Available Jobs',
   contact: 'Contact Us',
 };
 
+// Handle scroll and update active section
 const handleScroll = () => {
   const scrollPosition = window.scrollY + 150;
   for (const id of sectionIds) {
@@ -53,9 +57,11 @@ const handleScroll = () => {
   }
 };
 
+// Scroll listener
 onMounted(() => window.addEventListener('scroll', handleScroll));
 onUnmounted(() => window.removeEventListener('scroll', handleScroll));
 
+// Scroll to section
 const scrollToSection = async (id) => {
   activeSection.value = id;
   if (route.path !== '/') {
@@ -67,7 +73,7 @@ const scrollToSection = async (id) => {
   closeMenu();
 };
 
-// Signup Overlay (triggered from Navbar button)
+// Open signup overlay
 const openSignup = () => window.openSignupOverlay?.();
 </script>
 
@@ -92,7 +98,6 @@ const openSignup = () => window.openSignupOverlay?.();
         </span>
       </div>
 
-      ```
       <!-- Desktop Links -->
       <template v-if="!isAuthPage">
         <ul
@@ -127,7 +132,7 @@ const openSignup = () => window.openSignupOverlay?.();
           </button>
         </div>
 
-        <!-- Mobile Hamburger -->
+        <!-- Hamburger Menu (all screens < lg) -->
         <button
           @click="menuOpen = !menuOpen"
           class="block lg:hidden focus:outline-none z-50"
@@ -168,51 +173,71 @@ const openSignup = () => window.openSignupOverlay?.();
       </template>
     </div>
 
-    <!-- Mobile Menu -->
-    <transition name="slide">
+    <transition name="overlay-scale">
       <div
         v-if="menuOpen && !isAuthPage"
-        class="fixed inset-0 z-40 flex flex-col bg-[#001bb7] text-[#f5f1dc] p-6 pt-24 lg:hidden overflow-y-auto"
+        class="fixed inset-0 z-40 bg-[#001bb7] bg-opacity-95 flex items-center justify-center p-6 overflow-y-auto"
       >
-        <ul
-          class="flex flex-col space-y-6 font-semibold text-lg sm:text-xl list-none"
-        >
-          <li v-for="id in sectionIds" :key="id">
-            <a
-              class="mobile-link"
-              :class="{ active: activeSection === id }"
-              @click.prevent="scrollToSection(id)"
-            >
-              {{ sectionLabels[id] }}
-            </a>
-          </li>
-          <li>
-            <router-link class="mobile-link" @click="closeMenu" to="/login"
-              >Login</router-link
-            >
-          </li>
-          <li>
-            <button
-              class="mobile-btn block text-center py-2 rounded-md font-semibold"
-              style="background-color: #ff8040; color: #f5f1dc"
-              @click="
-                () => {
-                  openSignup();
-                  closeMenu();
-                }
-              "
-            >
-              Signup
-            </button>
-          </li>
-        </ul>
+        <div class="overlay-content text-center">
+          <ul
+            class="flex flex-col space-y-6 font-semibold text-lg sm:text-xl list-none"
+          >
+            <li v-for="id in sectionIds" :key="id">
+              <a
+                class="mobile-link"
+                :class="{ active: activeSection === id }"
+                @click.prevent="scrollToSection(id)"
+              >
+                {{ sectionLabels[id] }}
+              </a>
+            </li>
+            <li>
+              <router-link class="mobile-link" @click="closeMenu" to="/login"
+                >Login</router-link
+              >
+            </li>
+            <li>
+              <button
+                class="mobile-btn block py-2 px-6 rounded-md font-semibold mx-auto"
+                style="background-color: #ff8040; color: #f5f1dc"
+                @click="
+                  () => {
+                    openSignup();
+                    closeMenu();
+                  }
+                "
+              >
+                Signup
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </transition>
-    ```
   </nav>
 </template>
 
 <style scoped>
+/* Smooth center-scale overlay animation */
+.overlay-scale-enter-active,
+.overlay-scale-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform-origin: center;
+}
+
+.overlay-scale-enter-from,
+.overlay-scale-leave-to {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.overlay-scale-enter-to,
+.overlay-scale-leave-from {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Nav link styles */
 .nav-link,
 .mobile-link {
   color: #f5f1dc;
@@ -235,26 +260,38 @@ const openSignup = () => window.openSignupOverlay?.();
   color: #00e0ff;
 }
 
+/* Mobile button */
 .mobile-btn {
   display: block;
-  width: 100%;
+  width: fit-content;
   text-align: center;
-  padding: 0.5rem 1rem;
   font-weight: 600;
   border-radius: 0.375rem;
   transition: background-color 0.2s;
+  margin: 0 auto;
 }
 
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.28s ease;
-}
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateX(-100%);
-}
+/* Logo styling */
 .logo img {
   cursor: grab;
   user-select: none;
+}
+
+.overlay-scale-enter-active,
+.overlay-scale-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform-origin: center;
+}
+
+.overlay-scale-enter-from,
+.overlay-scale-leave-to {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.overlay-scale-enter-to,
+.overlay-scale-leave-from {
+  transform: scale(1);
+  opacity: 1;
 }
 </style>

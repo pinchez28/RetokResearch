@@ -19,13 +19,13 @@ const jobSchema = new mongoose.Schema({
     required: true,
   },
 
-  // CLIENT FIELDS
+  // Client fields
   title: { type: String, required: true },
   description: { type: String, required: true },
   attachments: [{ type: String }],
-  deadline: { type: Date },
+  deadline: { type: Date, required: true },
 
-  // Client suggests the price (not a range)
+  // Client suggested price (optional)
   clientProposedPrice: { type: Number },
 
   // ADMIN-ONLY FINAL PRICE RANGE
@@ -34,9 +34,19 @@ const jobSchema = new mongoose.Schema({
     max: { type: Number, default: 0 },
   },
 
-  // ADMIN FIELDS
+  // ADMIN sets branch (optional for client)
+  branch: {
+    type: String,
+    enum: [null, 'Academic Research', 'Industrial Research'],
+    default: null,
+    required: false,
+  },
+
+  // ADMIN sets category (depends on branch)
   category: { type: String, default: null },
-  skillsRequired: [{ type: String }], // Admin decides skills
+
+  // ADMIN sets required skills
+  skillsRequired: [{ type: String }],
 
   status: {
     type: String,
@@ -53,10 +63,9 @@ const jobSchema = new mongoose.Schema({
 
   approvedExperts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Expert' }],
 
-  // EXPERT APPLICATIONS
+  // Expert applications
   applications: [applicationSchema],
 
-  // Assigned expert after admin decision
   assignedExpert: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Expert',

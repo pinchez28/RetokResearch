@@ -12,9 +12,28 @@ export const getPendingJobs = async (req, res) => {
   try {
     const pendingJobs = await Job.find({
       status: 'pending_admin_review',
-    }).populate('client', 'name email');
+    })
+      .populate({
+        path: 'client',
+        select: 'name phone user',
+        populate: {
+          path: 'user',
+          model: 'User',
+          select: 'email',
+        },
+      })
+      .lean(); // convert to plain JS objects for easy modification
 
-    res.json({ success: true, data: pendingJobs });
+    // Flatten email to top-level client object
+    const jobsWithEmail = pendingJobs.map((job) => ({
+      ...job,
+      client: {
+        ...job.client,
+        email: job.client.user?.email || 'N/A',
+      },
+    }));
+
+    res.json({ success: true, data: jobsWithEmail });
   } catch (err) {
     console.error('getPendingJobs error:', err);
     res.status(500).json({
@@ -33,7 +52,7 @@ export const getPendingJobs = async (req, res) => {
 export const reviewJob = async (req, res) => {
   try {
     const { jobId } = req.params;
-    let { minPrice, maxPrice, skillsRequired } = req.body;
+    let { minPrice, maxPrice, skillsRequired, branch, category } = req.body;
 
     // Validate Job ID
     if (!jobId.match(/^[0-9a-fA-F]{24}$/)) {
@@ -42,7 +61,7 @@ export const reviewJob = async (req, res) => {
         .json({ success: false, message: 'Invalid Job ID' });
     }
 
-    // Convert skillsRequired to array if string
+    // Convert skills to array if string
     if (typeof skillsRequired === 'string') {
       skillsRequired = skillsRequired
         .split(',')
@@ -50,30 +69,55 @@ export const reviewJob = async (req, res) => {
         .filter(Boolean);
     }
 
-    // Validate inputs
-    if (minPrice == null || maxPrice == null || !skillsRequired?.length) {
+    // Validate new required fields
+    if (!branch) {
       return res.status(400).json({
         success: false,
-        message: 'Admin pricing range and skillsRequired are required.',
-      });
-    }
-    if (minPrice > maxPrice) {
-      return res.status(400).json({
-        success: false,
-        message: 'Minimum price cannot be greater than maximum price.',
+        message: 'Branch is required (Academic or Industrial).',
       });
     }
 
-    // Find job
+    if (!category) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category is required.',
+      });
+    }
+
+    if (minPrice == null || maxPrice == null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Admin pricing min & max are required.',
+      });
+    }
+
+    if (!skillsRequired?.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Skills are required.',
+      });
+    }
+
+    if (minPrice > maxPrice) {
+      return res.status(400).json({
+        success: false,
+        message: 'Min price cannot be greater than max price.',
+      });
+    }
+
+    // Find Job
     const job = await Job.findById(jobId).populate('client', 'name email');
     if (!job) {
       return res.status(404).json({ success: false, message: 'Job not found' });
     }
 
-    // Update job with pricing, skills, status
+    // Update job fields
     job.pricingRange = { min: minPrice, max: maxPrice };
     job.skillsRequired = skillsRequired;
+    job.branch = branch;
+    job.category = category;
     job.status = 'approved_for_bidding';
+
     await job.save();
 
     const io = req.app.get('io');
@@ -83,26 +127,23 @@ export const reviewJob = async (req, res) => {
       await Notification.create({
         userType: 'Client',
         userId: job.client._id,
-        title: 'Job Updated by Admin',
-        message: `Admin set pricing KES ${minPrice}-${maxPrice} and skills: ${skillsRequired.join(
-          ', '
-        )}`,
+        title: 'Job Approved by Admin',
+        message: `Your job "${job.title}" has been approved under ${branch} → ${category}.`,
         jobId: job._id,
         read: false,
       });
 
       await sendEmail({
         to: job.client.email,
-        subject: 'Job Updated by Admin',
-        html: `<h2>Job Updated</h2>
-               <p>Your job "<strong>${
-                 job.title
-               }</strong>" now has pricing KES ${minPrice}-${maxPrice} and required skills: ${skillsRequired.join(
-          ', '
-        )}.</p>
-               <p><a href="https://your-frontend-domain/client/jobs/${
-                 job._id
-               }">View Job</a></p>`,
+        subject: 'Your Job Has Been Approved',
+        html: `
+          <h2>Job Approved</h2>
+          <p>Your job "<strong>${job.title}</strong>" is now approved.</p>
+          <p><strong>Branch:</strong> ${branch}</p>
+          <p><strong>Category:</strong> ${category}</p>
+          <p><strong>Price Range:</strong> KES ${minPrice} - ${maxPrice}</p>
+          <p><strong>Skills Required:</strong> ${skillsRequired.join(', ')}</p>
+        `,
       });
     } catch (e) {
       console.warn(
@@ -111,13 +152,15 @@ export const reviewJob = async (req, res) => {
       );
     }
 
-    // Notify matched experts
+    // Match experts based on SKILLS
     const matchedExperts = await Expert.find({
       skills: { $in: skillsRequired },
     });
+
     job.approvedExperts = matchedExperts.map((e) => e._id);
     await job.save();
 
+    // Notify experts
     for (const ex of matchedExperts) {
       try {
         await Notification.create({
@@ -135,19 +178,22 @@ export const reviewJob = async (req, res) => {
             title: job.title,
             minPrice,
             maxPrice,
+            branch,
+            category,
           });
         }
 
         await sendEmail({
           to: ex.email,
-          subject: 'New Job Matching Your Skills',
-          html: `<h2>New Job Available</h2>
-                 <p><strong>Title:</strong> ${job.title}</p>
-                 <p>Pricing: KES ${minPrice}-${maxPrice}</p>
-                 <p>Required skills: ${skillsRequired.join(', ')}</p>
-                 <p><a href="https://your-frontend-domain/expert/jobs/${
-                   job._id
-                 }">View Job</a></p>`,
+          subject: 'Job Matching Your Skills',
+          html: `
+            <h2>New Job</h2>
+            <p><strong>Title:</strong> ${job.title}</p>
+            <p><strong>Branch:</strong> ${branch}</p>
+            <p><strong>Category:</strong> ${category}</p>
+            <p><strong>Price Range:</strong> KES ${minPrice}-${maxPrice}</p>
+            <p><strong>Skills:</strong> ${skillsRequired.join(', ')}</p>
+          `,
         });
       } catch (e) {
         console.warn(`Failed to notify expert ${ex._id}:`, e.message);
@@ -156,7 +202,7 @@ export const reviewJob = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Job approved and notifications sent',
+      message: 'Job approved & notifications sent',
       job,
     });
   } catch (err) {

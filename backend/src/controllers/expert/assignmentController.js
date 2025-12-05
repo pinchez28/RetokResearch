@@ -1,5 +1,5 @@
 import Assignment from '../../models/expert/Assignment.js';
-import User from '../../models/client/Client.js'; // for populating client info
+import User from '../../models/client/Client.js';
 
 /**
  * @desc Get all assignments for logged-in expert
@@ -11,7 +11,7 @@ export const getExpertAssignments = async (req, res) => {
     const expertId = req.user.id;
 
     const assignments = await Assignment.find({ expert: expertId })
-      .populate('client', 'name email') // populate client name & email
+      .populate('client', 'name email')
       .sort({ createdAt: -1 });
 
     res.json({ success: true, assignments });

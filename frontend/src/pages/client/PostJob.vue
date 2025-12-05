@@ -2,7 +2,6 @@
   <div class="max-w-3xl mx-auto p-6">
     <h1 class="text-2xl font-bold mb-6">Post a New Job</h1>
 
-    ```
     <form @submit.prevent="submitJob" class="space-y-5">
       <!-- Job Title -->
       <div>
@@ -40,6 +39,7 @@
           v-model="deadline"
           type="date"
           class="w-full border rounded p-3"
+          required
         />
       </div>
 
@@ -86,7 +86,6 @@
         {{ loading ? 'Posting...' : 'Post Job' }}
       </button>
     </form>
-    ```
   </div>
 </template>
 
@@ -101,20 +100,16 @@ const attachments = ref([]);
 const budget = ref(null);
 const loading = ref(false);
 
-// Base backend URL from .env
 const backendURL = import.meta.env.VITE_API_BASE_URL;
 
-// Token from localStorage
-const token = localStorage.getItem('token');
-
-// Handle file input
+// Handle file attachments
 const handleAttachments = (e) => {
   attachments.value = Array.from(e.target.files);
 };
 
-// Submit job
+// Submit job function
 const submitJob = async () => {
-  if (!title.value || !description.value) {
+  if (!title.value || !description.value || !deadline.value) {
     alert('Please fill all required fields.');
     return;
   }
@@ -122,34 +117,39 @@ const submitJob = async () => {
   loading.value = true;
 
   try {
+    // Get logged-in user with profile
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+
+    if (!user || !user.profile) {
+      alert('User profile missing. Please login again.');
+      loading.value = false;
+      return;
+    }
+
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('description', description.value);
-    if (deadline.value) formData.append('deadline', deadline.value);
+    formData.append('deadline', deadline.value);
+    formData.append('client', user.profile._id); // <--- Important: link job to client profile
     if (budget.value) formData.append('budget', budget.value);
-
-    attachments.value.forEach((file) => {
-      formData.append('attachments', file); // must match backend field name
-    });
+    attachments.value.forEach((file) => formData.append('attachments', file));
 
     const res = await axios.post(`${backendURL}/api/client/jobs`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
       },
     });
 
-    if (res.data?.success) {
-      title.value = '';
-      description.value = '';
-      deadline.value = '';
-      attachments.value = [];
-      budget.value = null;
+    // Reset form if successful
+    title.value = '';
+    description.value = '';
+    deadline.value = '';
+    attachments.value = [];
+    budget.value = null;
 
-      alert('Job posted successfully! Awaiting admin approval.');
-    } else {
-      alert(res.data?.message || 'Failed to post job.');
-    }
+    alert('Job posted successfully! Awaiting admin approval.');
   } catch (err) {
     console.error('Post job error:', err);
     alert(err.response?.data?.message || 'Error posting job. Try again.');

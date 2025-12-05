@@ -10,9 +10,10 @@ const expertSchema = new mongoose.Schema(
     experience: { type: Number, required: true },
     education: { type: String, required: true },
     certifications: [{ type: String }],
-    portfolio: [String], // optional links
+    portfolio: [String],
     rating: { type: Number, default: 0 },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
+    cvPdf: { type: String }, // <-- new field
   },
   { timestamps: true }
 );

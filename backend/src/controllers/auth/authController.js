@@ -1,17 +1,16 @@
+// ---------------- Signup ----------------
 import User from '../../models/auth/User.js';
 import Client from '../../models/client/Client.js';
 import Expert from '../../models/expert/Expert.js';
-import bcrypt from 'bcryptjs';
 import generateToken from '../../../utils/generateToken.js';
+import bcrypt from 'bcryptjs';
 
-// Map roles to models for populate
+// Map role to model for populate
 const roleModelMap = {
-  Client: 'Client',
-  Expert: 'Expert',
-  // Admin has no profile
+  Client,
+  Expert,
 };
 
-// ---------------- Signup ----------------
 // ---------------- Signup ----------------
 export const signup = async (req, res) => {
   try {
@@ -35,26 +34,32 @@ export const signup = async (req, res) => {
     // Normalize role
     role = role.trim().toLowerCase();
     if (!['client', 'expert'].includes(role)) {
-      return res
-        .status(400)
-        .json({ message: 'Invalid role. Only client or expert allowed.' });
+      return res.status(400).json({
+        message: 'Invalid role. Only client or expert allowed.',
+      });
     }
-    role = role.charAt(0).toUpperCase() + role.slice(1);
+    role = role.charAt(0).toUpperCase() + role.slice(1); // → Client | Expert
 
-    // Check if exists
+    // Check if email exists
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: 'Email already exists.' });
 
-    // Create profile
+    // ----------------------------------
+    // STEP 1: Create Profile FIRST
+    // ----------------------------------
     let profile;
+
     if (role === 'Client') {
-      profile = await Client.create({ name, phone });
+      profile = await Client.create({
+        name,
+        phone,
+      });
     } else if (role === 'Expert') {
       if (!specialization || !bio || !experience || !education || !req.file) {
-        return res
-          .status(400)
-          .json({ message: 'Missing expert-specific fields or photo.' });
+        return res.status(400).json({
+          message: 'Missing expert-specific fields or photo.',
+        });
       }
 
       profile = await Expert.create({
@@ -71,18 +76,26 @@ export const signup = async (req, res) => {
       });
     }
 
-    // Create User — RAW password, model will hash automatically
+    // ----------------------------------
+    // STEP 2: Create User WITH profile
+    // ----------------------------------
     const user = await User.create({
       email,
-      password, // model pre-save hook hashes this
+      password,
       role,
-      profile: profile._id,
+      profile: profile._id, // REQUIRED at creation
     });
 
-    // Token
-    const token = generateToken(user._id, role);
+    // ----------------------------------
+    // STEP 3: Update Profile.user
+    // ----------------------------------
+    profile.user = user._id;
+    await profile.save();
 
-    // Populate profile
+    // Generate token
+    const token = user.generateToken();
+
+    // Return populated data
     const populatedUser = await User.findById(user._id).populate({
       path: 'profile',
       model: roleModelMap[role],
@@ -98,40 +111,31 @@ export const signup = async (req, res) => {
 // ---------------- Login ----------------
 export const login = async (req, res) => {
   try {
-    let { email, password } = req.body;
+    const { email, password } = req.body;
+    if (!email || !password)
+      return res.status(400).json({ message: 'Email and password required.' });
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: 'Email and password are required.' });
-    }
-
-    // Find user
     const user = await User.findOne({ email });
-
     if (!user) return res.status(400).json({ message: 'Invalid credentials.' });
 
-    // Check password
     const isMatch = await user.matchPassword(password);
     if (!isMatch)
       return res.status(400).json({ message: 'Invalid credentials.' });
 
-    // Ensure role is proper case
-    const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
-
     // Generate token
-    const token = generateToken(user._id, role);
+    const token = generateToken(user._id);
 
-    // Populate profile for client/expert
+    // Populate profile for Client/Expert
     let populatedUser = user;
-    if (role !== 'Admin') {
+    if (user.role !== 'Admin') {
+      const roleModel = roleModelMap[user.role];
       populatedUser = await User.findById(user._id).populate({
         path: 'profile',
-        model: roleModelMap[role],
+        model: roleModel,
       });
     }
 
-    res.json({ token, user: populatedUser });
+    res.status(200).json({ token, user: populatedUser });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });

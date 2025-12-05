@@ -1,18 +1,18 @@
 <template>
   <div class="p-6 text-[#001BB7]">
     <!-- PAGE HEADER -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-6 flex-wrap">
       <h1 class="text-3xl font-bold text-[#001BB7]">All Clients</h1>
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Search by name or email..."
+        placeholder="Search by name, email, or phone..."
         class="px-4 py-2 rounded-md border border-gray-300 shadow focus:outline-none focus:ring-2 focus:ring-[#FF8040]"
       />
     </div>
 
     <!-- STATUS FILTER -->
-    <div class="flex gap-3 mb-6">
+    <div class="flex gap-3 mb-6 flex-wrap">
       <button
         v-for="status in statusOptions"
         :key="status.value"
@@ -34,138 +34,209 @@
       </button>
     </div>
 
-    <!-- CLIENT TABLE -->
-    <div class="bg-white rounded-lg shadow p-6">
-      <table class="w-full table-auto border-collapse border border-gray-200">
-        <thead>
-          <tr class="bg-[#FF8040] text-[#001BB7]">
-            <th class="px-4 py-2 border">Name</th>
-            <th class="px-4 py-2 border">Email</th>
-            <th class="px-4 py-2 border">Phone</th>
-            <th class="px-4 py-2 border">Company</th>
-            <th class="px-4 py-2 border">Status</th>
-            <th class="px-4 py-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="client in filteredClients"
-            :key="client.id"
-            class="text-center border-t border-gray-200 hover:bg-gray-100"
+    <!-- CLIENT CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div
+        v-for="client in filteredClients"
+        :key="client._id"
+        @click="openModal(client)"
+        class="cursor-pointer bg-white shadow-md rounded-2xl p-4 hover:shadow-xl transition"
+      >
+        <h2 class="text-xl font-bold text-gray-900 mb-1">{{ client.name }}</h2>
+        <p class="text-gray-900 text-sm">{{ client.email || 'N/A' }}</p>
+        <p class="text-gray-900 text-sm">{{ client.phone || 'N/A' }}</p>
+        <span
+          class="inline-block px-3 py-1 mt-2 rounded-md font-semibold text-sm"
+          :style="{
+            backgroundColor: statusColors[client.status || 'pending'],
+            color: '#001BB7',
+          }"
+        >
+          {{ formatStatus(client.status) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      v-if="selectedClient"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-lg p-6 w-11/12 max-w-4xl space-y-4 overflow-y-auto max-h-[90vh]"
+      >
+        <h2 class="text-2xl font-bold text-gray-900">
+          {{ selectedClient.name }}
+        </h2>
+        <p class="text-gray-900">
+          <strong>Email:</strong> {{ selectedClient.email || 'N/A' }}
+        </p>
+        <p class="text-gray-900">
+          <strong>Phone:</strong> {{ selectedClient.phone || 'N/A' }}
+        </p>
+        <p class="text-gray-900">
+          <strong>Company:</strong> {{ selectedClient.company || 'N/A' }}
+        </p>
+        <p class="text-gray-900">
+          <strong>Status:</strong> {{ formatStatus(selectedClient.status) }}
+        </p>
+        <p class="text-gray-900">
+          <strong>Joined:</strong> {{ formatDate(selectedClient.createdAt) }}
+        </p>
+        <p class="text-gray-900 font-semibold mt-2">All Projects:</p>
+        <ul
+          class="list-disc list-inside text-gray-600 max-h-40 overflow-y-auto"
+        >
+          <li
+            v-for="project in selectedClient.projects || []"
+            :key="project._id"
           >
-            <td class="px-4 py-2">{{ client.name }}</td>
-            <td class="px-4 py-2">{{ client.email }}</td>
-            <td class="px-4 py-2">{{ client.phone || "N/A" }}</td>
-            <td class="px-4 py-2">{{ client.company || "N/A" }}</td>
-            <td class="px-4 py-2">
-              <span
-                class="px-3 py-1 rounded-md font-semibold"
-                :style="{
-                  backgroundColor: statusColors[client.status],
-                  color: '#001BB7',
-                }"
-              >
-                {{ formatStatus(client.status) }}
-              </span>
-            </td>
-            <td class="px-4 py-2">
-              <button
-                class="px-3 py-1 rounded-md font-semibold text-white"
-                style="background-color: #001bb7"
-                @click="viewClient(client.id)"
-              >
-                View
-              </button>
-            </td>
-          </tr>
-          <tr v-if="filteredClients.length === 0">
-            <td colspan="6" class="py-4 text-gray-500">No clients found.</td>
-          </tr>
-        </tbody>
-      </table>
+            {{ project.title || 'Untitled Project' }}
+          </li>
+        </ul>
+
+        <div class="flex flex-col sm:flex-row gap-3 mt-4">
+          <!-- Suspend / Activate -->
+          <button
+            v-if="selectedClient.status !== 'suspended'"
+            @click="updateStatus('suspended')"
+            class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-xl font-semibold transition"
+          >
+            Suspend
+          </button>
+          <button
+            v-else
+            @click="updateStatus('active')"
+            class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl font-semibold transition"
+          >
+            Activate
+          </button>
+
+          <!-- Delete -->
+          <button
+            @click="deleteClient(selectedClient._id)"
+            class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl font-semibold transition"
+          >
+            Delete
+          </button>
+
+          <!-- Close -->
+          <button
+            @click="selectedClient = null"
+            class="flex-1 bg-[#FF8040] hover:bg-[#0046FF] text-white py-2 rounded-xl font-semibold transition"
+          >
+            Close
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
 
-const router = useRouter();
-
-// DUMMY CLIENT DATA
-const clients = ref([
-  {
-    id: 1,
-    name: "John Doe",
-    email: "johndoe@example.com",
-    phone: "+254712345678",
-    company: "Acme Ltd.",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    phone: "",
-    company: "",
-    status: "pending",
-  },
-  {
-    id: 3,
-    name: "Bob Johnson",
-    email: "bob@example.com",
-    phone: "+254711223344",
-    company: "Research Co.",
-    status: "suspended",
-  },
-]);
-
-const searchQuery = ref("");
-const filterStatus = ref("all");
+const clients = ref([]);
+const searchQuery = ref('');
+const filterStatus = ref('all');
+const selectedClient = ref(null);
 
 const statusColors = {
-  active: "#00E676",
-  pending: "#FFA366",
-  suspended: "#FF8040",
+  active: '#00E676',
+  pending: '#FFA366',
+  suspended: '#FF8040',
 };
 
 const statusOptions = [
-  { label: "All", value: "all" },
-  { label: "Active", value: "active" },
-  { label: "Pending", value: "pending" },
-  { label: "Suspended", value: "suspended" },
+  { label: 'All', value: 'all' },
+  { label: 'Active', value: 'active' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Suspended', value: 'suspended' },
 ];
 
-const filteredClients = computed(() => {
-  return clients.value
-    .filter(
-      (client) => filterStatus.value === "all" || client.status === filterStatus.value
-    )
-    .filter(
-      (client) =>
-        client.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+// Fetch clients from API
+const fetchClients = async () => {
+  try {
+    const token = localStorage.getItem('token') || '';
+    const { data } = await axios.get(
+      'http://localhost:4000/api/admin/clients',
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
-});
-
-const formatStatus = (status) => status.charAt(0).toUpperCase() + status.slice(1);
-
-const resetFilters = () => {
-  filterStatus.value = "all";
-  searchQuery.value = "";
+    clients.value = data;
+  } catch (err) {
+    console.error('Failed to fetch clients', err);
+  }
 };
 
-const viewClient = (id) => {
-  router.push(`/admin/clients-management/${id}`);
+onMounted(fetchClients);
+
+const filteredClients = computed(() =>
+  clients.value
+    .filter(
+      (c) => filterStatus.value === 'all' || c.status === filterStatus.value
+    )
+    .filter(
+      (c) =>
+        c.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        (c.email &&
+          c.email.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
+        (c.phone && c.phone.includes(searchQuery.value))
+    )
+);
+
+const formatStatus = (status) =>
+  status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Pending';
+const formatDate = (date) =>
+  date ? new Date(date).toLocaleDateString() : 'N/A';
+
+const resetFilters = () => {
+  filterStatus.value = 'all';
+  searchQuery.value = '';
+};
+
+const openModal = (client) => {
+  selectedClient.value = client;
+};
+
+// Update client status
+const updateStatus = async (status) => {
+  if (!selectedClient.value) return;
+  try {
+    const token = localStorage.getItem('token') || '';
+    const { data } = await axios.put(
+      `http://localhost:4000/api/admin/clients/${selectedClient.value._id}`,
+      { status },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Update modal and list immediately
+    selectedClient.value.status = data.status;
+    const index = clients.value.findIndex((c) => c._id === data._id);
+    if (index !== -1) clients.value[index].status = data.status;
+  } catch (err) {
+    console.error('Failed to update client status', err);
+  }
+};
+
+// Delete client
+const deleteClient = async (id) => {
+  if (!confirm('Are you sure you want to delete this client?')) return;
+  try {
+    const token = localStorage.getItem('token') || '';
+    await axios.delete(`http://localhost:4000/api/admin/clients/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    clients.value = clients.value.filter((c) => c._id !== id);
+    selectedClient.value = null;
+  } catch (err) {
+    console.error('Failed to delete client', err);
+  }
 };
 </script>
 
 <style scoped>
-table th,
-table td {
-  border: 1px solid #ddd;
-  text-align: center;
-  padding: 0.5rem;
-}
+/* Optional: card hover effect handled inline */
 </style>

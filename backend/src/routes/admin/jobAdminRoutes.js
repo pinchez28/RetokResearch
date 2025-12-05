@@ -10,21 +10,21 @@ import {
 
 const router = express.Router();
 
-// GET pending jobs
+// GET /api/admin/jobs/pending - fetch all pending jobs
 router.get('/pending', authMiddleware, authorizeRoles('Admin'), getPendingJobs);
 
-// GET active jobs
+// GET /api/admin/jobs/active - fetch all active jobs
 router.get('/active', authMiddleware, authorizeRoles('Admin'), getActiveJobs);
 
-// PATCH reject job
-router.patch(
+// PUT /api/admin/jobs/reject/:jobId - reject a job
+router.put(
   '/reject/:jobId',
   authMiddleware,
   authorizeRoles('Admin'),
   rejectJob
 );
 
-// PUT review job
+// PUT /api/admin/jobs/:jobId/review - approve/review a job
 router.put(
   '/:jobId/review',
   authMiddleware,

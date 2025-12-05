@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+  <div class="min-h-screen flex items-center justify-center bg-[#F5F1DC] px-4">
     <div class="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 space-y-6">
-      <h2 class="text-3xl font-extrabold text-gray-800 text-center">
+      <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-2">
         Welcome Back
       </h2>
       <p class="text-sm text-gray-500 text-center">
@@ -11,7 +11,7 @@
       <form @submit.prevent="handleLogin" class="space-y-4">
         <!-- Email -->
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700"
+          <label for="email" class="block text-sm font-medium text-gray-900"
             >Email</label
           >
           <input
@@ -19,14 +19,13 @@
             type="email"
             id="email"
             placeholder="you@example.com"
-            class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-            required
+            class="input"
           />
         </div>
 
         <!-- Password -->
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700"
+          <label for="password" class="block text-sm font-medium text-gray-900"
             >Password</label
           >
           <input
@@ -34,8 +33,7 @@
             type="password"
             id="password"
             placeholder="••••••••"
-            class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-            required
+            class="input"
           />
         </div>
 
@@ -48,26 +46,66 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full bg-[#FF8040] hover:bg-[#0046FF] text-white font-semibold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span v-if="loading">Signing in...</span>
           <span v-else>Login</span>
         </button>
-
-        <p class="text-sm text-gray-500 mt-4 text-center">
-          Don't have an account?
-          <router-link to="/signup/client" class="text-blue-600 hover:underline"
-            >Signup</router-link
-          >
-        </p>
-
-        <router-link
-          :to="{ name: 'Home' }"
-          class="block text-center text-gray-500 mt-2"
-        >
-          Back to Home
-        </router-link>
       </form>
+
+      <!-- Sign Up link triggers modal -->
+      <p class="text-sm text-gray-500 mt-4 text-center">
+        Don't have an account?
+        <button
+          type="button"
+          @click="showSignupModal = true"
+          class="text-[#0046FF] hover:underline font-semibold"
+        >
+          Signup
+        </button>
+      </p>
+
+      <router-link
+        :to="{ name: 'Home' }"
+        class="block text-center text-gray-500 mt-2"
+      >
+        Back to Home
+      </router-link>
+    </div>
+
+    <!-- Signup Modal -->
+    <div
+      v-if="showSignupModal"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-lg p-6 w-80 text-center space-y-4"
+      >
+        <h3 class="text-xl font-bold text-gray-900">Sign up as:</h3>
+        <div class="flex flex-col gap-3 mt-4">
+          <button
+            type="button"
+            @click="redirectToSignup('client')"
+            class="bg-[#FF8040] hover:bg-[#0046FF] text-white py-2 rounded-xl font-semibold transition"
+          >
+            Client
+          </button>
+          <button
+            type="button"
+            @click="redirectToSignup('expert')"
+            class="bg-[#FF8040] hover:bg-[#0046FF] text-white py-2 rounded-xl font-semibold transition"
+          >
+            Service Provider
+          </button>
+        </div>
+        <button
+          type="button"
+          @click="showSignupModal = false"
+          class="mt-4 text-gray-500 hover:underline"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -83,6 +121,7 @@ const email = ref('');
 const password = ref('');
 const loading = ref(false);
 const error = ref('');
+const showSignupModal = ref(false);
 
 const handleLogin = async () => {
   error.value = '';
@@ -94,17 +133,14 @@ const handleLogin = async () => {
   loading.value = true;
 
   try {
-    // Send request to backend login endpoint
     const { data } = await api.post('/auth/login', {
       email: email.value,
       password: password.value,
     });
 
-    // Save JWT and user info
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
 
-    // Redirect based on role
     switch (data.user.role) {
       case 'Admin':
         router.push('/admin');
@@ -125,6 +161,12 @@ const handleLogin = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const redirectToSignup = (role) => {
+  showSignupModal.value = false;
+  if (role === 'client') router.push('/signup/client');
+  if (role === 'expert') router.push('/signup/expert');
 };
 </script>
 

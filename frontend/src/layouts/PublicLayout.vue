@@ -1,12 +1,10 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-b from-primary via-primaryLight to-neutralSoft flex flex-col"
-  >
+  <div class="min-h-screen flex flex-col">
     <!-- Navbar -->
     <Navbar :role="'public'" />
 
-    <!-- Page content injected here -->
-    <main class="flex-1">
+    <!-- Page content -->
+    <main class="flex-1 flex flex-col">
       <router-view />
     </main>
 
@@ -16,6 +14,6 @@
 </template>
 
 <script setup>
-import Navbar from '@/components/navbar/Navbar.vue';
-import Footer from '@/components/footer/Footer.vue';
+import Navbar from "@/components/navbar/Navbar.vue";
+import Footer from "@/components/footer/Footer.vue";
 </script>

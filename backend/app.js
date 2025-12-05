@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 
 // -------------------- IMPORT MODELS --------------------
 import './src/models/auth/User.js';
@@ -8,6 +9,7 @@ import './src/models/client/Client.js';
 import './src/models/expert/Expert.js';
 import './src/models/Notification.js';
 import './src/models/client/Job.js';
+import './src/models/expert/Assignment.js';
 
 // -------------------- IMPORT ROUTES --------------------
 import notificationRoutes from './src/routes/notificationRoutes.js';
@@ -21,10 +23,13 @@ import expertJobRoutes from './src/routes/expert/jobRoutes.js';
 import assignmentRoutes from './src/routes/expert/assignmentRoutes.js';
 import guestJobRoutes from './src/routes/guest/jobRoutes.js';
 
+// -------------------- Admin --------------------
+import adminClientRoutes from './src/routes/admin/adminClientRoutes.js';
+
 dotenv.config();
 const app = express();
 
-// -------------------- CORS SETUP (Express HTTP) --------------------
+// -------------------- CORS --------------------
 const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(
   cors({
@@ -33,9 +38,14 @@ app.use(
   })
 );
 
+// --------------------- ADMIN --------------------------------
+app.use('/api/admin/clients', adminClientRoutes);
+
 // -------------------- BODY PARSER --------------------
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+
+// -------------------- STATIC FOLDER --------------------
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // -------------------- API ROUTES --------------------
 // Notifications
@@ -57,7 +67,7 @@ app.use('/api/client/jobs', clientJobRoutes);
 app.use('/api/admin/jobs', adminJobRoutes);
 
 // Expert
-app.use('/api/expert/jobs', expertJobRoutes);
+app.use('/api/expert', expertJobRoutes);
 app.use('/api/expert/assignments', assignmentRoutes);
 
 // -------------------- 404 HANDLER --------------------

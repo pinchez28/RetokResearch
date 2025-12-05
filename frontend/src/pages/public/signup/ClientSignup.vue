@@ -1,12 +1,14 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
     <div class="bg-gray-50 p-8 rounded-2xl shadow-lg w-full max-w-md space-y-6">
-      <h2 class="text-2xl font-bold mb-6 text-center">Sign Up as Client</h2>
+      <h2 class="text-3xl md:text-4xl font-extrabold mb-6 text-center text-gray-900">
+        Sign Up as Client
+      </h2>
 
       <form @submit.prevent="handleSignup" class="space-y-4">
         <!-- Name -->
         <div>
-          <label class="block mb-1 font-medium text-gray-700">Full Name</label>
+          <label class="block mb-1 font-semibold text-gray-900">Full Name</label>
           <input
             v-model="form.name"
             type="text"
@@ -18,7 +20,7 @@
 
         <!-- Email -->
         <div>
-          <label class="block mb-1 font-medium text-gray-700">Email</label>
+          <label class="block mb-1 font-semibold text-gray-900">Email</label>
           <input
             v-model="form.email"
             type="email"
@@ -30,7 +32,7 @@
 
         <!-- Phone -->
         <div>
-          <label class="block mb-1 font-medium text-gray-700">Phone</label>
+          <label class="block mb-1 font-semibold text-gray-900">Phone</label>
           <input
             v-model="form.phone"
             type="tel"
@@ -42,7 +44,7 @@
 
         <!-- Password -->
         <div>
-          <label class="block mb-1 font-medium text-gray-700">Password</label>
+          <label class="block mb-1 font-semibold text-gray-900">Password</label>
           <input
             v-model="form.password"
             type="password"
@@ -54,9 +56,7 @@
 
         <!-- Confirm Password -->
         <div>
-          <label class="block mb-1 font-medium text-gray-700"
-            >Confirm Password</label
-          >
+          <label class="block mb-1 font-semibold text-gray-900">Confirm Password</label>
           <input
             v-model="form.confirmPassword"
             type="password"
@@ -66,15 +66,12 @@
           />
         </div>
 
-        <!-- Login link before signup form -->
+        <!-- Login link -->
         <div class="text-center mb-4 text-sm">
           Already have an account?
-          <router-link
-            to="/login"
-            class="text-blue-600 hover:underline font-semibold"
+          <router-link to="/login" class="text-blue-600 hover:underline font-semibold"
+            >Login</router-link
           >
-            Login
-          </router-link>
         </div>
 
         <!-- Error -->
@@ -86,44 +83,47 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-blue-600 text-white py-3 rounded-xl shadow-md hover:shadow-lg transition disabled:opacity-50 font-semibold"
+          class="w-full bg-[#FF8040] text-white py-3 rounded-xl shadow-md hover:shadow-lg hover:bg-[#0046FF] transition disabled:opacity-50 font-semibold"
         >
           <span v-if="loading">Signing up...</span>
           <span v-else>Sign Up</span>
         </button>
       </form>
 
-      <!-- Back to Home link after signup button -->
+      <!-- Back to Home -->
       <div class="text-center mt-4 text-sm">
-        <router-link to="/" class="text-gray-600 hover:underline">
-          Back to Home
-        </router-link>
+        <router-link to="/" class="text-gray-600 hover:underline"
+          >Back to Home</router-link
+        >
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { ref } from "vue";
+import axios from "axios";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 
 const form = ref({
-  name: '',
-  email: '',
-  phone: '',
-  password: '',
-  confirmPassword: '',
+  name: "",
+  email: "",
+  phone: "",
+  password: "",
+  confirmPassword: "",
 });
 
 const loading = ref(false);
-const error = ref('');
+const error = ref("");
+
+const role = "Client"; // sent to backend
 
 const handleSignup = async () => {
-  error.value = '';
+  error.value = "";
 
+  // --- Frontend validation
   if (
     !form.value.name ||
     !form.value.email ||
@@ -131,37 +131,50 @@ const handleSignup = async () => {
     !form.value.password ||
     !form.value.confirmPassword
   ) {
-    error.value = 'Please fill all required fields.';
+    error.value = "Please fill all required fields.";
     return;
   }
 
   if (form.value.password !== form.value.confirmPassword) {
-    error.value = 'Passwords do not match.';
+    error.value = "Passwords do not match.";
     return;
   }
 
   loading.value = true;
 
   try {
+    // --- Payload for backend
     const payload = {
       name: form.value.name,
       email: form.value.email,
       phone: form.value.phone,
       password: form.value.password,
+      role,
     };
 
     const { data } = await axios.post(
-      'http://localhost:4000/api/auth/clients/signup',
+      "http://localhost:4000/api/auth/clients/signup",
       payload
     );
 
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
+    // --- Save token & user safely
+    if (data.token && data.user) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-    router.push('/client');
+      // --- Navigate to client dashboard
+      router.push("/client");
+    } else {
+      error.value = "Signup failed. Invalid server response.";
+    }
   } catch (err) {
     console.error(err);
-    error.value = err.response?.data?.message || 'Signup failed. Try again.';
+
+    // --- Safely read backend message
+    error.value =
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      "Signup failed. Please try again.";
   } finally {
     loading.value = false;
   }
@@ -172,15 +185,14 @@ const handleSignup = async () => {
 .input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db; /* light gray border */
+  border: 2px solid #d1d5db;
   border-radius: 0.75rem;
   outline: none;
-  background-color: #f9fafb; /* light field bg */
-  transition: box-shadow 0.2s, border-color 0.2s, background-color 0.2s;
+  background-color: #ffffff;
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 .input:focus {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-color: #3b82f6;
-  background-color: #ffffff;
+  border-color: #001bb7;
 }
 </style>

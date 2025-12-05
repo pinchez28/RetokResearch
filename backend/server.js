@@ -22,7 +22,7 @@ connectDB();
 const PORT = process.env.PORT || 4000;
 const server = http.createServer(app);
 
-// Socket.IO CORS (separate from Express)
+// Socket.IO
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -30,18 +30,18 @@ const io = new Server(server, {
     credentials: true,
   },
 });
-app.set('io', io);
+app.set('io', io); // make io available in controllers
 
 // -------------------- SOCKET CONNECTION --------------------
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log('User connected:', socket.id);
 
   socket.on('joinRoom', ({ userId, role }) => {
     if (role === 'admin') socket.join('admins');
     else if (role === 'client') socket.join(`client_${userId}`);
     else if (role === 'expert') {
       socket.join(`expert_${userId}`);
-      socket.join('experts'); // global expert broadcast room
+      socket.join('experts'); // broadcast to all experts if needed
     }
     console.log(`${role} ${userId} joined their room`);
   });
