@@ -89,7 +89,7 @@
 
         <div class="flex justify-center">
           <button
-            class="px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-500 transition"
+            class="bg-[#FF8040] hover:bg-[#2aac10] hover:text-white text-gray-900 font-extrabold py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl disabled:opacity-50 animate-bounce text-lg"
             @click="redirectToExpertSignup"
           >
             Perform This Work

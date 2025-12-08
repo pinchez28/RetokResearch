@@ -211,7 +211,7 @@ const submitGuestRequest = async () => {
           </div>
 
           <!-- Proposed Price -->
-          <div>
+          <!-- <div>
             <label class="font-semibold text-gray-900 mb-1 block"
               >Proposed Price (Optional)</label
             >
@@ -221,13 +221,14 @@ const submitGuestRequest = async () => {
               placeholder="Optional"
               class="w-full border p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
             />
-          </div>
+          </div> -->
+          -->
 
           <!-- Submit -->
           <button
             type="submit"
             :disabled="loading"
-            class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl w-full"
+            class="bg-[#FF8040] hover:bg-[#2aac10] hover:text-white text-gray-900 font-extrabold py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl disabled:opacity-50 animate-bounce text-lg"
           >
             {{ loading ? 'Submitting...' : 'Submit Request' }}
           </button>

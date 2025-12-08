@@ -47,7 +47,7 @@
         >
           <!-- Start Now Button -->
           <button
-            class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 rounded-xl text-lg font-bold bg-[#ff8040] text-[#333] shadow-xl hover:bg-[#ffa366] transition transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#ffb38a] animate-bounce"
+            class="bg-[#FF8040] hover:bg-[#2aac10] hover:text-white text-gray-900 font-extrabold uppercase py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl disabled:opacity-50 animate-bounce text-lg"
             @click="() => openSignup('client')"
           >
             Start Now

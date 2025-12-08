@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/auth/User.js';
 
-// ---------------------- UNIVERSAL PROTECT ----------------------
+// ---------------------- UNIVERSAL AUTH MIDDLEWARE ----------------------
 export const authMiddleware = async (req, res, next) => {
   let token;
 
@@ -16,7 +16,7 @@ export const authMiddleware = async (req, res, next) => {
       const user = await User.findById(decoded.id);
       if (!user) return res.status(401).json({ message: 'Not authorized' });
 
-      // Only populate profile for non-admins
+      // Optional: populate profile for non-admin users
       if (user.role !== 'Admin') {
         await user.populate('profile');
       }
@@ -37,7 +37,7 @@ export const authMiddleware = async (req, res, next) => {
   }
 };
 
-// ---------------------- ROLE-BASED PROTECTORS ----------------------
+// ---------------------- ROLE-BASED MIDDLEWARE ----------------------
 export const protectAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'Admin') {
     return res.status(403).json({ message: 'Forbidden: Admins only' });

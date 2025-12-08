@@ -19,7 +19,8 @@
     <section
       class="py-24 max-w-3xl mx-auto px-6 bg-gray-300 rounded-3xl shadow-2xl shadow-black/20 animate-fadeUp delay-300 transform hover:-translate-y-1 transition-all duration-300 -mt-20 relative z-10"
     >
-      <form @submit.prevent="submitContactForm" class="grid gap-6">
+      <form @submit.prevent="submitContactForm" class="grid gap-6 mb-4">
+        <label class="font-semibold text-gray-900 block">Yor Full Name</label>
         <input
           v-model="name"
           type="text"
@@ -27,6 +28,8 @@
           required
           class="border border-gray-300 p-4 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow-lg"
         />
+
+        <label class="font-semibold text-gray-900 block">Your Email</label>
         <input
           v-model="email"
           type="email"
@@ -34,6 +37,7 @@
           required
           class="border border-gray-300 p-4 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-[#0046FF] shadow-lg"
         />
+        <label class="font-semibold text-gray-900 block">Your Message</label>
         <textarea
           v-model="message"
           placeholder="Your Message"
@@ -44,7 +48,7 @@
         <button
           type="submit"
           :disabled="loading"
-          class="bg-[#FF8040] hover:bg-[#FFA366] text-[#333] font-bold py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl disabled:opacity-50"
+          class="bg-[#FF8040] hover:bg-[#2aac10] hover:text-white text-gray-900 font-extrabold uppercase py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl disabled:opacity-50 animate-bounce text-lg"
         >
           {{ loading ? 'Sending...' : 'Send Message' }}
         </button>

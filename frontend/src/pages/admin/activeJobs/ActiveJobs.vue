@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 text-[#001BB7]">
+  <div class="text-[#001BB7]">
     <!-- PAGE HEADER -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-[#001BB7]">Active Jobs</h1>

@@ -3,65 +3,37 @@ import Expert from '../../models/expert/Expert.js';
 import Notification from '../../models/Notification.js';
 import sendEmail from '../../../utils/sendEmail.js';
 
-/**
- * Get all pending jobs (for admin review)
- * @route GET /api/admin/jobs/pending
- * @access Private (admin only)
- */
+// ---------------- Get Pending Jobs ----------------
 export const getPendingJobs = async (req, res) => {
   try {
-    const pendingJobs = await Job.find({
-      status: 'pending_admin_review',
-    })
-      .populate({
-        path: 'client',
-        select: 'name phone user',
-        populate: {
-          path: 'user',
-          model: 'User',
-          select: 'email',
-        },
-      })
-      .lean(); // convert to plain JS objects for easy modification
+    const pendingJobs = await Job.find({ status: 'pending_admin_review' })
+      .populate({ path: 'client', populate: { path: 'user', select: 'email' } })
+      .lean({ virtuals: true });
 
-    // Flatten email to top-level client object
-    const jobsWithEmail = pendingJobs.map((job) => ({
-      ...job,
-      client: {
-        ...job.client,
-        email: job.client.user?.email || 'N/A',
-      },
-    }));
-
-    res.json({ success: true, data: jobsWithEmail });
+    res.json({ success: true, data: pendingJobs });
   } catch (err) {
     console.error('getPendingJobs error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch pending jobs',
-      error: err.message,
-    });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: 'Failed to fetch pending jobs',
+        error: err.message,
+      });
   }
 };
 
-/**
- * Admin reviews a job, sets required pricing range & skills, notifies experts & client
- * @route PUT /api/admin/jobs/:jobId/review
- * @access Private (admin only)
- */
+// ---------------- Review Job ----------------
 export const reviewJob = async (req, res) => {
   try {
     const { jobId } = req.params;
     let { minPrice, maxPrice, skillsRequired, branch, category } = req.body;
 
-    // Validate Job ID
-    if (!jobId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!jobId.match(/^[0-9a-fA-F]{24}$/))
       return res
         .status(400)
         .json({ success: false, message: 'Invalid Job ID' });
-    }
 
-    // Convert skills to array if string
     if (typeof skillsRequired === 'string') {
       skillsRequired = skillsRequired
         .split(',')
@@ -69,60 +41,47 @@ export const reviewJob = async (req, res) => {
         .filter(Boolean);
     }
 
-    // Validate new required fields
-    if (!branch) {
-      return res.status(400).json({
-        success: false,
-        message: 'Branch is required (Academic or Industrial).',
-      });
+    if (
+      !branch ||
+      !category ||
+      minPrice == null ||
+      maxPrice == null ||
+      !skillsRequired.length
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message:
+            'All fields (branch, category, prices, skills) are required.',
+        });
     }
 
-    if (!category) {
-      return res.status(400).json({
-        success: false,
-        message: 'Category is required.',
-      });
-    }
+    if (minPrice > maxPrice)
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: 'Min price cannot be greater than max price.',
+        });
 
-    if (minPrice == null || maxPrice == null) {
-      return res.status(400).json({
-        success: false,
-        message: 'Admin pricing min & max are required.',
-      });
-    }
-
-    if (!skillsRequired?.length) {
-      return res.status(400).json({
-        success: false,
-        message: 'Skills are required.',
-      });
-    }
-
-    if (minPrice > maxPrice) {
-      return res.status(400).json({
-        success: false,
-        message: 'Min price cannot be greater than max price.',
-      });
-    }
-
-    // Find Job
-    const job = await Job.findById(jobId).populate('client', 'name email');
-    if (!job) {
+    const job = await Job.findById(jobId).populate({
+      path: 'client',
+      populate: { path: 'user', select: 'email' },
+    });
+    if (!job)
       return res.status(404).json({ success: false, message: 'Job not found' });
-    }
 
-    // Update job fields
     job.pricingRange = { min: minPrice, max: maxPrice };
     job.skillsRequired = skillsRequired;
     job.branch = branch;
     job.category = category;
     job.status = 'approved_for_bidding';
-
     await job.save();
 
     const io = req.app.get('io');
 
-    // Notify client
+    // Notify Client
     try {
       await Notification.create({
         userType: 'Client',
@@ -134,33 +93,25 @@ export const reviewJob = async (req, res) => {
       });
 
       await sendEmail({
-        to: job.client.email,
+        to: job.client.user.email,
         subject: 'Your Job Has Been Approved',
-        html: `
-          <h2>Job Approved</h2>
-          <p>Your job "<strong>${job.title}</strong>" is now approved.</p>
-          <p><strong>Branch:</strong> ${branch}</p>
-          <p><strong>Category:</strong> ${category}</p>
-          <p><strong>Price Range:</strong> KES ${minPrice} - ${maxPrice}</p>
-          <p><strong>Skills Required:</strong> ${skillsRequired.join(', ')}</p>
-        `,
+        html: `<h2>Job Approved</h2><p>Title: ${
+          job.title
+        }</p><p>Branch: ${branch}</p><p>Category: ${category}</p><p>Price Range: KES ${minPrice}-${maxPrice}</p><p>Skills: ${skillsRequired.join(
+          ', '
+        )}</p>`,
       });
     } catch (e) {
-      console.warn(
-        'Failed to notify client via email/notification:',
-        e.message
-      );
+      console.warn('Failed to notify client:', e.message);
     }
 
-    // Match experts based on SKILLS
+    // Match Experts
     const matchedExperts = await Expert.find({
       skills: { $in: skillsRequired },
     });
-
     job.approvedExperts = matchedExperts.map((e) => e._id);
     await job.save();
 
-    // Notify experts
     for (const ex of matchedExperts) {
       try {
         await Notification.create({
@@ -171,8 +122,7 @@ export const reviewJob = async (req, res) => {
           jobId: job._id,
           read: false,
         });
-
-        if (io) {
+        if (io)
           io.to(`expert_${ex._id}`).emit('expert:new_job', {
             jobId: job._id,
             title: job.title,
@@ -181,57 +131,51 @@ export const reviewJob = async (req, res) => {
             branch,
             category,
           });
-        }
-
         await sendEmail({
           to: ex.email,
           subject: 'Job Matching Your Skills',
-          html: `
-            <h2>New Job</h2>
-            <p><strong>Title:</strong> ${job.title}</p>
-            <p><strong>Branch:</strong> ${branch}</p>
-            <p><strong>Category:</strong> ${category}</p>
-            <p><strong>Price Range:</strong> KES ${minPrice}-${maxPrice}</p>
-            <p><strong>Skills:</strong> ${skillsRequired.join(', ')}</p>
-          `,
+          html: `<p>Title: ${
+            job.title
+          }</p><p>Branch: ${branch}</p><p>Category: ${category}</p><p>Price Range: KES ${minPrice}-${maxPrice}</p><p>Skills: ${skillsRequired.join(
+            ', '
+          )}</p>`,
         });
       } catch (e) {
         console.warn(`Failed to notify expert ${ex._id}:`, e.message);
       }
     }
 
-    return res.json({
+    res.json({
       success: true,
       message: 'Job approved & notifications sent',
       job,
     });
   } catch (err) {
     console.error('reviewJob error:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to review job',
-      error: err.message,
-    });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: 'Failed to review job',
+        error: err.message,
+      });
   }
 };
 
-/**
- * Reject job
- * @route PUT /api/admin/jobs/:jobId/reject
- * @access Private (admin only)
- */
+// ---------------- Reject Job ----------------
 export const rejectJob = async (req, res) => {
   try {
     const { jobId } = req.params;
-    const job = await Job.findById(jobId).populate('client', 'name email');
-    if (!job) {
+    const job = await Job.findById(jobId).populate({
+      path: 'client',
+      populate: { path: 'user', select: 'email' },
+    });
+    if (!job)
       return res.status(404).json({ success: false, message: 'Job not found' });
-    }
 
     job.status = 'rejected';
     await job.save();
 
-    // Notify client
     await Notification.create({
       userType: 'Client',
       userId: job.client._id,
@@ -242,10 +186,9 @@ export const rejectJob = async (req, res) => {
     });
 
     await sendEmail({
-      to: job.client.email,
+      to: job.client.user.email,
       subject: 'Job Rejected by Admin',
-      html: `<h2>Job Rejected</h2>
-             <p>Your job "<strong>${job.title}</strong>" was rejected by the admin.</p>`,
+      html: `<h2>Job Rejected</h2><p>Title: ${job.title}</p>`,
     });
 
     res.json({
@@ -255,35 +198,35 @@ export const rejectJob = async (req, res) => {
     });
   } catch (err) {
     console.error('rejectJob error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to reject job',
-      error: err.message,
-    });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: 'Failed to reject job',
+        error: err.message,
+      });
   }
 };
 
-/**
- * Get all active jobs
- * @route GET /api/admin/jobs/active
- * @access Private (admin only)
- */
+// ---------------- Get Active Jobs ----------------
 export const getActiveJobs = async (req, res) => {
   try {
     const activeJobs = await Job.find({
       status: { $in: ['approved_for_bidding', 'assigned', 'in_progress'] },
     })
-      .populate('client', 'name email')
+      .populate({ path: 'client', populate: { path: 'user', select: 'email' } })
       .populate('approvedExperts', 'name email')
-      .lean();
+      .lean({ virtuals: true });
 
     res.json({ success: true, data: activeJobs });
   } catch (err) {
     console.error('getActiveJobs error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch active jobs',
-      error: err.message,
-    });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: 'Failed to fetch active jobs',
+        error: err.message,
+      });
   }
 };

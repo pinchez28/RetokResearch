@@ -84,7 +84,7 @@ const handleRequest = () => {
         <div class="text-center mt-6">
           <button
             @click="handleRequest"
-            class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-300"
+            class="bg-[#FF8040] hover:bg-[#2aac10] hover:text-white text-gray-900 font-extrabold animate-bounce text-lg py-3 px-6 rounded-xl shadow-lg transition-all duration-300"
           >
             Request This Research
           </button>

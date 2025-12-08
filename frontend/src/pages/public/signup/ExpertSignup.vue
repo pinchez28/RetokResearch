@@ -1,9 +1,18 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-12 mt-10">
-    <div class="bg-gray-50 p-8 rounded-2xl shadow-lg w-full max-w-4xl space-y-6">
-      <h2 class="text-3xl md:text-4xl font-extrabold mb-2 mt-4 text-center text-gray-900">
-        Sign Up as Service Provider
+  <div
+    class="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-12 mt-20"
+  >
+    <div
+      class="bg-gray-900 p-8 rounded-2xl shadow-lg w-full max-w-4xl space-y-6"
+    >
+      <h2
+        class="text-3xl md:text-4xl font-extrabold mb-2 mt-4 text-center text-white"
+      >
+        Service Provider Signup
       </h2>
+      <p class="text-sm text-white text-center">
+        Sign up to Collaborate and Earn.
+      </p>
 
       <form
         @submit.prevent="handleSignup"
@@ -12,7 +21,7 @@
       >
         <!-- Name -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Full Name</label>
+          <label class="block mb-1 font-extrabold text-white">Full Name</label>
           <input
             v-model="form.name"
             type="text"
@@ -24,7 +33,7 @@
 
         <!-- Email -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Email</label>
+          <label class="block mb-1 font-extrabold text-white">Email</label>
           <input
             v-model="form.email"
             type="email"
@@ -36,7 +45,7 @@
 
         <!-- Phone -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Phone</label>
+          <label class="block mb-1 font-extrabold text-white">Phone</label>
           <input
             v-model="form.phone"
             type="tel"
@@ -48,7 +57,9 @@
 
         <!-- Profile Photo -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Profile Photo</label>
+          <label class="block mb-1 font-extrabold text-white"
+            >Profile Photo</label
+          >
           <input
             type="file"
             accept="image/*"
@@ -60,7 +71,9 @@
 
         <!-- Specialization -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Specialization</label>
+          <label class="block mb-1 font-extrabold text-white"
+            >Specialization</label
+          >
           <input
             v-model="form.specialization"
             type="text"
@@ -69,20 +82,11 @@
           />
         </div>
 
-        <!-- Bio -->
-        <div>
-          <label class="block mb-1 font-semibold text-gray-900">Bio</label>
-          <textarea
-            v-model="form.bio"
-            rows="3"
-            placeholder="Short professional bio"
-            class="input"
-          ></textarea>
-        </div>
-
         <!-- Experience -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Experience (years)</label>
+          <label class="block mb-1 font-extrabold text-white"
+            >Experience (years)</label
+          >
           <input
             v-model.number="form.experience"
             type="number"
@@ -94,7 +98,7 @@
 
         <!-- Education -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Education</label>
+          <label class="block mb-1 font-extrabold text-white">Education</label>
           <input
             v-model="form.education"
             type="text"
@@ -105,7 +109,9 @@
 
         <!-- Certifications -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Certifications</label>
+          <label class="block mb-1 font-extrabold text-white"
+            >Certifications</label
+          >
           <input
             v-model="form.certifications"
             type="text"
@@ -114,9 +120,20 @@
           />
         </div>
 
+        <!-- Bio -->
+        <div class="md:col-span-2">
+          <label class="block mb-1 font-extrabold text-white">Bio</label>
+          <textarea
+            v-model="form.bio"
+            rows="3"
+            placeholder="Short professional bio"
+            class="input w-full"
+          ></textarea>
+        </div>
+
         <!-- Password -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Password</label>
+          <label class="block mb-1 font-extrabold text-white">Password</label>
           <input
             v-model="form.password"
             type="password"
@@ -128,7 +145,9 @@
 
         <!-- Confirm Password -->
         <div>
-          <label class="block mb-1 font-semibold text-gray-900">Confirm Password</label>
+          <label class="block mb-1 font-extrabold text-white"
+            >Confirm Password</label
+          >
           <input
             v-model="form.confirmPassword"
             type="password"
@@ -139,32 +158,37 @@
         </div>
 
         <!-- Error -->
-        <div v-if="error" class="md:col-span-2 text-red-500 text-center text-sm">
+        <div
+          v-if="error"
+          class="md:col-span-2 text-red-500 text-center text-sm"
+        >
           {{ error }}
-        </div>
-
-        <!-- Login link above submit button -->
-        <div class="md:col-span-2 text-center mb-2 text-sm">
-          Already have an account?
-          <router-link to="/login" class="text-blue-600 hover:underline font-semibold">
-            Login
-          </router-link>
         </div>
 
         <!-- Submit -->
         <button
           type="submit"
           :disabled="loading"
-          class="md:col-span-2 w-full bg-[#FF8040] text-white py-3 rounded-xl shadow-md hover:shadow-lg hover:bg-[#0046FF] transition disabled:opacity-50 font-semibold"
+          class="md:col-span-2 w-full bg-[#FF8040] text-white py-3 rounded-xl shadow-md hover:shadow-lg hover:bg-[#0046FF] transition disabled:opacity-50 font-extrabold uppercase"
         >
           <span v-if="loading">Signing up...</span>
           <span v-else>Sign Up</span>
         </button>
+        <!-- Login link above submit button -->
+        <div class="md:col-span-2 text-center mb-2 text-sm text-white">
+          Already have an account?
+          <router-link
+            to="/login"
+            class="text-green-600 hover:underline font-semibold"
+          >
+            Login
+          </router-link>
+        </div>
       </form>
 
       <!-- Back to Home link after signup button -->
-      <div class="text-center mt-4 text-sm">
-        <router-link to="/" class="text-gray-600 hover:underline">
+      <div class="text-center mt-4 text-sm decoration-none">
+        <router-link to="/" class="text-yellow-500 hover:underline">
           Back to Home
         </router-link>
       </div>
@@ -173,28 +197,28 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import axios from "axios";
-import { useRouter } from "vue-router";
+import { ref } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
 const form = ref({
-  name: "",
-  email: "",
-  phone: "",
+  name: '',
+  email: '',
+  phone: '',
   photo: null,
-  specialization: "",
-  bio: "",
+  specialization: '',
+  bio: '',
   experience: 0,
-  education: "",
-  certifications: "",
-  password: "",
-  confirmPassword: "",
+  education: '',
+  certifications: '',
+  password: '',
+  confirmPassword: '',
 });
 
 const loading = ref(false);
-const error = ref("");
+const error = ref('');
 
 const handlePhotoUpload = (e) => {
   const file = e.target.files[0];
@@ -202,7 +226,7 @@ const handlePhotoUpload = (e) => {
 };
 
 const handleSignup = async () => {
-  error.value = "";
+  error.value = '';
 
   if (
     !form.value.name ||
@@ -212,12 +236,12 @@ const handleSignup = async () => {
     !form.value.password ||
     !form.value.confirmPassword
   ) {
-    error.value = "Please fill all required fields.";
+    error.value = 'Please fill all required fields.';
     return;
   }
 
   if (form.value.password !== form.value.confirmPassword) {
-    error.value = "Passwords do not match.";
+    error.value = 'Passwords do not match.';
     return;
   }
 
@@ -225,39 +249,39 @@ const handleSignup = async () => {
 
   try {
     const payload = new FormData();
-    payload.append("name", form.value.name);
-    payload.append("email", form.value.email);
-    payload.append("phone", form.value.phone);
-    payload.append("photo", form.value.photo);
-    payload.append("specialization", form.value.specialization);
-    payload.append("bio", form.value.bio);
-    payload.append("experience", form.value.experience);
-    payload.append("education", form.value.education);
+    payload.append('name', form.value.name);
+    payload.append('email', form.value.email);
+    payload.append('phone', form.value.phone);
+    payload.append('photo', form.value.photo);
+    payload.append('specialization', form.value.specialization);
+    payload.append('bio', form.value.bio);
+    payload.append('experience', form.value.experience);
+    payload.append('education', form.value.education);
 
     // Convert certifications to JSON array
     const certArray = form.value.certifications
-      ? form.value.certifications.split(",").map((c) => c.trim())
+      ? form.value.certifications.split(',').map((c) => c.trim())
       : [];
-    payload.append("certifications", JSON.stringify(certArray));
+    payload.append('certifications', JSON.stringify(certArray));
 
-    payload.append("password", form.value.password);
+    payload.append('password', form.value.password);
 
     // ✅ Ensure role is sent so profile is created
-    payload.append("role", "Expert");
+    payload.append('role', 'Expert');
 
     const { data } = await axios.post(
-      "http://localhost:4000/api/auth/experts/signup",
+      'http://localhost:4000/api/auth/experts/signup',
       payload,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { 'Content-Type': 'multipart/form-data' } }
     );
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
 
-    router.push("/expert");
+    router.push('/expert');
   } catch (err) {
     console.error(err);
-    error.value = err.response?.data?.message || "Signup failed. Try again.";
+    error.value = err.response?.data?.message || 'Signup failed. Try again.';
   } finally {
     loading.value = false;
   }

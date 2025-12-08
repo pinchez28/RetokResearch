@@ -16,7 +16,7 @@
           <p class="text-gray-600 mt-1 truncate">{{ job.description }}</p>
           <p class="text-sm text-gray-400 mt-1">
             Submitted by: {{ job.client?.name || 'Unknown Client' }} | Email:
-            {{ job.client?.email || 'N/A' }} | Phone:
+            {{ job.client?.user?.email || 'N/A' }} | Phone:
             {{ job.client?.phone || 'N/A' }} | Date:
             {{ formatDate(job.createdAt) }}
           </p>
@@ -54,7 +54,7 @@
           </p>
           <p>
             <span class="font-semibold">Email:</span>
-            {{ selectedJob.client?.email || 'N/A' }}
+            {{ selectedJob.client?.user?.email || 'N/A' }}
           </p>
           <p>
             <span class="font-semibold">Phone:</span>

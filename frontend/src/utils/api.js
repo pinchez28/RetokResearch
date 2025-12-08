@@ -1,10 +1,13 @@
 // src/utils/api.js
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:4000/api';
+// Use environment variable for backend URL or fallback to localhost
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ||
+  'http://localhost:4000';
 
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: `${API_BASE}/api`,
 });
 
 // Attach token for all requests
@@ -30,7 +33,7 @@ export const clientApi = {
       return api.post('/client/jobs', jobData);
     }
   },
-  getMyJobs: () => api.get('/client/jobs/mine'),
+  getMyJobs: () => api.get('/client/jobs'), // matches what JobTracking.vue expects
 };
 
 // ===== Expert API =====
@@ -44,7 +47,7 @@ export const expertApi = {
 // ===== Admin API =====
 export const adminApi = {
   getPendingJobs: () => api.get('/admin/jobs/pending'),
-  getActiveJobs: () => api.get('/admin/jobs/active'), // <-- add this
+  getActiveJobs: () => api.get('/admin/jobs/active'),
   approveJob: (jobId, payload) =>
     api.patch(`/admin/jobs/approve/${jobId}`, payload),
   rejectJob: (jobId) => api.patch(`/admin/jobs/reject/${jobId}`),
@@ -53,4 +56,4 @@ export const adminApi = {
   getAllJobs: () => api.get('/admin/jobs'),
 };
 
-export default api; // default export is just the Axios instance
+export default api;

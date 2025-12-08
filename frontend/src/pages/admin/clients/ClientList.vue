@@ -74,9 +74,7 @@
         <p class="text-gray-900">
           <strong>Phone:</strong> {{ selectedClient.phone || 'N/A' }}
         </p>
-        <p class="text-gray-900">
-          <strong>Company:</strong> {{ selectedClient.company || 'N/A' }}
-        </p>
+
         <p class="text-gray-900">
           <strong>Status:</strong> {{ formatStatus(selectedClient.status) }}
         </p>

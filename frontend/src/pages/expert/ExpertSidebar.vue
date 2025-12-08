@@ -48,7 +48,7 @@ const router = useRouter();
 const links = [
   { name: 'Dashboard', path: '/expert/dashboard' },
   { name: 'Projects', path: '/expert/projects' },
-  { name: 'Jobs', path: '/expert/jobs' },
+  { name: 'Available Jobs', path: '/expert/jobs' },
   { name: 'Assignments', path: '/expert/assignments' },
   { name: 'Profile', path: '/expert/profile' },
   { name: 'Support', path: '/expert/support' },

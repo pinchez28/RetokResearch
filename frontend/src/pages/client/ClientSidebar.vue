@@ -36,25 +36,26 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
 
 const links = [
-  { name: "Dashboard", path: "/client/dashboard" },
-  { name: "Post Job", path: "/client/post-job" },
-  { name: "Projects", path: "/client/projects" },
-  { name: "Messages", path: "/client/messages" },
-  { name: "Payments", path: "/client/payments" },
-  { name: "Profile", path: "/client/profile" },
-  { name: "Support", path: "/client/support" },
+  { name: 'Dashboard', path: '/client/dashboard' },
+  { name: 'Post Job', path: '/client/post-job' },
+  { name: 'Job Tracking', path: '/client/job-tracking' },
+  { name: 'Projects', path: '/client/projects' },
+  { name: 'Messages', path: '/client/messages' },
+  { name: 'Payments', path: '/client/payments' },
+  { name: 'Profile', path: '/client/profile' },
+  { name: 'Support', path: '/client/support' },
 ];
 
 const isActive = (path) => route.path === path;
 
 const logout = () => {
-  router.push("/login");
+  router.push('/login');
 };
 </script>
 

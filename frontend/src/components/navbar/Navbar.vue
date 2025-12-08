@@ -241,17 +241,17 @@ const openSignup = () => window.openSignupOverlay?.();
 .nav-link,
 .mobile-link {
   color: #f5f1dc;
-  font-weight: 700;
+  font-weight: bolder;
   transition: color 0.25s, background-color 0.25s;
   text-decoration: none;
   padding: 6px 14px;
-  border-radius: 999px;
+  border-radius: 4px;
 }
 
 .nav-link.active,
 .mobile-link.active {
-  background-color: #facc15;
-  color: #001bb7 !important;
+  background-color: #ff8040;
+  color: #020d4d !important;
   box-shadow: 0 0 10px rgba(250, 204, 21, 0.55);
 }
 

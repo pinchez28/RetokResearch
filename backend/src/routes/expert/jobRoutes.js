@@ -1,23 +1,27 @@
 import express from 'express';
 import { authMiddleware } from '../../middleware/auth.js';
 import { authorizeRoles } from '../../middleware/roles.js';
+import { uploadCV } from '../../middleware/multer.js';
 
 import {
   getAvailableJobs,
   getJobDetails,
   applyForJob,
 } from '../../controllers/expert/jobController.js';
+
 import { getExpertAssignments } from '../../controllers/expert/assignmentController.js';
 import { getEarnings } from '../../controllers/expert/earningsController.js';
 
-import { uploadCV } from '../../middleware/multer.js';
-
 const router = express.Router();
 
-// Job feed
+// -------------------------------
+// 1. Expert Job Feed
+// -------------------------------
 router.get('/jobs', authMiddleware, authorizeRoles('expert'), getAvailableJobs);
 
-// Single job
+// -------------------------------
+// 2. Single Job Details
+// -------------------------------
 router.get(
   '/jobs/:jobId',
   authMiddleware,
@@ -25,7 +29,9 @@ router.get(
   getJobDetails
 );
 
-// Apply for job (proposal + optional CV)
+// -------------------------------
+// 3. Apply for a Job (proposal + optional CV)
+// -------------------------------
 router.post(
   '/jobs/:jobId/apply',
   authMiddleware,
@@ -34,7 +40,9 @@ router.post(
   applyForJob
 );
 
-// Assignments
+// -------------------------------
+// 4. Expert Assignments
+// -------------------------------
 router.get(
   '/assignments',
   authMiddleware,
@@ -42,7 +50,9 @@ router.get(
   getExpertAssignments
 );
 
-// Earnings
+// -------------------------------
+// 5. Expert Earnings
+// -------------------------------
 router.get('/earnings', authMiddleware, authorizeRoles('expert'), getEarnings);
 
 export default router;

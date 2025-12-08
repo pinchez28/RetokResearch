@@ -2,7 +2,10 @@ import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-import { createJob } from '../../controllers/client/jobController.js';
+import {
+  createJob,
+  getClientJobs,
+} from '../../controllers/client/jobController.js';
 import { authMiddleware } from '../../middleware/auth.js';
 import { authorizeRoles } from '../../middleware/roles.js';
 
@@ -22,10 +25,9 @@ const storage = multer.diskStorage({
   },
 });
 
-// File validation: only allow certain types & max 5MB
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max per file
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /pdf|doc|docx|png|jpg|jpeg/;
     const ext = file.originalname.split('.').pop().toLowerCase();
@@ -41,10 +43,8 @@ const upload = multer({
 
 // -------------------- ROUTES --------------------
 /**
- * @route   POST /api/client/jobs
- * @desc    Client posts a new job (goes to admin for review)
- * @access  Private (Client only)
- * Supports multiple file attachments (up to 10)
+ * POST /api/client/jobs
+ * Client posts a new job (goes to admin for review)
  */
 router.post(
   '/',
@@ -59,5 +59,11 @@ router.post(
   },
   createJob
 );
+
+/**
+ * GET /api/client/jobs
+ * Get all jobs posted by the logged-in client
+ */
+router.get('/', authMiddleware, authorizeRoles('Client'), getClientJobs);
 
 export default router;

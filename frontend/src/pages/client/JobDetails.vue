@@ -135,7 +135,7 @@ const newMessage = ref('');
 // Mock load function (replace with API)
 const loadProject = async () => {
   try {
-    // Replace with actual API call:
+    //Replace with actual API call:
     // const { data } = await axios.get(`/client/projects/${projectId}`);
     // project.value = data.project;
     // messages.value = data.messages;

@@ -14,6 +14,7 @@ const expertSchema = new mongoose.Schema(
     rating: { type: Number, default: 0 },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
     cvPdf: { type: String }, // <-- new field
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }
 );

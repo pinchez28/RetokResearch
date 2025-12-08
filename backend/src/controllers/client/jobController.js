@@ -1,19 +1,52 @@
 import Job from '../../models/client/Job.js';
+import Proposal from '../../models/expert/Proposal.js';
 import Client from '../../models/client/Client.js';
 import Notification from '../../models/Notification.js';
-import sendEmail from '../../../utils/sendEmail.js';
 import path from 'path';
+import sendEmail from '../../../utils/sendEmail.js';
 
-/**
- * @desc Client posts a job (admin review)
- * @route POST /api/client/jobs
- * @access Private (client only)
- */
+// ---------------- Get Jobs for Client ----------------
+export const getClientJobs = async (req, res) => {
+  try {
+    const clientId = req.user.profile;
+
+    // Fetch client jobs
+    const jobs = await Job.find({ client: clientId })
+      .populate({
+        path: 'client',
+        populate: { path: 'user', select: 'email' },
+      })
+      .sort({ createdAt: -1 })
+      .lean({ virtuals: true });
+
+    // Populate applications for each job
+    const jobsWithApplications = await Promise.all(
+      jobs.map(async (job) => {
+        const applications = await Proposal.find({ job: job._id })
+          .populate('expert', 'profile.name profile.photo')
+          .lean({ virtuals: true });
+
+        return {
+          ...job,
+          applications,
+        };
+      })
+    );
+
+    res.json({ success: true, jobs: jobsWithApplications });
+  } catch (err) {
+    console.error('Get client jobs error:', err);
+    res
+      .status(500)
+      .json({ success: false, message: 'Server Error', error: err.message });
+  }
+};
+
+// ---------------- Create Job ----------------
 export const createJob = async (req, res) => {
   try {
-    const user = req.user; // from authMiddleware
+    const user = req.user;
 
-    // Ensure client profile exists
     if (!user.profile) {
       return res.status(400).json({
         success: false,
@@ -21,11 +54,15 @@ export const createJob = async (req, res) => {
       });
     }
 
-    const client = await Client.findById(user.profile, 'name email phone');
-    if (!client) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Client not found' });
+    const clientProfile = await Client.findById(user.profile)
+      .populate('user', 'email')
+      .lean({ virtuals: true });
+
+    if (!clientProfile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Client not found',
+      });
     }
 
     const { title, description, deadline, budget } = req.body;
@@ -37,17 +74,11 @@ export const createJob = async (req, res) => {
       });
     }
 
-    // Handle uploaded attachments
-    let attachmentFiles = [];
-    if (req.files && req.files.length > 0) {
-      attachmentFiles = req.files.map((file) =>
-        path.join('uploads/jobs', file.filename)
-      );
-    }
+    const attachmentFiles =
+      req.files?.map((f) => path.join('uploads/jobs', f.filename)) || [];
 
-    // Create job with admin-only fields null
     const job = await Job.create({
-      client: client._id,
+      client: user.profile, // Link to Client, not User
       title,
       description,
       deadline: new Date(deadline),
@@ -60,9 +91,18 @@ export const createJob = async (req, res) => {
       pricingRange: { min: 0, max: 0 },
     });
 
-    const jobWithClient = { ...job.toObject(), client };
+    // -------------------------------
+    // ✅ Apply your REQUIRED FIX HERE
+    // -------------------------------
+    const populatedJob = await Job.findById(job._id)
+      .populate({
+        path: 'client',
+        populate: { path: 'user', select: 'email' },
+      })
+      .lean({ virtuals: true });
+    // -------------------------------
 
-    // Notify admin
+    // Notify Admin
     await Notification.create({
       userType: 'Admin',
       userId: null,
@@ -72,38 +112,27 @@ export const createJob = async (req, res) => {
       read: false,
     });
 
-    // Emit Socket.IO to admins
     const io = req.app.get('io');
-    if (io) {
+    if (io)
       io.to('admins').emit('admin:new_job', {
         jobId: job._id,
         title: job.title,
-        client: {
-          name: client.name,
-          email: client.email,
-          phone: client.phone,
-        },
       });
-    }
 
-    // Email to admin
     await sendEmail({
       to: process.env.ADMIN_EMAIL,
       subject: 'New Job Awaiting Review',
-      html: `
-        <h2>New Job Submitted</h2>
-        <p><strong>Title:</strong> ${job.title}</p>
-        <p><strong>Client:</strong> ${client.name}</p>
-        <p><strong>Email:</strong> ${client.email || 'N/A'}</p>
-        <p><strong>Phone:</strong> ${client.phone || 'N/A'}</p>
-        <p>This job is awaiting review in the admin dashboard.</p>
-      `,
+      html: `<h2>New Job Submitted</h2><p>Title: ${job.title}</p>`,
     });
 
+    // -------------------------------
+    // ✅ Respond using POPULATED JOB
+    // -------------------------------
     res.status(201).json({
       success: true,
       message: 'Job submitted successfully. Awaiting admin approval.',
-      job: jobWithClient,
+      job: populatedJob,
+      clientEmail: clientProfile.user?.email,
     });
   } catch (err) {
     console.error('createJob error:', err);

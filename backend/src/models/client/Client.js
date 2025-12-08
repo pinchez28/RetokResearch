@@ -19,8 +19,18 @@ const clientSchema = new mongoose.Schema(
       default: 'pending',
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+// Virtual for email
+clientSchema.virtual('email').get(function () {
+  // `this.user` should be populated
+  return this.user?.email || 'N/A';
+});
 
 const Client = mongoose.model('Client', clientSchema);
 

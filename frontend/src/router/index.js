@@ -27,19 +27,23 @@ import ClientLayout from '@/layouts/ClientLayout.vue';
 /* ============================
    EXPERT PAGES
 ============================ */
+/* EXPERT PAGES */
 import ExpertDashboard from '@/pages/expert/Dashboard.vue';
 import ExpertJobs from '@/pages/expert/jobs.vue';
 import ExpertProjects from '@/pages/expert/Projects.vue';
 import ExpertAssignments from '@/pages/expert/Assignments.vue';
 import ExpertProfile from '@/pages/expert/Profile.vue';
 import ExpertSupport from '@/pages/expert/Support.vue';
+import ExpertJobDetails from '@/pages/expert/ExpertJobDetails.vue'; // ✅ ADD THIS
 
 /* ============================
    CLIENT PAGES
 ============================ */
 import Dashboard from '@/pages/client/Dashboard.vue';
 import ClientProjects from '@/pages/client/Projects.vue';
+import JobTracking from '../pages/client/JobTracking.vue';
 import JobDetails from '@/pages/client/JobDetails.vue';
+import ClientJobApplications from '../pages/client/ClientJobApplications.vue';
 import Messages from '@/pages/client/Messages.vue';
 import Payments from '@/pages/client/Payments.vue';
 import PostJob from '@/pages/client/PostJob.vue';
@@ -139,6 +143,14 @@ const routes = [
       { path: 'post-job', name: 'PostJob', component: PostJob },
       { path: 'profile', name: 'Profile', component: Profile },
       { path: 'support', name: 'Support', component: Support },
+      { path: 'job-tracking', name: 'JobTracking', component: JobTracking },
+
+      // ✅ Dedicated Applications Page
+      {
+        path: 'jobs/:jobId/applications',
+        name: 'ClientJobApplications',
+        component: ClientJobApplications, // make sure imported
+      },
     ],
   },
 
@@ -155,6 +167,13 @@ const routes = [
       },
       { path: 'projects', name: 'ExpertProjects', component: ExpertProjects },
       { path: 'jobs', name: 'ExpertJobs', component: ExpertJobs },
+
+      {
+        path: 'jobs/:jobId', // <-- must match `route.params.jobId`
+        name: 'ExpertJobDetails',
+        component: ExpertJobDetails,
+      },
+
       {
         path: 'assignments',
         name: 'ExpertAssignments',

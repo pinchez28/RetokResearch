@@ -22,6 +22,8 @@ import adminJobRoutes from './src/routes/admin/jobAdminRoutes.js';
 import expertJobRoutes from './src/routes/expert/jobRoutes.js';
 import assignmentRoutes from './src/routes/expert/assignmentRoutes.js';
 import guestJobRoutes from './src/routes/guest/jobRoutes.js';
+import clientDashboardRoutes from './src/routes/client/clientDashboardRoutes.js';
+import clientProfileRoutes from './src/routes/client/clientProfileRoutes.js';
 
 // -------------------- Admin --------------------
 import adminClientRoutes from './src/routes/admin/adminClientRoutes.js';
@@ -62,6 +64,8 @@ app.use('/api/guest/jobs', guestJobRoutes);
 
 // Client
 app.use('/api/client/jobs', clientJobRoutes);
+app.use('/api/client', clientDashboardRoutes);
+app.use('/api/client/profile', clientProfileRoutes);
 
 // Admin
 app.use('/api/admin/jobs', adminJobRoutes);

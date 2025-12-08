@@ -1,17 +1,21 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[#F5F1DC] px-4">
-    <div class="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 space-y-6">
-      <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-2">
+  <div
+    class="min-h-screen flex items-center justify-center bg-[#F5F1DC] px-4 mt-10 mb-10"
+  >
+    <div
+      class="max-w-md w-full bg-gray-900 text-white shadow-2xl rounded-2xl p-8 space-y-6"
+    >
+      <h2 class="text-3xl font-extrabold text-white text-center mb-2">
         Welcome Back
       </h2>
-      <p class="text-sm text-gray-500 text-center">
+      <p class="text-sm text-white text-center">
         Sign in to your account to request and track research services.
       </p>
 
       <form @submit.prevent="handleLogin" class="space-y-4">
         <!-- Email -->
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-900"
+          <label for="email" class="block text-sm font-medium text-white"
             >Email</label
           >
           <input
@@ -19,13 +23,13 @@
             type="email"
             id="email"
             placeholder="you@example.com"
-            class="input"
+            class="input text-black"
           />
         </div>
 
         <!-- Password -->
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-900"
+          <label for="password" class="block text-sm font-medium text-white"
             >Password</label
           >
           <input
@@ -33,7 +37,7 @@
             type="password"
             id="password"
             placeholder="••••••••"
-            class="input"
+            class="input text-black"
           />
         </div>
 
@@ -46,7 +50,7 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-[#FF8040] hover:bg-[#0046FF] text-white font-semibold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full bg-[#FF8040] hover:bg-[#26c506] text-white font-semibold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 uppercase disabled:cursor-not-allowed"
         >
           <span v-if="loading">Signing in...</span>
           <span v-else>Login</span>
@@ -54,12 +58,12 @@
       </form>
 
       <!-- Sign Up link triggers modal -->
-      <p class="text-sm text-gray-500 mt-4 text-center">
+      <p class="text-sm text-white mt-4 text-center">
         Don't have an account?
         <button
           type="button"
           @click="showSignupModal = true"
-          class="text-[#0046FF] hover:underline font-semibold"
+          class="text-[#1cdf4d] hover:underline font-extrabold"
         >
           Signup
         </button>
@@ -67,7 +71,7 @@
 
       <router-link
         :to="{ name: 'Home' }"
-        class="block text-center text-gray-500 mt-2"
+        class="block text-center text-yellow-500 mt-2"
       >
         Back to Home
       </router-link>

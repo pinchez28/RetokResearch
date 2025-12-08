@@ -92,6 +92,10 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const title = ref('');
 const description = ref('');
@@ -110,19 +114,26 @@ const handleAttachments = (e) => {
 // Submit job function
 const submitJob = async () => {
   if (!title.value || !description.value || !deadline.value) {
-    alert('Please fill all required fields.');
+    Swal.fire({
+      icon: 'warning',
+      title: 'Incomplete Form',
+      text: 'Please fill all required fields.',
+    });
     return;
   }
 
   loading.value = true;
 
   try {
-    // Get logged-in user with profile
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
 
     if (!user || !user.profile) {
-      alert('User profile missing. Please login again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Profile Missing',
+        text: 'User profile missing. Please login again.',
+      });
       loading.value = false;
       return;
     }
@@ -131,28 +142,40 @@ const submitJob = async () => {
     formData.append('title', title.value);
     formData.append('description', description.value);
     formData.append('deadline', deadline.value);
-    formData.append('client', user.profile._id); // <--- Important: link job to client profile
+    formData.append('client', user.profile._id);
     if (budget.value) formData.append('budget', budget.value);
     attachments.value.forEach((file) => formData.append('attachments', file));
 
-    const res = await axios.post(`${backendURL}/api/client/jobs`, formData, {
+    await axios.post(`${backendURL}/api/client/jobs`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
       },
     });
 
-    // Reset form if successful
+    // Reset form
     title.value = '';
     description.value = '';
     deadline.value = '';
     attachments.value = [];
     budget.value = null;
 
-    alert('Job posted successfully! Awaiting admin approval.');
+    // Success notification and redirect
+    Swal.fire({
+      icon: 'success',
+      title: 'Job Posted!',
+      text: 'Your job is awaiting admin approval.',
+      confirmButtonText: 'Go to Job Tracking',
+    }).then(() => {
+      router.push('/client/job-tracking');
+    });
   } catch (err) {
     console.error('Post job error:', err);
-    alert(err.response?.data?.message || 'Error posting job. Try again.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: err.response?.data?.message || 'Error posting job. Try again.',
+    });
   } finally {
     loading.value = false;
   }
