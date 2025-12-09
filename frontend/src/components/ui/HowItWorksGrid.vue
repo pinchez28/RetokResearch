@@ -18,3 +18,4 @@ const props = defineProps({
   steps: { type: Array, required: true },
 });
 </script>
+

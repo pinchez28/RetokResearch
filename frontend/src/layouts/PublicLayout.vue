@@ -14,6 +14,10 @@
 </template>
 
 <script setup>
-import Navbar from "@/components/navbar/Navbar.vue";
-import Footer from "@/components/footer/Footer.vue";
+import Navbar from '@/components/shared/Navbar.vue';
+import Footer from '@/components/shared/Footer.vue';
 </script>
+
+<style scoped>
+/* Optional: add page-level styles here */
+</style>

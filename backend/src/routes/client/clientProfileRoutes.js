@@ -1,5 +1,8 @@
 import express from 'express';
-import { authMiddleware, protectClient } from '../../middleware/auth.js';
+import {
+  authMiddleware,
+  protectClient,
+} from '../../middleware/authMiddleware.js';
 import {
   getClientProfile,
   updateClientProfile,

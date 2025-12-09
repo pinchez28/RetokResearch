@@ -1,6 +1,6 @@
 import { createApp } from 'vue';
 import './style.css';
-import '@/assets/tailwind.css';
+import '@/assets/css/tailwind.css';
 import App from './App.vue';
 import router from './router';
 import { createPinia } from 'pinia';
@@ -13,7 +13,7 @@ import { Toaster } from 'vue-sonner';
 import 'vue-sonner/style.css';
 
 // Import auth store
-import { useAuthStore } from './store/auth.js';
+import { useAuthStore } from './core/store/auth.js';
 
 const app = createApp(App);
 

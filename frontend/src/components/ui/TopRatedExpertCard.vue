@@ -58,3 +58,4 @@ defineProps({
   rating: { type: Number, default: 5 },
 });
 </script>
+

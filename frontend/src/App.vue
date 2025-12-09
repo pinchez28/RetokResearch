@@ -11,7 +11,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import SignupOverlay from '@/pages/public/signup/SignupOverlay.vue';
+import SignupOverlay from '@/modules/public/signup/SignupOverlay.vue';
 
 const signupOverlay = ref(null);
 

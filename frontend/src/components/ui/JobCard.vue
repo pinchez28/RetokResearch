@@ -55,3 +55,4 @@ const gradient = computed(() => {
   return `linear-gradient(135deg, ${colors[index][0]}, ${colors[index][1]})`;
 });
 </script>
+

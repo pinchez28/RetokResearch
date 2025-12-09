@@ -16,3 +16,4 @@ const props = defineProps({
   testimonials: { type: Array, required: true },
 });
 </script>
+

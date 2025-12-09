@@ -67,3 +67,4 @@ const formattedPrice = computed(() => {
   return `Ksh ${clean}`;
 });
 </script>
+

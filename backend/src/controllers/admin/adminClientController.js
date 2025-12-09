@@ -1,5 +1,5 @@
 import Client from '../../models/client/Client.js';
-import '../../../src/models/Project.js';
+import '../../models/client/Project.js';
 import User from '../../models/auth/User.js';
 
 // GET all clients

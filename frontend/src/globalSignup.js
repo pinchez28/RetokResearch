@@ -41,3 +41,4 @@ if (!window.openSignupOverlay) {
     document.body.appendChild(overlay);
   };
 }
+

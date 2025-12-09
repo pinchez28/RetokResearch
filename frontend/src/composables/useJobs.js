@@ -11,3 +11,4 @@ export const loadJobs = async () => {
     console.error('Failed to load jobs', err);
   }
 };
+

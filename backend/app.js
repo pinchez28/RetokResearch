@@ -7,26 +7,33 @@ import path from 'path';
 import './src/models/auth/User.js';
 import './src/models/client/Client.js';
 import './src/models/expert/Expert.js';
-import './src/models/Notification.js';
+import './src/models/notification/Notification.js';
 import './src/models/client/Job.js';
-import './src/models/expert/Assignment.js';
+import './src/models/expert/ExpertAssignment.js';
 
 // -------------------- IMPORT ROUTES --------------------
-import notificationRoutes from './src/routes/notificationRoutes.js';
+import notificationRoutes from './src/routes/notification/notificationRoutes.js';
 import authRoutes from './src/routes/auth/authRoutes.js';
-import aboutRoutes from './src/routes/guest/aboutRoutes.js';
-import serviceRoutes from './src/routes/guest/serviceRoutes.js';
-import guestRequestRoutes from './src/routes/guest/guestRequestRoutes.js';
-import clientJobRoutes from './src/routes/client/jobRoutes.js';
-import adminJobRoutes from './src/routes/admin/jobAdminRoutes.js';
-import expertJobRoutes from './src/routes/expert/jobRoutes.js';
-import assignmentRoutes from './src/routes/expert/assignmentRoutes.js';
-import guestJobRoutes from './src/routes/guest/jobRoutes.js';
-import clientDashboardRoutes from './src/routes/client/clientDashboardRoutes.js';
-import clientProfileRoutes from './src/routes/client/clientProfileRoutes.js';
 
-// -------------------- Admin --------------------
+// Guest routes
+import guestAboutRoutes from './src/routes/guest/guestAboutRoutes.js';
+import guestServiceRoutes from './src/routes/guest/guestServiceRoutes.js';
+import guestRequestRoutes from './src/routes/guest/guestRequestRoutes.js';
+import guestJobRoutes from './src/routes/guest/guestJobRoutes.js';
+
+// Client routes
+import clientJobRoutes from './src/routes/client/clientJobRoutes.js';
+import clientDashboardRoutes from './src/routes/client/clientDashboardRoutes.js';
+import clientProfileRoutes from './src//routes/client/clientProfileRoutes.js';
+
+// Admin routes
 import adminClientRoutes from './src/routes/admin/adminClientRoutes.js';
+import adminExpertRoutes from './src/routes/admin/adminExpertRoutes.js';
+import adminJobRoutes from './src/routes/admin/adminJobRoutes.js';
+
+// Expert routes
+import expertJobRoutes from './src/routes/expert/expertJobRoutes.js';
+import expertAssignmentRoutes from './src/routes/expert/expertAssignmentRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -40,9 +47,6 @@ app.use(
   })
 );
 
-// --------------------- ADMIN --------------------------------
-app.use('/api/admin/clients', adminClientRoutes);
-
 // -------------------- BODY PARSER --------------------
 app.use(express.json());
 
@@ -50,6 +54,7 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // -------------------- API ROUTES --------------------
+
 // Notifications
 app.use('/api/notifications', notificationRoutes);
 
@@ -57,8 +62,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
 
 // Guest
-app.use('/api/about', aboutRoutes);
-app.use('/api/services', serviceRoutes);
+app.use('/api/about', guestAboutRoutes);
+app.use('/api/services', guestServiceRoutes);
 app.use('/api/guest-requests', guestRequestRoutes);
 app.use('/api/guest/jobs', guestJobRoutes);
 
@@ -68,11 +73,13 @@ app.use('/api/client', clientDashboardRoutes);
 app.use('/api/client/profile', clientProfileRoutes);
 
 // Admin
+app.use('/api/admin/clients', adminClientRoutes);
+app.use('/api/admin/experts', adminExpertRoutes);
 app.use('/api/admin/jobs', adminJobRoutes);
 
 // Expert
-app.use('/api/expert', expertJobRoutes);
-app.use('/api/expert/assignments', assignmentRoutes);
+app.use('/api/expert/assignments', expertAssignmentRoutes);
+app.use('/api/expert/jobs', expertJobRoutes);
 
 // -------------------- 404 HANDLER --------------------
 app.use((req, res) => {

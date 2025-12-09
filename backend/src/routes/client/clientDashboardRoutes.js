@@ -1,6 +1,6 @@
 import express from 'express';
-import { authMiddleware } from '../../middleware/auth.js';
-import { authorizeRoles } from '../../middleware/roles.js';
+import { authMiddleware } from '../../middleware/authMiddleware.js';
+import { authorizeRoles } from '../../middleware/rolesMiddleware.js';
 import {
   getClientProfile,
   getClientStats,

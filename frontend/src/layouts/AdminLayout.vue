@@ -23,9 +23,9 @@
 </template>
 
 <script setup>
-import AdminSidebar from '@/pages/admin/AdminSidebar.vue';
-import AdminTopbar from '@/pages/admin/AdminTopbar.vue';
-import Footer from '@/components/footer/Footer.vue';
+import AdminSidebar from '@/modules/admin/index/AdminSidebar.vue';
+import AdminTopbar from '@/modules/admin/index/AdminTopbar.vue';
+import Footer from '@/components/shared/Footer.vue';
 </script>
 
 <style scoped>

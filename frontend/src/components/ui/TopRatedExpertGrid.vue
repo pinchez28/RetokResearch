@@ -28,3 +28,4 @@ const viewProfile = (id) => {
   emit('viewProfile', id);
 };
 </script>
+

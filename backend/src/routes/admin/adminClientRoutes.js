@@ -5,8 +5,8 @@ import {
   updateClient,
   deleteClient,
 } from '../../controllers/admin/adminClientController.js';
-import { authMiddleware } from '../../middleware/auth.js';
-import { adminOnly } from '../../middleware/adminOnly.js';
+import { authMiddleware } from '../../middleware/authMiddleware.js';
+import { adminOnly } from '../../middleware/adminOnlyMiddleware.js';
 
 const router = express.Router();
 

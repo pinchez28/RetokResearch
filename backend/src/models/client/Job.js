@@ -37,9 +37,8 @@ const jobSchema = new mongoose.Schema({
   // ADMIN sets branch (optional for client)
   branch: {
     type: String,
-    enum: [null, 'Academic Research', 'Industrial Research'],
+    enum: ['Academic Research', 'Industrial Research', null],
     default: null,
-    required: false,
   },
 
   // ADMIN sets category (depends on branch)

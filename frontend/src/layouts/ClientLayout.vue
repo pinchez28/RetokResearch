@@ -20,9 +20,9 @@
 </template>
 
 <script setup>
-import ClientSidebar from '@/pages/client/ClientSidebar.vue';
-import ClientNavbar from '@/pages/client/ClientNavbar.vue';
-import Footer from '@/components/footer/Footer.vue';
+import ClientSidebar from '@/modules/client/ClientSidebar.vue';
+import ClientNavbar from '@/modules/client/ClientNavbar.vue';
+import Footer from '@/components/shared/Footer.vue';
 </script>
 
 <style scoped>

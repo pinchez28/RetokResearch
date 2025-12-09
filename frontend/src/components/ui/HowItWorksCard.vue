@@ -30,3 +30,4 @@ const props = defineProps({
 
 const { elRef, isVisible } = useScrollAnimation();
 </script>
+
