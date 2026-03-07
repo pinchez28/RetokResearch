@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Responsive typography */
+
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 1280px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+/* Responsive text utilities */
+
+.text-responsive-xs {
+  @apply text-xs sm:text-sm md:text-sm lg:text-base;
+}
+
+.text-responsive-sm {
+  @apply text-sm sm:text-base md:text-base lg:text-lg;
+}
+
+.text-responsive-base {
+  @apply text-base sm:text-base md:text-lg lg:text-xl;
+}
+
+.text-responsive-lg {
+  @apply text-lg sm:text-xl md:text-xl lg:text-2xl;
+}
+
+@layer base {
+  html {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  a {
+    @apply no-underline hover:no-underline focus:no-underline active:no-underline;
+  }
+}

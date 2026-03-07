@@ -1,0 +1,45 @@
+# ==========================
+# Node.js / Backend
+# ==========================
+node_modules/
+dist/
+.env
+npm-debug.log*
+yarn-error.log*
+
+# ==========================
+# Frontend / Vue
+# ==========================
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# ==========================
+# Logs
+# ==========================
+logs/
+*.log
+*.log.*
+
+# ==========================
+# IDE / Editor
+# ==========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ==========================
+# OS Files
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Optional
+# ==========================
+coverage/
+*.tgz

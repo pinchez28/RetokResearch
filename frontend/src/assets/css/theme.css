@@ -1,0 +1,31 @@
+/* src/assets/css/theme.css */
+
+/* Light Theme (default) */
+:root {
+  --primary: #1c0770;
+  --secondary: #261cc1;
+  --accent: #3a9aff;
+  --highlight: #f1ff5e;
+
+  --bg-main: #f5f1dc;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --border-color: #d1d5db;
+  --text-primary: #1c0770;
+  --text-secondary: #4b5563;
+}
+
+/* Dark Theme */
+[data-theme='dark'] {
+  --primary: #8f7bff;
+  --secondary: #6c63ff;
+  --accent: #4fb3ff;
+  --highlight: #d4e157;
+
+  --bg-main: #0f0f1a;
+  --bg-surface: #161625;
+  --bg-card: #1e1e2f;
+  --border-color: #2a2a40;
+  --text-primary: #f5f7ff;
+  --text-secondary: #b8c1ec;
+}
