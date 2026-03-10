@@ -35,6 +35,7 @@
           </h1>
           <p class="text-primary-300 text-2xl">
             Join our platform to collaborate and earn on research projects.
+            Create your professionl profile.
           </p>
         </div>
 
