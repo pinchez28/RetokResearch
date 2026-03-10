@@ -1,51 +1,82 @@
+// backend/src/models/auth/User.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken'; // ✅ import jwt
+import jwt from 'jsonwebtoken';
 
 const userSchema = new mongoose.Schema(
   {
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
 
-    // Role must be one of these
+    password: {
+      type: String,
+      required: true, // now always required for local auth
+    },
+
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
+
     role: {
       type: String,
       enum: ['Client', 'Expert', 'Admin'],
       required: true,
     },
 
-    // Dynamic profile reference based on role
     profile: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: 'role', // resolves to Client, Expert, or Admin collection
-      required: false, // profile may be created after user creation
+      refPath: 'role',
+      required: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-// Encrypt password before saving (if modified)
+// ==========================
+// HASH PASSWORD BEFORE SAVE
+// ==========================
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// Method to verify password
+// ==========================
+// CHECK PASSWORD METHOD
+// ==========================
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate JWT token
+// ==========================
+// GENERATE JWT METHOD
+// ==========================
 userSchema.methods.generateToken = function () {
   return jwt.sign(
-    { id: this._id, role: this.role, email: this.email },
+    {
+      id: this._id,
+      email: this.email,
+      role: this.role,
+    },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '7d' },
   );
 };
 
+// ==========================
+// MODEL EXPORT
+// ==========================
 const User = mongoose.model('User', userSchema);
-
 export default User;

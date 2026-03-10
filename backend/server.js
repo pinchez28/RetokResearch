@@ -1,10 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import http from 'http';
 import app from './app.js';
 import { initSocket } from './src/sockets/index.js';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 // MongoDB
 mongoose

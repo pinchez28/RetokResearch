@@ -5,14 +5,14 @@ const clientSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: false,
+      required: true, // make required to ensure every client links to a user
     },
 
     name: { type: String, required: true },
     phone: String,
     company: String,
     projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
-    role: { type: String, default: 'client' },
+    role: { type: String, default: 'Client' },
     status: {
       type: String,
       enum: ['active', 'pending', 'suspended'],
@@ -23,15 +23,17 @@ const clientSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
-// Virtual for email
-clientSchema.virtual('email').get(function () {
-  // `this.user` should be populated
-  return this.user?.email || 'N/A';
+// Optional: populate email from linked User
+clientSchema.virtual('email', {
+  ref: 'User',
+  localField: 'user',
+  foreignField: '_id',
+  justOne: true,
+  options: { select: 'email' },
 });
 
 const Client = mongoose.model('Client', clientSchema);
-
 export default Client;

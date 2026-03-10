@@ -2,7 +2,7 @@
   <div
     class="min-h-screen flex flex-col lg:flex-row bg-primary-900 text-primary-200 py-12 sm:py-20 px-4 sm:px-6 lg:px-28"
   >
-    <!-- LEFT PANEL (Illustration) -->
+    <!-- LEFT PANEL -->
     <div
       class="hidden lg:flex lg:w-1/2 sticky top-24 h-[calc(100vh-6rem)] bg-primary-800/60 backdrop-blur-xl border border-primary-700 rounded-l-3xl shadow-premium-dark flex-col justify-start items-center pt-12 px-10 space-y-6"
     >
@@ -26,7 +26,7 @@
     <!-- FORM CARD -->
     <div class="flex-1 flex items-center justify-center p-4 sm:p-6">
       <div
-        class="w-full max-w-3xl bg-primary-800/70 backdrop-blur-xl border border-primary-700 rounded-3xl shadow-premium-dark p-10 space-y-6"
+        class="w-full max-w-xl bg-primary-800/70 backdrop-blur-xl border border-primary-700 rounded-3xl shadow-premium-dark p-10 space-y-6"
       >
         <!-- Heading -->
         <div class="text-center space-y-2">
@@ -39,26 +39,23 @@
         </div>
 
         <!-- FORM -->
-        <form
-          @submit.prevent="handleSignup"
-          class="grid grid-cols-1 sm:grid-cols-2 gap-6"
-        >
-          <!-- Name -->
-          <div class="col-span-1 sm:col-span-2">
+        <form @submit.prevent="handleSignup" class="space-y-6">
+          <!-- NAME -->
+          <div>
             <label class="block text-sm font-medium text-primary-300 mb-2">
-              Name
+              User Name
             </label>
             <input
               v-model="form.name"
               type="text"
               required
-              placeholder="John Doe"
-              class="input-dark w-full text-primary-900"
+              placeholder="Username"
+              class="input-dark w-full"
             />
           </div>
 
-          <!-- Email -->
-          <div class="col-span-1 sm:col-span-2">
+          <!-- EMAIL -->
+          <div>
             <label class="block text-sm font-medium text-primary-300 mb-2">
               Email
             </label>
@@ -66,13 +63,13 @@
               v-model="form.email"
               type="email"
               required
-              placeholder="you@example.com"
-              class="input-dark w-full text-primary-900"
+              placeholder="Email Address"
+              class="input-dark w-full"
             />
           </div>
 
-          <!-- Phone -->
-          <div class="col-span-1 sm:col-span-2">
+          <!-- PHONE -->
+          <div>
             <label class="block text-sm font-medium text-primary-300 mb-2">
               Phone
             </label>
@@ -80,61 +77,63 @@
               v-model="form.phone"
               type="tel"
               required
-              placeholder="+254 700 000000"
-              class="input-dark w-full text-primary-900"
+              placeholder="Phone Number"
+              class="input-dark w-full"
             />
           </div>
 
-          <!-- Password -->
-          <div class="col-span-1 sm:col-span-2">
+          <!-- PASSWORD -->
+          <div class="relative">
             <label class="block text-sm font-medium text-primary-300 mb-2">
               Password
             </label>
             <input
               v-model="form.password"
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
               required
-              placeholder="••••••••"
-              class="input-dark w-full text-primary-900"
+              placeholder="Password"
+              class="input-dark w-full pr-12"
             />
+            <button
+              type="button"
+              class="absolute right-3 top-10 text-primary-400 hover:text-accent-400"
+              @click="showPassword = !showPassword"
+            >
+              <Eye v-if="!showPassword" class="w-5 h-5" />
+              <EyeOff v-else class="w-5 h-5" />
+            </button>
           </div>
 
-          <!-- Confirm Password -->
-          <div class="col-span-1 sm:col-span-2">
+          <!-- CONFIRM PASSWORD -->
+          <div class="relative">
             <label class="block text-sm font-medium text-primary-300 mb-2">
               Confirm Password
             </label>
             <input
               v-model="form.confirmPassword"
-              type="password"
+              :type="showConfirmPassword ? 'text' : 'password'"
               required
-              placeholder="••••••••"
-              class="input-dark w-full text-primary-900"
+              placeholder="Confirm Password"
+              class="input-dark w-full pr-12"
             />
+            <button
+              type="button"
+              class="absolute right-3 top-10 text-primary-400 hover:text-accent-400"
+              @click="showConfirmPassword = !showConfirmPassword"
+            >
+              <Eye v-if="!showConfirmPassword" class="w-5 h-5" />
+              <EyeOff v-else class="w-5 h-5" />
+            </button>
           </div>
 
-          <!-- Error -->
-          <div
-            v-if="error"
-            class="col-span-1 sm:col-span-2 text-red-400 text-center text-sm"
-          >
-            {{ error }}
-          </div>
-
-          <!-- Submit -->
-          <button
-            type="submit"
-            :disabled="loading"
-            class="col-span-1 sm:col-span-2 w-full bg-accent-500 text-primary-900 font-bold py-3 rounded-xl hover:bg-accent-400 transition-all duration-300 shadow-float-md disabled:opacity-50 flex justify-center items-center gap-2"
-          >
+          <!-- SUBMIT -->
+          <button type="submit" :disabled="loading" class="btn-primary">
             <Loader v-if="loading" class="animate-spin w-5 h-5" />
             {{ loading ? 'Signing up...' : 'Sign Up' }}
           </button>
 
-          <!-- Login Link -->
-          <p
-            class="col-span-1 sm:col-span-2 text-sm text-primary-300 text-center"
-          >
+          <!-- LOGIN LINK -->
+          <p class="text-sm text-primary-300 text-center">
             Already have an account?
             <router-link
               to="/login"
@@ -145,7 +144,7 @@
           </p>
         </form>
 
-        <!-- Back Home -->
+        <!-- BACK -->
         <router-link
           to="/"
           class="block text-center text-accent-400 hover:text-accent-300 mt-4 font-semibold"
@@ -161,17 +160,19 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/core/store/auth.js';
-import { Loader } from 'lucide-vue-next';
+import Swal from 'sweetalert2';
+import { Loader, Eye, EyeOff } from 'lucide-vue-next';
 import { Vue3Lottie } from 'vue3-lottie';
 import signupAnimation from '@/assets/animations/client-signup-animation.json';
 
-const ClientIllustration = new URL(
-  '@/assets/images/client-signup-illustration.png',
-  import.meta.url,
-).href;
-
 const router = useRouter();
 const authStore = useAuthStore();
+
+// Password toggle
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+
+const loading = ref(false);
 
 const form = ref({
   name: '',
@@ -181,12 +182,7 @@ const form = ref({
   confirmPassword: '',
 });
 
-const loading = ref(false);
-const error = ref('');
-
 const handleSignup = async () => {
-  error.value = '';
-
   if (
     !form.value.name ||
     !form.value.email ||
@@ -194,13 +190,19 @@ const handleSignup = async () => {
     !form.value.password ||
     !form.value.confirmPassword
   ) {
-    error.value = 'Please fill all required fields.';
-    return;
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Missing Fields',
+      text: 'Please fill all required fields.',
+    });
   }
 
   if (form.value.password !== form.value.confirmPassword) {
-    error.value = 'Passwords do not match.';
-    return;
+    return Swal.fire({
+      icon: 'error',
+      title: 'Password Mismatch',
+      text: 'Passwords do not match.',
+    });
   }
 
   loading.value = true;
@@ -215,14 +217,26 @@ const handleSignup = async () => {
 
     const data = await authStore.signupClient(payload);
 
-    if (data?.accessToken && data?.user) {
-      router.push('/client/dashboard');
+    if (data?.success) {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Account Created',
+        text: 'A verification email has been sent to your inbox.',
+      });
+      router.push('/verify-email');
     } else {
-      error.value = data?.message || 'Signup failed. Please try again.';
+      Swal.fire({
+        icon: 'error',
+        title: 'Signup Failed',
+        text: data?.message || 'Signup failed.',
+      });
     }
   } catch (err) {
-    error.value =
-      err.response?.data?.message || 'Signup failed. Please try again.';
+    Swal.fire({
+      icon: 'error',
+      title: 'Signup Failed',
+      text: err.response?.data?.message || 'Something went wrong.',
+    });
   } finally {
     loading.value = false;
   }
@@ -230,26 +244,50 @@ const handleSignup = async () => {
 </script>
 
 <style scoped>
-.input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  border: 2px solid #d1d5db;
-  outline: none;
-  background-color: white;
-  font-weight: 500;
+/* Dark input fields like login page */
+.input-dark {
+  @apply w-full px-4 py-3
+         rounded-xl
+         bg-primary-900
+         border border-primary-700
+         text-primary-200
+         placeholder-primary-400
+         outline-none
+         transition-all duration-300;
 }
-.input:focus {
-  border-color: #26c506;
-  box-shadow: 0 0 0 3px rgba(38, 197, 6, 0.2);
+
+.input-dark:focus {
+  @apply border-accent-500 shadow-inner-glow;
+}
+
+.btn-primary {
+  @apply w-full bg-accent-500 text-primary-900 font-bold py-3 rounded-xl hover:bg-accent-400 transition-all duration-300 shadow-float-md flex justify-center items-center gap-2 disabled:opacity-50;
 }
 
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Floating Lottie */
+.lottie-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+  100% {
+    transform: translateY(0px);
   }
 }
 </style>

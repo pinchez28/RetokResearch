@@ -108,18 +108,12 @@ export const useAuthStore = defineStore('auth', () => {
       const payload = { ...formData, role: 'Client' };
       const { data } = await authApi.signupClient(payload);
 
-      if (data.accessToken) {
-        setToken(data.accessToken);
-        user.value = data.user;
-        loggedIn.value = true;
-      }
-
+      // No login here — user must verify email first
       return data;
     } finally {
       isLoading.value = false;
     }
   };
-
   /* ================= EXPERT SIGNUP ================= */
   const signupExpert = async (formData, isFormData = false) => {
     isLoading.value = true;

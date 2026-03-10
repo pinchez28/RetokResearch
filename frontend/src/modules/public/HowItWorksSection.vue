@@ -110,13 +110,27 @@ const steps = [
 ];
 
 // Assign colorful backgrounds for cards
-// Each object has `bg` for gradient class and `text` for readable text color
 const colorClasses = [
-  { bg: 'bg-gradient-to-br from-blue-500 to-indigo-500', text: 'text-white' }, // dark gradient → white text
-  { bg: 'bg-gradient-to-br from-green-400 to-teal-500', text: 'text-black' }, // lighter gradient → black text
-  { bg: 'bg-gradient-to-br from-pink-500 to-purple-500', text: 'text-white' },
-  { bg: 'bg-gradient-to-br from-yellow-400 to-orange-500', text: 'text-black' },
-  { bg: 'bg-gradient-to-br from-red-400 to-pink-500', text: 'text-white' },
+  {
+    bg: 'bg-gradient-to-br from-primary-700 to-primary-500',
+    text: 'text-neutral-white',
+  },
+  {
+    bg: 'bg-gradient-to-br from-primary-600 to-primary-400',
+    text: 'text-neutral-white',
+  },
+  {
+    bg: 'bg-gradient-to-br from-accent-500 to-accent-400',
+    text: 'text-primary-900',
+  },
+  {
+    bg: 'bg-gradient-to-br from-primary-800 to-primary-600',
+    text: 'text-neutral-white',
+  },
+  {
+    bg: 'bg-gradient-to-br from-primary-500 to-accent-500',
+    text: 'text-neutral-white',
+  },
 ];
 
 const bgVideo = ref(null);
@@ -178,5 +192,12 @@ section {
   .grid {
     grid-template-columns: 1fr !important;
   }
+}
+
+.step-card:hover {
+  transform: translateY(-10px);
+  box-shadow:
+    0 15px 30px rgba(0, 0, 0, 0.25),
+    0 0 12px rgba(236, 179, 101, 0.5);
 }
 </style>

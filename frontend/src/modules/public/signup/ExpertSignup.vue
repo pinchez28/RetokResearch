@@ -7,7 +7,7 @@
       class="hidden lg:flex lg:w-1/2 sticky top-24 h-[calc(100vh-6rem)] bg-primary-800/60 backdrop-blur-xl border border-primary-700 rounded-l-3xl shadow-premium-dark flex-col justify-start items-center pt-12 px-10 space-y-6"
     >
       <h1 class="text-4xl lg:text-5xl font-extrabold text-accent-400">
-        Join as a Reserch Expert
+        Join as a Research Expert
       </h1>
 
       <p class="text-primary-300 text-lg text-center">
@@ -15,16 +15,12 @@
         seamlessly.
       </p>
 
-      <div
-        class="w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] max-w-full opacity-90 lottie-float"
-      >
-        <Vue3Lottie
-          :animationData="signupAnimation"
-          :loop="true"
-          :speed="0.85"
-          class="w-[320px] max-w-full opacity-90 lottie-float"
-        />
-      </div>
+      <Vue3Lottie
+        :animationData="signupAnimation"
+        :loop="true"
+        :speed="0.85"
+        class="w-[320px] max-w-full opacity-90 lottie-float"
+      />
     </div>
 
     <!-- FORM CARD -->
@@ -56,9 +52,9 @@
             <input
               v-model="form.name"
               type="text"
-              placeholder="John Doe"
+              placeholder="Username"
               required
-              class="input-dark w-full text-primary-900"
+              class="input-dark w-full"
             />
           </div>
 
@@ -70,9 +66,9 @@
             <input
               v-model="form.email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="Email Address"
               required
-              class="input-dark w-full text-primary-900"
+              class="input-dark w-full"
             />
           </div>
 
@@ -84,9 +80,9 @@
             <input
               v-model="form.phone"
               type="tel"
-              placeholder="+254 700 000000"
+              placeholder="Phone Number"
               required
-              class="input-dark w-full text-primary-900"
+              class="input-dark w-full"
             />
           </div>
 
@@ -126,8 +122,8 @@
             <input
               v-model="form.specialization"
               type="text"
-              placeholder="Data Science"
-              class="input-dark w-full text-primary-900"
+              placeholder="Specialization Skill"
+              class="input-dark w-full"
             />
           </div>
 
@@ -140,8 +136,8 @@
               v-model.number="form.experience"
               type="number"
               min="0"
-              placeholder="5"
-              class="input-dark w-full text-primary-900"
+              placeholder="0"
+              class="input-dark w-full"
             />
           </div>
 
@@ -153,8 +149,8 @@
             <input
               v-model="form.education"
               type="text"
-              placeholder="BSc Computer Science"
-              class="input-dark w-full text-primary-900"
+              placeholder="Top Level of Education"
+              class="input-dark w-full"
             />
           </div>
 
@@ -166,8 +162,8 @@
             <input
               v-model="form.certifications"
               type="text"
-              placeholder="Comma separated e.g., AWS, PMP"
-              class="input-dark w-full text-primary-900"
+              placeholder="Certifications"
+              class="input-dark w-full"
             />
           </div>
 
@@ -179,57 +175,63 @@
             <textarea
               v-model="form.bio"
               rows="3"
-              placeholder="Short professional bio"
-              class="input-dark w-full text-primary-900"
+              placeholder="Full Biography"
+              class="input-dark w-full"
             ></textarea>
           </div>
 
           <!-- Password -->
-          <div>
+          <div class="relative">
             <label class="block text-sm font-medium text-primary-300 mb-2">
               Password
             </label>
             <input
               v-model="form.password"
-              type="password"
-              placeholder="••••••••"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Password"
               required
-              class="input-dark w-full text-primary-900"
+              class="input-dark w-full pr-12"
             />
+            <button
+              type="button"
+              class="absolute right-3 top-10 text-primary-400 hover:text-accent-400"
+              @click="showPassword = !showPassword"
+            >
+              <Eye v-if="!showPassword" class="w-5 h-5" />
+              <EyeOff v-else class="w-5 h-5" />
+            </button>
           </div>
 
           <!-- Confirm Password -->
-          <div>
+          <div class="relative">
             <label class="block text-sm font-medium text-primary-300 mb-2">
               Confirm Password
             </label>
             <input
               v-model="form.confirmPassword"
-              type="password"
-              placeholder="••••••••"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              placeholder="Confirm Password"
               required
-              class="input-dark w-full text-primary-900"
+              class="input-dark w-full pr-12"
             />
-          </div>
-
-          <!-- Error -->
-          <div
-            v-if="error"
-            class="col-span-1 sm:col-span-2 text-red-400 text-center text-sm"
-          >
-            {{ error }}
+            <button
+              type="button"
+              class="absolute right-3 top-10 text-primary-400 hover:text-accent-400"
+              @click="showConfirmPassword = !showConfirmPassword"
+            >
+              <Eye v-if="!showConfirmPassword" class="w-5 h-5" />
+              <EyeOff v-else class="w-5 h-5" />
+            </button>
           </div>
 
           <!-- Submit -->
           <button
             type="submit"
             :disabled="loading"
-            class="col-span-1 sm:col-span-2 w-full bg-accent-500 text-primary-900 font-bold py-3 rounded-xl hover:bg-accent-400 transition-all duration-300 shadow-float-md disabled:opacity-50 flex justify-center items-center gap-2"
+            class="col-span-1 sm:col-span-2 btn-primary"
           >
-            <span v-if="loading" class="flex items-center gap-2">
-              <Loader class="animate-spin w-5 h-5" />
-              Signing up...
-            </span>
+            <Loader v-if="loading" class="animate-spin w-5 h-5" />
+            <span v-if="loading">Signing up...</span>
             <span v-else>Sign Up</span>
           </button>
 
@@ -260,22 +262,16 @@
 </template>
 
 <script setup>
-/* ✅ YOUR ORIGINAL SCRIPT — UNCHANGED */
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authApi } from '@/core/api/http.js';
 import Swal from 'sweetalert2';
-import { Loader } from 'lucide-vue-next';
-
+import { Loader, Eye, EyeOff } from 'lucide-vue-next';
 import { Vue3Lottie } from 'vue3-lottie';
 import signupAnimation from '@/assets/animations/expert-signup-animation.json';
 
-const ExpertIllustration = new URL(
-  '@/assets/images/expert-signup-illustration.png',
-  import.meta.url,
-).href;
-
 const router = useRouter();
+
 const form = ref({
   name: '',
   email: '',
@@ -290,8 +286,12 @@ const form = ref({
   password: '',
   confirmPassword: '',
 });
+
 const loading = ref(false);
-const error = ref('');
+
+// Password toggles
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 const handlePhotoUpload = (e) => {
   form.value.photo = e.target.files[0] || null;
@@ -301,8 +301,6 @@ const handleCVUpload = (e) => {
 };
 
 const handleSignup = async () => {
-  error.value = '';
-
   const requiredFields = [
     'name',
     'email',
@@ -312,21 +310,32 @@ const handleSignup = async () => {
     'password',
     'confirmPassword',
   ];
-  for (const f of requiredFields)
+
+  for (const f of requiredFields) {
     if (!form.value[f]) {
-      error.value = 'Please fill all required fields.';
-      return;
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Missing Required Fields',
+        text: 'Please fill all required fields.',
+        confirmButtonColor: '#ECB365',
+      });
     }
+  }
 
   if (form.value.password !== form.value.confirmPassword) {
-    error.value = 'Password and Confirm Password must match.';
-    return;
+    return Swal.fire({
+      icon: 'error',
+      title: 'Password Mismatch',
+      text: 'Password and Confirm Password must match.',
+      confirmButtonColor: '#ECB365',
+    });
   }
 
   loading.value = true;
 
   try {
     const payload = new FormData();
+
     payload.append('role', 'Expert');
     payload.append('name', form.value.name);
     payload.append('email', form.value.email);
@@ -352,18 +361,30 @@ const handleSignup = async () => {
 
     if (data.status === 'pending_admin_review') {
       await Swal.fire({
-        icon: 'info',
+        icon: 'success',
         title: 'Signup Successful',
-        html: 'Your account has been created! Admin approval is required before login.',
-        confirmButtonText: 'OK',
+        html: 'Your account has been created successfully.<br><br><b>Admin approval is required before login.</b>',
+        confirmButtonColor: '#ECB365',
       });
+
       router.push('/pending-approval');
     } else {
-      error.value = data.message || 'Signup failed. Please try again.';
+      Swal.fire({
+        icon: 'error',
+        title: 'Signup Failed',
+        text: data.message || 'Signup failed. Please try again.',
+        confirmButtonColor: '#ECB365',
+      });
     }
   } catch (err) {
-    error.value =
-      err.response?.data?.message || 'Signup failed. Please try again.';
+    Swal.fire({
+      icon: 'error',
+      title: 'Signup Failed',
+      text:
+        err.response?.data?.message ||
+        'Something went wrong. Please try again.',
+      confirmButtonColor: '#ECB365',
+    });
   } finally {
     loading.value = false;
   }
@@ -398,6 +419,10 @@ const handleSignup = async () => {
 
 .file-input-dark:hover {
   @apply border-accent-500;
+}
+
+.btn-primary {
+  @apply w-full bg-accent-500 text-primary-900 font-bold py-3 rounded-xl hover:bg-accent-400 transition-all duration-300 shadow-float-md flex justify-center items-center gap-2 disabled:opacity-50;
 }
 
 .animate-spin {

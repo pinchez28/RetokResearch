@@ -6,18 +6,14 @@
     <div
       class="hidden md:flex md:w-1/2 sticky top-[120px] h-[calc(100vh-160px)] bg-primary-800/60 backdrop-blur-xl border-r border-primary-700 flex-col justify-between items-center px-12 py-12"
     >
-      <!-- TEXT -->
       <div class="text-center space-y-4 max-w-md">
         <h1 class="text-5xl font-extrabold text-accent-400">Welcome Back</h1>
 
         <p class="text-primary-200 text-lg">
-          Sign in to request and track research services seamlessly. Access
-          top-tier research experts and manage projects effortlessly.
+          Sign in to request and track research services seamlessly.
         </p>
       </div>
 
-      <!-- IMAGE -->
-      <!-- ANIMATED ILLUSTRATION -->
       <div
         class="flex-1 w-full flex items-center justify-center overflow-hidden"
       >
@@ -49,46 +45,56 @@
             <label class="block text-sm font-medium text-primary-300 mb-2">
               Email
             </label>
+
             <input
               v-model="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="Email Address"
               class="input-dark w-full text-primary-900"
+              @keyup.enter="handleLogin"
             />
           </div>
 
           <!-- PASSWORD -->
-          <div>
+          <div class="relative">
             <label class="block text-sm font-medium text-primary-300 mb-2">
               Password
             </label>
+
             <input
               v-model="password"
-              type="password"
-              placeholder="••••••••"
-              class="input-dark w-full text-primary-900"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Password"
+              class="input-dark w-full text-primary-900 pr-12"
+              @keyup.enter="handleLogin"
             />
-          </div>
 
-          <!-- ERROR -->
-          <div v-if="error" class="text-red-400 text-sm text-center">
-            {{ error }}
+            <!-- SHOW PASSWORD -->
+            <button
+              type="button"
+              class="absolute right-3 top-10 text-primary-400 hover:text-accent-400"
+              @click="showPassword = !showPassword"
+            >
+              <Eye v-if="!showPassword" class="w-5 h-5" />
+              <EyeOff v-else class="w-5 h-5" />
+            </button>
           </div>
 
           <!-- LOGIN BUTTON -->
           <button
             type="submit"
             :disabled="loading"
-            class="w-full bg-accent-500 text-primary-900 font-bold py-3 rounded-xl hover:bg-accent-400 transition-all duration-300 shadow-float-md"
+            class="w-full bg-accent-500 text-primary-900 font-bold py-3 rounded-xl hover:bg-accent-400 transition-all duration-300 shadow-float-md flex items-center justify-center gap-2"
           >
-            <span v-if="loading">Signing in...</span>
-            <span v-else>Login</span>
+            <Loader v-if="loading" class="animate-spin w-5 h-5" />
+            {{ loading ? 'Signing in...' : 'Login' }}
           </button>
         </form>
 
         <!-- SIGNUP -->
         <div class="text-center text-sm text-primary-300 mt-4">
           Don't have an account?
+
           <button
             @click="showSignupModal = true"
             class="text-accent-400 hover:underline font-semibold"
@@ -114,7 +120,6 @@
             <div
               class="bg-primary-800 border border-primary-700 rounded-3xl shadow-premium-dark w-full max-w-md p-8 space-y-6 relative"
             >
-              <!-- Close Button -->
               <button
                 @click="showSignupModal = false"
                 class="absolute top-4 right-4 text-primary-400 hover:text-accent-400 text-xl"
@@ -122,7 +127,6 @@
                 ✕
               </button>
 
-              <!-- Title -->
               <div class="text-center space-y-2">
                 <h3 class="text-2xl font-extrabold text-accent-400">
                   Create Account As
@@ -132,9 +136,7 @@
                 </p>
               </div>
 
-              <!-- Options -->
               <div class="space-y-4">
-                <!-- Client -->
                 <button
                   @click="redirectToSignup('client')"
                   class="w-full flex items-center justify-center gap-3 bg-primary-900 border border-primary-700 py-3 rounded-xl hover:border-accent-500 transition-all duration-300"
@@ -143,7 +145,6 @@
                   <span class="font-semibold">Sign up as Client</span>
                 </button>
 
-                <!-- Expert -->
                 <button
                   @click="redirectToSignup('expert')"
                   class="w-full flex items-center justify-center gap-3 bg-primary-900 border border-primary-700 py-3 rounded-xl hover:border-accent-500 transition-all duration-300"
@@ -161,35 +162,45 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import Swal from 'sweetalert2';
 import { useAuthStore } from '@/core/store/auth.js';
-import { Loader, User, Briefcase } from 'lucide-vue-next';
+import { Loader, User, Briefcase, Eye, EyeOff } from 'lucide-vue-next';
 import { Vue3Lottie } from 'vue3-lottie';
 import loginAnimation from '@/assets/animations/login-animation.json';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 const email = ref('');
 const password = ref('');
 const loading = ref(false);
-const error = ref('');
+const showPassword = ref(false);
 const showSignupModal = ref(false);
 
-const handleLogin = async () => {
-  error.value = '';
+/* Auto-fill email from verification link */
+onMounted(() => {
+  email.value = route.query.email || '';
+});
 
+const handleLogin = async () => {
   if (!email.value || !password.value) {
-    error.value = 'Please enter both email and password.';
-    return;
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Missing Credentials',
+      text: 'Please enter both email and password.',
+    });
   }
 
   loading.value = true;
 
   try {
-    await authStore.login({ email: email.value, password: password.value });
+    await authStore.login({
+      email: email.value,
+      password: password.value,
+    });
 
     const user = authStore.user;
 
@@ -197,39 +208,22 @@ const handleLogin = async () => {
       await Swal.fire({
         icon: 'info',
         title: 'Account Pending Approval',
-        text: 'Your Expert account is pending admin approval. You will be able to login once approved.',
-        confirmButtonText: 'Ok',
+        text: 'Your Expert account is pending admin approval.',
       });
+
       return;
     }
 
-    switch (user.role) {
-      case 'Admin':
-        router.push('/admin');
-        break;
-      case 'Client':
-        router.push('/client');
-        break;
-      case 'Expert':
-        router.push('/expert');
-        break;
-      default:
-        router.push('/');
-    }
+    if (user.role === 'Admin') router.push('/admin');
+    else if (user.role === 'Client') router.push('/client');
+    else if (user.role === 'Expert') router.push('/expert');
+    else router.push('/');
   } catch (err) {
-    if (err.response?.status === 403) {
-      await Swal.fire({
-        icon: 'info',
-        title: 'Account Pending Approval',
-        text:
-          err.response.data.message ||
-          'Your account is pending admin approval.',
-        confirmButtonText: 'Ok',
-      });
-    } else {
-      error.value =
-        err.response?.data?.message || 'Login failed. Please try again.';
-    }
+    await Swal.fire({
+      icon: 'error',
+      title: 'Login Failed',
+      text: err.response?.data?.message || 'Login failed. Please try again.',
+    });
   } finally {
     loading.value = false;
   }
@@ -237,94 +231,35 @@ const handleLogin = async () => {
 
 const redirectToSignup = (role) => {
   showSignupModal.value = false;
+
   if (role === 'client') router.push('/signup/client');
   if (role === 'expert') router.push('/signup/expert');
 };
 </script>
 
 <style scoped>
-.input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 3rem;
-  border-radius: 1rem;
-  border: 2px solid #d1d5db;
-  outline: none;
-  background-color: #f9fafb;
-  font-weight: 500;
-  transition: all 0.3s;
-}
-.input:focus {
-  border-color: #26c506;
-  box-shadow: 0 0 0 4px rgba(38, 197, 6, 0.2);
+.input-dark {
+  @apply w-full px-4 py-3
+         rounded-xl
+         bg-primary-900
+         border border-primary-700
+         text-primary-200
+         placeholder-primary-400
+         outline-none
+         transition-all duration-300;
 }
 
-/* LEFT PANEL SLIDE IN */
-.left-panel-animate {
-  animation: slideInLeft 0.9s ease-out forwards;
-  opacity: 0;
+.input-dark:focus {
+  @apply border-accent-500 shadow-inner-glow;
 }
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-60px);
-    opacity: 0;
-  }
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
   to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* RIGHT PANEL SLIDE IN */
-.form-panel-animate {
-  animation: slideInRight 0.9s ease-out forwards;
-  opacity: 0;
-}
-@keyframes slideInRight {
-  from {
-    transform: translateX(60px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* STAGGER FADE UP */
-.animate-fade-up {
-  opacity: 0;
-  transform: translateY(30px);
-  animation: fadeUp 0.8s ease forwards;
-}
-.delay-1 {
-  animation-delay: 0.2s;
-}
-.delay-2 {
-  animation-delay: 0.4s;
-}
-.delay-3 {
-  animation-delay: 0.6s;
-}
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* FLOATING IMAGE */
-.floating-illustration {
-  animation: float 6s ease-in-out infinite;
-}
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
-  100% {
-    transform: translateY(0px);
+    transform: rotate(360deg);
   }
 }
 
@@ -332,6 +267,7 @@ const redirectToSignup = (role) => {
 .fade-leave-active {
   transition: opacity 0.25s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;

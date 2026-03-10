@@ -41,12 +41,24 @@ const expertSchema = new mongoose.Schema(
       updatedAt: { type: Date, default: Date.now },
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
 // Index for faster queries by status
 expertSchema.index({ status: 1 });
 
-const Expert = mongoose.model('Expert', expertSchema);
+// Optional: virtual to populate email from User
+expertSchema.virtual('email', {
+  ref: 'User',
+  localField: 'user',
+  foreignField: '_id',
+  justOne: true,
+  options: { select: 'email' },
+});
 
+const Expert = mongoose.model('Expert', expertSchema);
 export default Expert;

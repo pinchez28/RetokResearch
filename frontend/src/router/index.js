@@ -10,6 +10,8 @@ import About from '@/modules/public/About.vue';
 import Contact from '@/modules/public/Contact.vue';
 import Login from '@/modules/public/Login.vue';
 import ForgotPassword from '@/modules/public/ForgotPassword.vue';
+import VerifyEmail from '@/modules/public/VerifyEmail.vue';
+import EmailVerified from '../modules/public/EmailVerified.vue';
 
 /* ============================
    SIGNUP PAGES
@@ -157,6 +159,14 @@ const routes = [
         name: 'ExpertSignup',
         component: ExpertSignup,
         meta: { guestOnly: true },
+      },
+      {
+        path: '/verify-email',
+        component: VerifyEmail,
+      },
+      {
+        path: '/email-verified',
+        component: EmailVerified,
       },
     ],
   },

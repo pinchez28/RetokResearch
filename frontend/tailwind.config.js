@@ -10,10 +10,10 @@ module.exports = {
           700: '#064663',
           600: '#0A5C7A',
           500: '#0E7490',
-          400: '#20A4B0', // lighter for borders
-          300: '#45C1D4', // lighter for placeholder text
-          200: '#A0E1F0', // very light text
-          100: '#D0F0FA', // optional background highlights
+          400: '#20A4B0',
+          300: '#45C1D4',
+          200: '#A0E1F0',
+          100: '#D0F0FA',
         },
         accent: {
           500: '#ECB365',
@@ -30,10 +30,16 @@ module.exports = {
           },
         },
       },
+
+      fontFamily: {
+        sans: ['Poppins', 'ui-sans-serif', 'system-ui'],
+      },
+
       boxShadow: {
         'inner-glow': 'inset 0 0 8px rgba(236, 179, 101, 0.3)',
         'float-md': '0 6px 20px rgba(0, 0, 0, 0.15)',
       },
+
       keyframes: {
         fadeUp: {
           '0%': { opacity: '0', transform: 'translateY(25px)' },
@@ -48,10 +54,8 @@ module.exports = {
           '50%': { borderColor: '#FFB76B' },
           '100%': { borderColor: '#ECB365' },
         },
-        fontFamily: {
-          sans: ['Poppins', 'ui-sans-serif', 'system-ui'],
-        },
       },
+
       animation: {
         fadeUp: 'fadeUp 1s ease-out forwards',
         floatLabel: 'floatLabel 0.3s ease forwards',

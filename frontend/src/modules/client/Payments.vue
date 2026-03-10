@@ -248,15 +248,28 @@ async function handlePayment() {
     });
   } catch (err) {
     console.error(err);
-    await Swal.fire({
-      icon: 'error',
-      title: 'Payment Failed',
-      text:
-        err.response?.data?.message ||
-        'Payment could not be initiated. Please try again.',
-      confirmButtonColor: '#dc2626',
-    });
-    paying.value = false;
+
+    if (err.response?.status === 409) {
+      // Conflict: already paid or in progress
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Payment Already Initiated',
+        text: 'This project has already been paid or is currently in progress.',
+        confirmButtonColor: '#f59e0b', // amber
+      });
+    } else {
+      // Any other errors
+      await Swal.fire({
+        icon: 'error',
+        title: 'Payment Failed',
+        text:
+          err.response?.data?.message ||
+          'Payment could not be initiated. Please try again.',
+        confirmButtonColor: '#dc2626',
+      });
+    }
+
+    paying.value = false; // reset the flag
   }
 }
 

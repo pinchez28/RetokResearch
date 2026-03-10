@@ -1,10 +1,14 @@
 <template>
   <div class="p-6 md:p-10 space-y-6 bg-gray-100 min-h-screen">
-    <h1 class="text-3xl font-extrabold text-[#001BB7]">Available Jobs</h1>
+    <h1 class="text-3xl font-extrabold text-[#070912]">Available Jobs</h1>
 
     <!-- Filters -->
     <div class="flex flex-wrap gap-4 my-4">
-      <input v-model="filters.keyword" placeholder="Search jobs..." class="input" />
+      <input
+        v-model="filters.keyword"
+        placeholder="Search jobs..."
+        class="input"
+      />
       <select v-model="filters.category" class="input">
         <option value="">All Categories</option>
         <option v-for="cat in categories" :key="cat">{{ cat }}</option>
@@ -14,7 +18,10 @@
     <!-- JOB CARDS -->
     <div v-if="loading" class="text-center mt-10">Loading jobs...</div>
 
-    <div v-else-if="filteredJobs.length === 0" class="text-center mt-10 text-gray-500">
+    <div
+      v-else-if="filteredJobs.length === 0"
+      class="text-center mt-10 text-gray-500"
+    >
       No available jobs at the moment. Check back later!
     </div>
 
@@ -27,7 +34,7 @@
       >
         <h2 class="text-xl font-bold text-[#001BB7] mb-2">{{ job.title }}</h2>
         <p class="text-gray-600 text-sm mb-4">
-          {{ (job.description || "").substring(0, 160) }}...
+          {{ (job.description || '').substring(0, 160) }}...
         </p>
 
         <div class="space-y-2 text-sm text-gray-500 mb-4">
@@ -37,7 +44,9 @@
             {{ job.pricingRange?.max || 0 }}
           </p>
           <p><strong>Deadline:</strong> {{ formatDate(job.deadline) }}</p>
-          <p v-if="job.category"><strong>Category:</strong> {{ job.category }}</p>
+          <p v-if="job.category">
+            <strong>Category:</strong> {{ job.category }}
+          </p>
         </div>
 
         <div class="flex justify-between mt-4">
@@ -54,16 +63,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { expertApi } from "@/core/api/http.js";
+import { ref, computed, onMounted, nextTick } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { expertApi } from '@/core/api/http.js';
 
 const router = useRouter();
 const route = useRoute();
 
 const availableJobs = ref([]);
 const categories = ref([]);
-const filters = ref({ keyword: "", category: "" });
+const filters = ref({ keyword: '', category: '' });
 const loading = ref(false);
 
 const fetchJobs = async () => {
@@ -73,7 +82,9 @@ const fetchJobs = async () => {
     availableJobs.value = res.data.jobs || [];
 
     categories.value = [
-      ...new Set(availableJobs.value.map((job) => job.category).filter(Boolean)),
+      ...new Set(
+        availableJobs.value.map((job) => job.category).filter(Boolean),
+      ),
     ];
 
     if (route.query.jobId) {
@@ -81,11 +92,11 @@ const fetchJobs = async () => {
       const job = availableJobs.value.find((j) => j._id === route.query.jobId);
       if (job) {
         const el = document.getElementById(`job-${job._id}`);
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
   } catch (err) {
-    console.error("Failed to fetch jobs:", err);
+    console.error('Failed to fetch jobs:', err);
   } finally {
     loading.value = false;
   }
@@ -100,12 +111,12 @@ const filteredJobs = computed(() =>
       ? j.category === filters.value.category
       : true;
     return matchKeyword && matchCategory;
-  })
+  }),
 );
 
 const formatDate = (d) => {
   const date = new Date(d);
-  return !isNaN(date) ? date.toLocaleDateString() : "—";
+  return !isNaN(date) ? date.toLocaleDateString() : '—';
 };
 
 const viewJob = (job) => router.push(`/expert/jobs/${job._id}`);

@@ -114,7 +114,7 @@ const openSignup = () => window.openSignupOverlay?.();
         <!-- Second Row: Login / Signup -->
         <div
           v-if="!isAuthPage"
-          class="flex justify-center items-center space-x-4"
+          class="flex justify-center items-center space-x-4 mt-8"
         >
           <router-link
             to="/login"

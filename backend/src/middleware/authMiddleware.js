@@ -30,8 +30,11 @@ export const authMiddleware = async (req, res, next) => {
       });
     }
 
+    // ✅ Added fallback support for JWT_SECRET
+    const jwtSecret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
+
     // 2️⃣ Verify JWT
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const decoded = jwt.verify(token, jwtSecret);
 
     // 3️⃣ Fetch user from DB
     let user;

@@ -1,37 +1,29 @@
-// backend/src/services/smsService.js
+import dotenv from 'dotenv';
+dotenv.config(); // <-- load .env variables
+
 import AfricasTalking from 'africastalking';
 
+const africasTalkingUsername = process.env.AFRICASTALKING_USERNAME || 'sandbox';
+const africasTalkingApiKey = process.env.AFRICASTALKING_API_KEY || 'dev_key';
+
 const africasTalking = AfricasTalking({
-  apiKey: process.env.AT_API_KEY,
-  username: process.env.AT_USERNAME,
+  username: africasTalkingUsername,
+  apiKey: africasTalkingApiKey,
 });
 
-const sms = africasTalking.SMS; // ✅ no parentheses
+const sms = africasTalking.SMS;
 
-/**
- * Send an SMS
- * @param {string} phone - Recipient phone (format 2547XXXXXXXX)
- * @param {string} message - SMS body
- */
 export async function sendSMS(phone, message) {
-  if (!/^254\d{9}$/.test(phone)) {
-    throw new Error('Invalid phone number for SMS');
-  }
-
+  if (!/^254\d{9}$/.test(phone)) throw new Error('Invalid phone number');
   if (!message) throw new Error('SMS message is required');
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log('SMS stub (dev mode):', phone, message);
+    return { status: 'stubbed' };
+  }
+
   try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('SMS stub (dev mode):', phone, message);
-      return { status: 'stubbed' };
-    }
-
-    const response = await sms.send({
-      to: phone,
-      message,
-      from: 'Academin', // optional sender ID
-    });
-
+    const response = await sms.send({ to: phone, message, from: 'Academin' });
     console.log('SMS sent:', response);
     return response;
   } catch (err) {
