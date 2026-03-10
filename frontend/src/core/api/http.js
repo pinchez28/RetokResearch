@@ -116,6 +116,8 @@ export const authApi = {
   logout: () => api.post('/auth/logout'),
   getCurrentUser: () => api.get('/auth/me'),
   verifyEmail: (token) => api.get(`/auth/verify-email?token=${token}`),
+  forgotPassword: (payload) => api.post('/auth/forgot-password', payload),
+  resetPassword: (payload) => api.post('/auth/reset-password', payload),
 };
 
 /* ================= CLIENT API ================= */

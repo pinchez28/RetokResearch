@@ -8,8 +8,7 @@
     >
       <div class="text-center space-y-4 max-w-md">
         <h1 class="text-5xl font-extrabold text-accent-400">Welcome Back</h1>
-
-        <p class="text-primary-200 text-lg">
+        <p class="text-primary-200 text-2xl">
           Sign in to request and track research services seamlessly.
         </p>
       </div>
@@ -33,7 +32,7 @@
       >
         <div class="text-center space-y-2">
           <h2 class="text-4xl font-extrabold text-accent-400">Sign In</h2>
-          <p class="text-primary-300 text-sm sm:text-base">
+          <p class="text-primary-300 text-2xl">
             Access your account and manage your research services.
           </p>
         </div>
@@ -42,10 +41,9 @@
         <form @submit.prevent="handleLogin" class="space-y-6">
           <!-- EMAIL -->
           <div>
-            <label class="block text-sm font-medium text-primary-300 mb-2">
-              Email
-            </label>
-
+            <label class="block text-sm font-medium text-primary-300 mb-2"
+              >Email</label
+            >
             <input
               v-model="email"
               type="email"
@@ -57,10 +55,9 @@
 
           <!-- PASSWORD -->
           <div class="relative">
-            <label class="block text-sm font-medium text-primary-300 mb-2">
-              Password
-            </label>
-
+            <label class="block text-sm font-medium text-primary-300 mb-2"
+              >Password</label
+            >
             <input
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
@@ -78,6 +75,17 @@
               <Eye v-if="!showPassword" class="w-5 h-5" />
               <EyeOff v-else class="w-5 h-5" />
             </button>
+
+            <!-- FORGOT PASSWORD -->
+            <div class="text-right mt-2">
+              <button
+                type="button"
+                @click="showForgotModal = true"
+                class="text-sm text-accent-400 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
           </div>
 
           <!-- LOGIN BUTTON -->
@@ -94,7 +102,6 @@
         <!-- SIGNUP -->
         <div class="text-center text-sm text-primary-300 mt-4">
           Don't have an account?
-
           <button
             @click="showSignupModal = true"
             class="text-accent-400 hover:underline font-semibold"
@@ -156,6 +163,47 @@
             </div>
           </div>
         </transition>
+
+        <!-- FORGOT PASSWORD MODAL -->
+        <transition name="fade">
+          <div
+            v-if="showForgotModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          >
+            <div
+              class="bg-primary-800 border border-primary-700 rounded-3xl shadow-premium-dark w-full max-w-md p-8 space-y-6 relative"
+            >
+              <button
+                @click="showForgotModal = false"
+                class="absolute top-4 right-4 text-primary-400 hover:text-accent-400 text-xl"
+              >
+                ✕
+              </button>
+
+              <h3 class="text-2xl font-bold text-accent-400 text-center">
+                Reset Password
+              </h3>
+
+              <p class="text-primary-300 text-sm text-center">
+                Enter your email to receive a password reset link.
+              </p>
+
+              <input
+                v-model="forgotEmail"
+                type="email"
+                placeholder="Email Address"
+                class="input-dark w-full"
+              />
+
+              <button
+                @click="handleForgotPassword"
+                class="w-full bg-accent-500 text-primary-900 font-bold py-3 rounded-xl hover:bg-accent-400 transition-all duration-300"
+              >
+                Send Reset Link
+              </button>
+            </div>
+          </div>
+        </transition>
       </div>
     </div>
   </div>
@@ -169,6 +217,7 @@ import { useAuthStore } from '@/core/store/auth.js';
 import { Loader, User, Briefcase, Eye, EyeOff } from 'lucide-vue-next';
 import { Vue3Lottie } from 'vue3-lottie';
 import loginAnimation from '@/assets/animations/login-animation.json';
+import { authApi } from '@/core/api/http.js';
 
 const router = useRouter();
 const route = useRoute();
@@ -180,7 +229,10 @@ const loading = ref(false);
 const showPassword = ref(false);
 const showSignupModal = ref(false);
 
-/* Auto-fill email from verification link */
+/* Forgot password */
+const showForgotModal = ref(false);
+const forgotEmail = ref('');
+
 onMounted(() => {
   email.value = route.query.email || '';
 });
@@ -210,7 +262,6 @@ const handleLogin = async () => {
         title: 'Account Pending Approval',
         text: 'Your Expert account is pending admin approval.',
       });
-
       return;
     }
 
@@ -229,9 +280,36 @@ const handleLogin = async () => {
   }
 };
 
+const handleForgotPassword = async () => {
+  if (!forgotEmail.value) {
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Missing Email',
+      text: 'Please enter your email.',
+    });
+  }
+
+  try {
+    await authApi.forgotPassword({ email: forgotEmail.value });
+
+    showForgotModal.value = false;
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Reset Link Sent',
+      text: 'Check your email for the password reset link.',
+    });
+  } catch (err) {
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: err.response?.data?.message || 'Failed to send reset email.',
+    });
+  }
+};
+
 const redirectToSignup = (role) => {
   showSignupModal.value = false;
-
   if (role === 'client') router.push('/signup/client');
   if (role === 'expert') router.push('/signup/expert');
 };
@@ -248,26 +326,21 @@ const redirectToSignup = (role) => {
          outline-none
          transition-all duration-300;
 }
-
 .input-dark:focus {
   @apply border-accent-500 shadow-inner-glow;
 }
-
 .animate-spin {
   animation: spin 1s linear infinite;
 }
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
-
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.25s ease;
 }
-
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;

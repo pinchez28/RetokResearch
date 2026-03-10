@@ -9,7 +9,7 @@ import HomePage from '@/modules/public/HomePage.vue';
 import About from '@/modules/public/About.vue';
 import Contact from '@/modules/public/Contact.vue';
 import Login from '@/modules/public/Login.vue';
-import ForgotPassword from '@/modules/public/ForgotPassword.vue';
+import ResetPassword from '@/modules/public/ResetPassword.vue';
 import VerifyEmail from '@/modules/public/VerifyEmail.vue';
 import EmailVerified from '../modules/public/EmailVerified.vue';
 
@@ -137,10 +137,11 @@ const routes = [
         meta: { guestOnly: true },
       },
       {
-        path: 'forgot-password',
-        name: 'ForgotPassword',
-        component: ForgotPassword,
+        path: 'reset-password/:token',
+        name: 'ResetPassword',
+        component: ResetPassword,
         meta: { guestOnly: true },
+        props: true, // allows route param to be passed as a prop if needed
       },
       {
         path: 'signup',

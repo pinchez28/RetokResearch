@@ -10,7 +10,7 @@
         Join as Client
       </h1>
 
-      <p class="text-primary-300 text-lg text-center max-w-md">
+      <p class="text-primary-300 text-center max-w-md text-2xl">
         Sign up to request research services and track your projects
         effortlessly.
       </p>
@@ -33,7 +33,7 @@
           <h1 class="text-3xl sm:text-4xl font-extrabold text-accent-400">
             Client Signup
           </h1>
-          <p class="text-primary-300 text-sm sm:text-base">
+          <p class="text-primary-300 text-2xl">
             Create your account to start requesting research services.
           </p>
         </div>

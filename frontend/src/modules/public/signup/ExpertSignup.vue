@@ -10,7 +10,7 @@
         Join as a Research Expert
       </h1>
 
-      <p class="text-primary-300 text-lg text-center">
+      <p class="text-primary-300 text-2xl text-center">
         Sign up to collaborate and earn by providing research services
         seamlessly.
       </p>
@@ -33,7 +33,7 @@
           <h1 class="text-4xl font-extrabold text-accent-400">
             Service Provider Signup
           </h1>
-          <p class="text-primary-300 text-sm sm:text-base">
+          <p class="text-primary-300 text-2xl">
             Join our platform to collaborate and earn on research projects.
           </p>
         </div>

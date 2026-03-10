@@ -21,6 +21,8 @@ const isStrongPassword = (password) => {
   return regex.test(password);
 };
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 export const signup = async (req, res) => {
   try {
     console.log('req.body:', req.body);

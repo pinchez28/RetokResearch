@@ -11,7 +11,7 @@
 
       <router-link
         to="/login"
-        class="btn-primary mt-4 inline-block text-accent-400"
+        class="btn-primary mt-4 inline-block text-accent-400 hover:text-accent-500"
       >
         Go to Login
       </router-link>
