@@ -1,3 +1,4 @@
+// app.js
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -20,24 +21,16 @@ import './src/models/chat/ChatThread.js';
 // -------------------- IMPORT ROUTES --------------------
 import notificationRoutes from './src/routes/notification/notificationRoutes.js';
 import authRoutes from './src/routes/auth/authRoutes.js';
-
-// Guest
 import guestAboutRoutes from './src/routes/guest/guestAboutRoutes.js';
 import guestRequestRoutes from './src/routes/guest/guestRequestRoutes.js';
 import guestMessageRoutes from './src/routes/guest/guestMessageRoutes.js';
 import guestJobRoutes from './src/routes/guest/guestJobRoutes.js';
-
-// Client
 import clientDashboardRoutes from './src/routes/client/clientDashboardRoutes.js';
 import clientProfileRoutes from './src/routes/client/clientProfileRoutes.js';
 import clientJobRoutes from './src/routes/client/clientJobRoutes.js';
 import clientProposalRoutes from './src/routes/client/clientProposalRoutes.js';
 import clientProjectRoutes from './src/routes/client/clientProjectRoutes.js';
-
-// MPESA
 import mpesaRoutes from './src/routes/mpesa/mpesaRoutes.js';
-
-// Admin
 import adminServiceRoutes from './src/routes/admin/adminServiceRoutes.js';
 import adminClientRoutes from './src/routes/admin/adminClientRoutes.js';
 import adminExpertRoutes from './src/routes/admin/adminExpertRoutes.js';
@@ -45,19 +38,27 @@ import adminJobRoutes from './src/routes/admin/adminJobRoutes.js';
 import adminRoutes from './src/routes/admin/adminRoutes.js';
 import adminGuestGuestRequestRoutes from './src/routes/admin/adminGuestRequestRoutes.js';
 import adminGuestMessageRoutes from './src/routes/admin/adminGuestMessagesRoutes.js';
-
-// Expert (✅ SINGLE CONSOLIDATED ROUTER)
 import expertRoutes from './src/routes/expert/expertRoutes.js';
-
-// Chat
 import chatRoutes from './src/routes/chat/chatRoutes.js';
 
 // -------------------- CORS --------------------
-const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = [
+  process.env.FRONTEND_URL, // Render frontend
+  'http://localhost:5173', // local dev
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS not allowed'));
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
 

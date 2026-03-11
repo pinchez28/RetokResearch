@@ -1,3 +1,4 @@
+// server.js
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -9,14 +10,15 @@ import app from './app.js';
 import { initSocket } from './src/sockets/index.js';
 import { cleanupUnverifiedUsers } from './src/jobs/cleanUpUnverifiedUser.js';
 
-// MongoDB
+// -------------------- MONGO --------------------
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('MongoDB connected');
+    console.log('✅ MongoDB connected');
 
-    cron.schedule('0 * * * *', async () => {
-      console.log('🧹 Running cleanup job...');
+    // Cleanup job every 48 hours (runs at midnight every 2 days)
+    cron.schedule('0 0 */2 * *', async () => {
+      console.log('🧹 Running cleanup job every 48 hours...');
       await cleanupUnverifiedUsers();
     });
 
@@ -27,16 +29,24 @@ mongoose
     process.exit(1);
   });
 
-// HTTP server
+// -------------------- HTTP SERVER --------------------
 const server = http.createServer(app);
 
-// Socket.IO
+// -------------------- SOCKET.IO --------------------
 const io = initSocket(server);
 app.set('io', io);
 
-// Start server
-const PORT = process.env.PORT || 4000;
+// Optional: log socket connections
+io.on('connection', (socket) => {
+  console.log('🔌 Socket connected', socket.id);
 
+  socket.on('disconnect', () => {
+    console.log('❌ Socket disconnected', socket.id);
+  });
+});
+
+// -------------------- START SERVER --------------------
+const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
