@@ -45,7 +45,12 @@ io.on('connection', (socket) => {
   });
 });
 
-
+// Only log relevant SMTP/env info — NEVER log passwords in public logs
+console.log('LIVE ENV VARIABLES:');
+console.log('SMTP_HOST:', process.env.SMTP_HOST);
+console.log('SMTP_PORT:', process.env.SMTP_PORT);
+console.log('SMTP_USER:', process.env.SMTP_USER ? 'SET' : 'MISSING');
+console.log('SMTP_PASS:', process.env.SMTP_PASS ? 'SET' : 'MISSING');
 
 // -------------------- START SERVER --------------------
 const PORT = process.env.PORT || 4000;
