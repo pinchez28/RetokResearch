@@ -41,7 +41,8 @@ export const signup = async (req, res) => {
       certifications,
     } = req.body;
 
-    // Validate required fields
+    // ================= VALIDATION =================
+
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -69,7 +70,8 @@ export const signup = async (req, res) => {
 
     role = role.charAt(0).toUpperCase() + role.slice(1);
 
-    // Check existing user
+    // ================= CHECK EXISTING USER =================
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -79,11 +81,13 @@ export const signup = async (req, res) => {
       });
     }
 
-    // Create auth user
+    // ================= CREATE AUTH USER =================
+
     const user = new User({
       email,
       password,
       role,
+      isEmailVerified: false,
     });
 
     await user.save();
@@ -91,6 +95,7 @@ export const signup = async (req, res) => {
     let profile;
 
     // ================= CLIENT PROFILE =================
+
     if (role === 'Client') {
       profile = new Client({
         name,
@@ -102,6 +107,7 @@ export const signup = async (req, res) => {
     }
 
     // ================= EXPERT PROFILE =================
+
     if (role === 'Expert') {
       if (!specialization || !bio || !experience || !education) {
         return res.status(400).json({
@@ -132,33 +138,19 @@ export const signup = async (req, res) => {
         photo,
         specialization,
         bio,
-        experience,
+        experience: Number(experience),
         education,
         certifications: certificationsArray,
         cvPdf,
-        status: 'pending_admin_review',
+        status: 'email_verification_pending',
         rating: 0,
       });
 
       await profile.save();
-
-      // Notify Admin
-      await Notification.create({
-        userType: 'Admin',
-        title: 'New Expert Signup Pending Approval',
-        message: `${profile.name} signed up as Expert.`,
-      });
-
-      if (process.env.ADMIN_EMAIL) {
-        await sendEmail({
-          to: process.env.ADMIN_EMAIL,
-          subject: 'New Expert Signup Pending Approval',
-          html: `<p>${profile.name} signed up as Expert.</p>`,
-        });
-      }
     }
 
-    // Attach profile to user
+    // ================= LINK PROFILE =================
+
     user.profile = profile._id;
     await user.save();
 
@@ -174,7 +166,7 @@ export const signup = async (req, res) => {
       expiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
-    const backendURL = process.env.BACKEND_URL || 'http://localhost:4000';
+    const backendURL = process.env.BACKEND_URL;
 
     const verifyURL = `${backendURL}/api/auth/verify-email?token=${token}`;
 
@@ -473,39 +465,89 @@ export const verifyEmail = async (req, res) => {
     const { token } = req.query;
 
     if (!token) {
-      return res.redirect(`${process.env.FRONTEND_URL}/verification-failed`);
+      return res.status(400).json({
+        success: false,
+        message: 'Verification token is missing',
+      });
     }
 
-    const emailToken = await EmailToken.findOne({ token });
+    // Find token record
+    const emailToken = await EmailToken.findOne({
+      token,
+      expiresAt: { $gt: Date.now() },
+    });
 
     if (!emailToken) {
-      return res.redirect(`${process.env.FRONTEND_URL}/verification-failed`);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification token',
+      });
     }
 
-    if (emailToken.expiresAt < Date.now()) {
-      return res.redirect(`${process.env.FRONTEND_URL}/verification-failed`);
-    }
-
+    // Find the user
     const user = await User.findById(emailToken.user);
 
     if (!user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/verification-failed`);
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
     }
 
+    // Prevent double verification
     if (user.isEmailVerified) {
-      return res.redirect(`${process.env.FRONTEND_URL}/email-verified`);
+      const frontendURL = process.env.FRONTEND_URL;
+      return res.redirect(`${frontendURL}/email-verified`);
     }
 
+    // Mark email verified
     user.isEmailVerified = true;
     await user.save();
 
-    await EmailToken.deleteOne({ _id: emailToken._id });
+    // ================= EXPERT FLOW =================
+    if (user.role === 'Expert') {
+      const expert = await Expert.findOne({ user: user._id });
 
-    // Redirect to frontend success page
-    return res.redirect(`${process.env.FRONTEND_URL}/email-verified`);
-  } catch (err) {
-    console.error('Email verification error:', err);
+      if (expert) {
+        // Move expert into admin review queue
+        expert.status = 'pending_admin_review';
+        await expert.save();
 
-    return res.redirect(`${process.env.FRONTEND_URL}/verification-failed`);
+        // Notify admin
+        await Notification.create({
+          userType: 'Admin',
+          title: 'New Expert Awaiting Approval',
+          message: `${expert.name} has verified their email and awaits approval.`,
+        });
+
+        // Email admin
+        if (process.env.ADMIN_EMAIL) {
+          await sendEmail({
+            to: process.env.ADMIN_EMAIL,
+            subject: 'New Expert Awaiting Approval',
+            html: `
+              <p><b>${expert.name}</b> has verified their email and is awaiting approval.</p>
+            `,
+          });
+        }
+      }
+    }
+
+    // ================= CLEANUP =================
+
+    await EmailToken.deleteMany({ user: user._id });
+
+    // ================= REDIRECT FRONTEND =================
+
+    const frontendURL = process.env.FRONTEND_URL;
+
+    return res.redirect(`${frontendURL}/email-verified`);
+  } catch (error) {
+    console.error('Email verification error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Email verification failed',
+    });
   }
 };

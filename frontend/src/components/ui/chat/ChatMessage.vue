@@ -53,7 +53,7 @@
           v-else-if="localMessage.status === 'rejected'"
           class="ml-2 px-2 py-0.5 rounded-full bg-red-700 text-white font-semibold text-xs"
         >
-          Rejected: {{ localMessage.rejectionReason || "No reason provided" }}
+          Rejected: {{ localMessage.rejectionReason || 'No reason provided' }}
         </span>
 
         <!-- Delete -->
@@ -72,8 +72,8 @@
       v-if="showModal"
       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
     >
-      <div class="bg-gray-800 p-6 rounded-xl w-96 text-white">
-        <h3 class="font-bold text-lg mb-4">Reject Message</h3>
+      <div class="bg-gray-800 p-6 rounded-xl w-96 text-primary-100">
+        <h3 class="font-bold text-lg mb-4 text-primary-100">Reject Message</h3>
 
         <textarea
           v-model="rejectReason"
@@ -103,10 +103,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
-import Swal from "sweetalert2";
-import { CheckIcon, XIcon } from "lucide-vue-next";
-import { useChat } from "@/composables/chat/useChat.js";
+import { ref, computed, watch } from 'vue';
+import Swal from 'sweetalert2';
+import { CheckIcon, XIcon } from 'lucide-vue-next';
+import { useChat } from '@/composables/chat/useChat.js';
 
 // Props
 const props = defineProps({
@@ -117,36 +117,36 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(["moderated", "deleted", "chat-ready"]);
+const emit = defineEmits(['moderated', 'deleted', 'chat-ready']);
 
 // Local message state
 const localMessage = ref({ ...props.message });
-if (typeof localMessage.value.sender === "string") {
+if (typeof localMessage.value.sender === 'string') {
   localMessage.value.sender = {
     _id: localMessage.value.sender,
-    role: localMessage.value.senderRole?.toLowerCase() || "unknown",
+    role: localMessage.value.senderRole?.toLowerCase() || 'unknown',
     name: localMessage.value.senderRole
       ? localMessage.value.senderRole.charAt(0).toUpperCase() +
         localMessage.value.senderRole.slice(1)
-      : "Unknown",
+      : 'Unknown',
   };
 }
 watch(
   () => props.message,
   (newMsg) => {
     localMessage.value = { ...newMsg };
-    if (typeof localMessage.value.sender === "string") {
+    if (typeof localMessage.value.sender === 'string') {
       localMessage.value.sender = {
         _id: localMessage.value.sender,
-        role: localMessage.value.senderRole?.toLowerCase() || "unknown",
+        role: localMessage.value.senderRole?.toLowerCase() || 'unknown',
         name: localMessage.value.senderRole
           ? localMessage.value.senderRole.charAt(0).toUpperCase() +
             localMessage.value.senderRole.slice(1)
-          : "Unknown",
+          : 'Unknown',
       };
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 // Chat composable
@@ -155,117 +155,121 @@ const { moderateMessage, deleteMessage } = useChat(
   false,
   { _id: props.currentUserId },
   props.adminMode,
-  emit
+  emit,
 );
 
 // Computed
-const isMine = computed(() => localMessage.value.sender?._id === props.currentUserId);
+const isMine = computed(
+  () => localMessage.value.sender?._id === props.currentUserId,
+);
 const senderDisplay = computed(() => {
   const sender = localMessage.value.sender;
-  if (!sender) return "UNKNOWN";
-  if (props.adminMode) return (sender.role || "unknown").toUpperCase();
-  if (sender._id === props.currentUserId) return "You";
-  return (sender.role || sender.name || "UNKNOWN").toUpperCase();
+  if (!sender) return 'UNKNOWN';
+  if (props.adminMode) return (sender.role || 'unknown').toUpperCase();
+  if (sender._id === props.currentUserId) return 'You';
+  return (sender.role || sender.name || 'UNKNOWN').toUpperCase();
 });
-const messageContent = computed(() => localMessage.value.content || "");
+const messageContent = computed(() => localMessage.value.content || '');
 const formattedTime = computed(() => {
   const ts = localMessage.value.createdAt;
   return ts
     ? new Date(ts).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
+        hour: '2-digit',
+        minute: '2-digit',
       })
-    : "";
+    : '';
 });
 
 // Bubble color per role
 const messageBubbleClass = computed(() => {
   const role = localMessage.value.sender?.role?.toLowerCase();
-  if (role === "admin")
-    return "bg-gradient-to-r from-purple-600 to-purple-500 text-white";
-  if (role === "expert") return "bg-gradient-to-r from-blue-600 to-blue-500 text-white";
-  if (role === "client")
-    return "bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold";
-  return "bg-gray-200 text-gray-900";
+  if (role === 'admin')
+    return 'bg-gradient-to-r from-purple-600 to-purple-500 text-white';
+  if (role === 'expert')
+    return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white';
+  if (role === 'client')
+    return 'bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold';
+  return 'bg-gray-200 text-gray-900';
 });
 
 const senderTextClass = computed(() =>
-  localMessage.value.sender?.role ? "text-white font-bold" : "text-gray-700"
+  localMessage.value.sender?.role ? 'text-white font-bold' : 'text-gray-700',
 );
 
 // Modal state
 const showModal = ref(false);
-const rejectReason = ref("");
+const rejectReason = ref('');
 const openRejectModal = () => {
-  rejectReason.value = "";
+  rejectReason.value = '';
   showModal.value = true;
 };
 const closeRejectModal = () => {
   showModal.value = false;
-  rejectReason.value = "";
+  rejectReason.value = '';
 };
 
 // Actions
 const handleApprove = async () => {
-  if (localMessage.value.status !== "pending") return;
+  if (localMessage.value.status !== 'pending') return;
   const result = await Swal.fire({
-    title: "Approve this message?",
-    icon: "question",
+    title: 'Approve this message?',
+    icon: 'question',
     showCancelButton: true,
-    confirmButtonText: "Approve",
-    confirmButtonColor: "#16a34a",
+    confirmButtonText: 'Approve',
+    confirmButtonColor: '#16a34a',
   });
   if (!result.isConfirmed) return;
   try {
-    const updated = await moderateMessage(localMessage.value._id, "approve");
-    localMessage.value.status = "approved";
+    const updated = await moderateMessage(localMessage.value._id, 'approve');
+    localMessage.value.status = 'approved';
     localMessage.value.rejectionReason = null;
-    emit("moderated", updated);
+    emit('moderated', updated);
   } catch (err) {
-    Swal.fire("Error", err.message || "Moderation failed", "error");
+    Swal.fire('Error', err.message || 'Moderation failed', 'error');
   }
 };
 
 const handleReject = async () => {
-  if (localMessage.value.status !== "pending" || !rejectReason.value.trim()) return;
+  if (localMessage.value.status !== 'pending' || !rejectReason.value.trim())
+    return;
   const result = await Swal.fire({
-    title: "Reject this message?",
-    icon: "warning",
+    title: 'Reject this message?',
+    icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: "Reject",
-    confirmButtonColor: "#dc2626",
+    confirmButtonText: 'Reject',
+    confirmButtonColor: '#dc2626',
   });
   if (!result.isConfirmed) return;
   try {
     const updated = await moderateMessage(
       localMessage.value._id,
-      "reject",
-      rejectReason.value.trim()
+      'reject',
+      rejectReason.value.trim(),
     );
-    localMessage.value.status = "rejected";
+    localMessage.value.status = 'rejected';
     localMessage.value.rejectionReason = rejectReason.value.trim();
-    emit("moderated", updated);
+    emit('moderated', updated);
     closeRejectModal();
   } catch (err) {
-    Swal.fire("Error", err.message || "Moderation failed", "error");
+    Swal.fire('Error', err.message || 'Moderation failed', 'error');
   }
 };
 
 const handleDelete = async () => {
   if (!isMine.value) return;
   const result = await Swal.fire({
-    title: "Delete this message?",
-    icon: "warning",
+    title: 'Delete this message?',
+    icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: "Delete",
-    confirmButtonColor: "#dc2626",
+    confirmButtonText: 'Delete',
+    confirmButtonColor: '#dc2626',
   });
   if (!result.isConfirmed) return;
   try {
     const deleted = await deleteMessage(localMessage.value._id);
-    emit("deleted", deleted);
+    emit('deleted', deleted);
   } catch (err) {
-    Swal.fire("Error", err.message || "Delete failed", "error");
+    Swal.fire('Error', err.message || 'Delete failed', 'error');
   }
 };
 </script>
@@ -280,7 +284,7 @@ div p {
 
 /* WhatsApp-style subtle bubble tails */
 .relative::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 0;
   width: 0;

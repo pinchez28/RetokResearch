@@ -28,10 +28,14 @@ router.post('/clients/signup', (req, res) => {
 });
 
 // Expert signup
-router.post('/experts/signup', (req, res) => {
-  req.body.role = 'Expert';
-  signup(req, res);
-});
+router.post(
+  '/experts/signup',
+  uploadExpertSignup, // middleware for photo & cv upload
+  (req, res) => {
+    req.body.role = 'Expert';
+    signup(req, res);
+  },
+);
 
 /* ================= LOGIN ================= */
 

@@ -25,8 +25,13 @@ const expertSchema = new mongoose.Schema(
     // Account status
     status: {
       type: String,
-      enum: ['pending_admin_review', 'approved', 'rejected'],
-      default: 'pending_admin_review',
+      enum: [
+        'email_verification_pending',
+        'pending_admin_review',
+        'approved',
+        'rejected',
+      ],
+      default: 'email_verification_pending',
     },
     rejectionReason: { type: String, default: null },
 

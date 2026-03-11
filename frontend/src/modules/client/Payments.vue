@@ -135,6 +135,8 @@ const error = ref('');
 const paying = ref(false);
 const phone = ref('');
 
+let stkTimeout = null;
+
 /* -----------------------------
    Socket.IO Setup
 -------------------------------- */
@@ -145,6 +147,7 @@ function joinProjectRoom() {
 
   socket.on('project-paid', (data) => {
     if (data.projectId === projectId) {
+      clearTimeout(stkTimeout);
       paying.value = false;
       project.value.paymentStatus = 'confirmed';
       Swal.close();
@@ -160,6 +163,7 @@ function joinProjectRoom() {
 
 onUnmounted(() => {
   socket.off('project-paid');
+  clearTimeout(stkTimeout);
 });
 
 /* -----------------------------
@@ -196,7 +200,6 @@ async function loadProject() {
     if (res.data.project.clientPhone)
       phone.value = normalizePhone(res.data.project.clientPhone);
 
-    // Fetch payment status
     const statusRes = await clientApi.getProjectPaymentStatus(projectId);
     project.value.paymentStatus = statusRes.data.payment?.status || 'none';
   } catch (err) {
@@ -236,8 +239,9 @@ async function handlePayment() {
       await clientApi.initiateProjectPayment(projectId, normalized);
     }
 
-    project.value.paymentStatus = 'pending'; // UX feedback
+    project.value.paymentStatus = 'pending';
 
+    // Show loader modal
     Swal.fire({
       icon: 'info',
       title: 'Check Your Mobile Device',
@@ -246,19 +250,65 @@ async function handlePayment() {
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
     });
+
+    // -------------------- Sandbox / fallback --------------------
+    // If using sandbox test numbers, simulate confirmation
+    if (['254708374149', '254708374150', '254708374151'].includes(normalized)) {
+      // Auto-fire event in 2 seconds
+      stkTimeout = setTimeout(() => {
+        socket.emit('project-paid', { projectId });
+      }, 2000);
+      return;
+    }
+
+    // -------------------- Production fallback --------------------
+    // If no callback received in 60 seconds, allow user to manually check
+    stkTimeout = setTimeout(async () => {
+      paying.value = false;
+      Swal.close();
+
+      const { value: confirm } = await Swal.fire({
+        icon: 'warning',
+        title: 'Payment Pending',
+        text: 'Payment is still not confirmed. Click "I have paid" to check status.',
+        showCancelButton: true,
+        confirmButtonText: 'I have paid',
+        cancelButtonText: 'Cancel',
+        allowOutsideClick: false,
+      });
+
+      if (confirm) {
+        const statusRes = await clientApi.getProjectPaymentStatus(projectId);
+        project.value.paymentStatus = statusRes.data.payment?.status || 'none';
+
+        if (project.value.paymentStatus === 'confirmed') {
+          Swal.fire({
+            icon: 'success',
+            title: 'Payment Confirmed',
+            text: 'You can now download your project.',
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Payment Not Confirmed',
+            text: 'Payment is still pending. Please try again.',
+          });
+        }
+      }
+    }, 60000);
   } catch (err) {
     console.error(err);
+    paying.value = false;
+    clearTimeout(stkTimeout);
 
     if (err.response?.status === 409) {
-      // Conflict: already paid or in progress
       await Swal.fire({
         icon: 'warning',
         title: 'Payment Already Initiated',
         text: 'This project has already been paid or is currently in progress.',
-        confirmButtonColor: '#f59e0b', // amber
+        confirmButtonColor: '#f59e0b',
       });
     } else {
-      // Any other errors
       await Swal.fire({
         icon: 'error',
         title: 'Payment Failed',
@@ -268,8 +318,6 @@ async function handlePayment() {
         confirmButtonColor: '#dc2626',
       });
     }
-
-    paying.value = false; // reset the flag
   }
 }
 
