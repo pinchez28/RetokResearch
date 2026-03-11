@@ -2,37 +2,50 @@ import nodemailer from 'nodemailer';
 
 /**
  * sendEmail({ to, subject, html, replyTo })
- * - to: string or array of emails
- * - subject: email subject
- * - html: HTML body of the email
- * - replyTo: optional, sets who replies go to
+ * - Works both locally (Gmail) and in production (SendGrid / SMTP)
  */
 export const sendEmail = async ({ to, subject, html, replyTo }) => {
   try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465,
-      secure: true, // Gmail App Passwords require secure connection on 465
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+    // ---------- Production SMTP ----------
+    let transporter;
+
+    if (process.env.SENDGRID_API_KEY) {
+      // Use SendGrid in production
+      transporter = nodemailer.createTransport({
+        host: 'smtp.sendgrid.net',
+        port: 587,
+        auth: {
+          user: 'apikey', // literal string required by SendGrid
+          pass: process.env.SENDGRID_API_KEY,
+        },
+      });
+    } else {
+      // ---------- Local SMTP (Gmail) ----------
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465,
+        secure: process.env.SMTP_SECURE !== 'false', // true for 465, false for 587
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+    }
 
     const mailOptions = {
-      from: `"Academin Platform" <${process.env.SMTP_USER}>`,
+      from: `"Retok Research Platform" <${process.env.SMTP_USER || 'no-reply@example.com'}>`,
       to,
       subject,
       html,
-      replyTo: replyTo || process.env.SMTP_USER, // optional: guest email
+      replyTo: replyTo || process.env.SMTP_USER,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent: ${info.messageId} -> ${to}`);
+    console.log(`✅ Email sent: ${info.messageId} -> ${to}`);
     return info;
   } catch (err) {
-    console.error('sendEmail error:', err?.message || err);
-    return null; // don’t throw, allow app flow to continue
+    console.error('❌ sendEmail error:', err?.message || err);
+    return null;
   }
 };
 
