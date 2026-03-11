@@ -91,7 +91,7 @@ const openSignup = () => window.openSignupOverlay?.();
       >
         <!-- Logo (spans 2 rows) -->
         <div class="row-span-2 flex items-center space-x-3 shrink-0">
-          <img src="@/assets/images/logo.jpg" class="h-14 w-14 rounded-full" />
+          <img src="@/assets/images/logo.webp" class="h-14 w-14 rounded-full" />
           <span class="text-accent-500 font-extrabold text-2xl"> Retok </span>
         </div>
 
@@ -135,7 +135,7 @@ const openSignup = () => window.openSignupOverlay?.();
       <div class="flex items-center justify-between lg:hidden">
         <!-- Logo -->
         <div class="flex items-center space-x-2">
-          <img src="@/assets/images/logo.jpg" class="h-10 w-10 rounded-full" />
+          <img src="@/assets/images/logo.webp" class="h-10 w-10 rounded-full" />
           <span class="text-accent-500 font-bold text-lg">Retok</span>
         </div>
 

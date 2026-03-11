@@ -11,7 +11,7 @@
     >
       <div class="flex-shrink-0">
         <img
-          src="@/assets/images/logo.jpg"
+          src="@/assets/images/logo.webp"
           alt="Retok Logo"
           class="h-12 w-12 md:h-14 md:w-14 rounded-full border-2 border-white/20 shadow-lg select-none"
           draggable="false"

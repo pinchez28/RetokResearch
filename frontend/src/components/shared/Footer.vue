@@ -6,22 +6,31 @@
         <div class="flex flex-col items-start space-y-4 w-full lg:w-1/3">
           <div class="flex items-center space-x-3">
             <img
-              src="@/assets/images/logo.jpg"
+              src="@/assets/images/logo.webp"
               alt="Logo"
               class="h-12 w-12 rounded-full"
             />
             <h1 class="text-4xl font-extrabold text-accent-500">Retok</h1>
           </div>
           <p class="text-gray-300 leading-relaxed">
-            Connecting researchers and experts to deliver top-notch insights and guidance.
+            Connecting researchers and experts to deliver top-notch insights and
+            guidance.
           </p>
         </div>
 
         <!-- Footer links -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-10 w-full">
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-10 w-full"
+        >
           <div v-for="(section, index) in links" :key="index">
-            <h4 class="font-semibold mb-3 text-accent-500 flex items-center gap-2">
-              <component :is="section.icon" v-if="section.icon" class="w-4 h-4" />
+            <h4
+              class="font-semibold mb-3 text-accent-500 flex items-center gap-2"
+            >
+              <component
+                :is="section.icon"
+                v-if="section.icon"
+                class="w-4 h-4"
+              />
               {{ section.title }}
             </h4>
 
@@ -49,54 +58,61 @@
 </template>
 
 <script setup>
-import { Phone, Mail, Twitter, Linkedin, Facebook, Instagram } from "lucide-vue-next";
+import {
+  Phone,
+  Mail,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Instagram,
+} from 'lucide-vue-next';
 
 const currentYear = new Date().getFullYear();
 
 const links = [
   {
-    title: "Company",
+    title: 'Company',
     items: [
-      { label: "About Us" },
-      { label: "Careers" },
-      { label: "Blog" },
-      { label: "Contact" },
+      { label: 'About Us' },
+      { label: 'Careers' },
+      { label: 'Blog' },
+      { label: 'Contact' },
     ],
   },
   {
-    title: "Services",
+    title: 'Services',
     items: [
-      { label: "Research Writing" },
-      { label: "Data Analysis" },
-      { label: "Consultations" },
-      { label: "Market Research" },
+      { label: 'Research Writing' },
+      { label: 'Data Analysis' },
+      { label: 'Consultations' },
+      { label: 'Market Research' },
     ],
   },
   {
-    title: "Resources",
+    title: 'Resources',
     items: [
-      { label: "Help Center" },
-      { label: "Guides" },
-      { label: "FAQs" },
-      { label: "Case Studies" },
+      { label: 'Help Center' },
+      { label: 'Guides' },
+      { label: 'FAQs' },
+      { label: 'Case Studies' },
     ],
   },
   {
-    title: "Social",
+    title: 'Social',
     icon: Twitter,
     items: [
-      { label: "Twitter", icon: Twitter },
-      { label: "LinkedIn", icon: Linkedin },
-      { label: "Facebook", icon: Facebook },
-      { label: "Instagram", icon: Instagram },
+      { label: 'Twitter', icon: Twitter },
+      { label: 'LinkedIn', icon: Linkedin },
+      { label: 'Facebook', icon: Facebook },
+      { label: 'Instagram', icon: Instagram },
     ],
   },
   {
-    title: "Contacts",
+    title: 'Contacts',
     icon: Phone,
     items: [
-      { label: "0700000000", icon: Phone },
-      { label: "admin@retok.ke", icon: Mail },
+      { label: '0700000000', icon: Phone },
+      { label: 'admin@retok.ke', icon: Mail },
     ],
   },
 ];
@@ -104,6 +120,6 @@ const links = [
 
 <style scoped>
 footer {
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 </style>

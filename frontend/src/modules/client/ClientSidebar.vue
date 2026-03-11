@@ -10,7 +10,7 @@
       @click="closeSidebarOnMobile"
     >
       <img
-        src="@/assets/images/logo.jpg"
+        src="@/assets/images/logo.webp"
         alt="Retok Logo"
         class="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full border-2 border-primary-700 shadow-float-md"
       />
