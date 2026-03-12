@@ -1,39 +1,38 @@
 import nodemailer from 'nodemailer';
 
-/**
- * sendEmail({ to, subject, html, replyTo })
- * - Works both locally (Gmail) and in production (SendGrid / SMTP)
- */
+let transporter;
+
+// Create transporter once
+if (process.env.SENDGRID_API_KEY) {
+  console.log('📧 Using SendGrid SMTP');
+
+  transporter = nodemailer.createTransport({
+    host: 'smtp.sendgrid.net',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'apikey',
+      pass: process.env.SENDGRID_API_KEY,
+    },
+  });
+} else {
+  console.log('📧 Using Gmail SMTP');
+
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
+
 export const sendEmail = async ({ to, subject, html, replyTo }) => {
   try {
-    // ---------- Production SMTP ----------
-    let transporter;
-
-    if (process.env.SENDGRID_API_KEY) {
-      // Use SendGrid in production
-      transporter = nodemailer.createTransport({
-        host: 'smtp.sendgrid.net',
-        port: 587,
-        auth: {
-          user: 'apikey', // literal string required by SendGrid
-          pass: process.env.SENDGRID_API_KEY,
-        },
-      });
-    } else {
-      // ---------- Local SMTP (Gmail) ----------
-      transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465,
-        secure: process.env.SMTP_SECURE !== 'false', // true for 465, false for 587
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-    }
-
     const mailOptions = {
-      from: `"Retok Research Platform" <${process.env.SMTP_USER || 'no-reply@example.com'}>`,
+      from: `"Retok Research Platform" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,
@@ -41,7 +40,9 @@ export const sendEmail = async ({ to, subject, html, replyTo }) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
+
     console.log(`✅ Email sent: ${info.messageId} -> ${to}`);
+
     return info;
   } catch (err) {
     console.error('❌ sendEmail error:', err?.message || err);
