@@ -167,17 +167,21 @@ export const signup = async (req, res) => {
     });
 
     const backendURL = process.env.BACKEND_URL;
-
     const verifyURL = `${backendURL}/api/auth/verify-email?token=${token}`;
 
-    await sendEmail({
-      to: user.email,
-      subject: 'Verify Your Email',
-      html: `
-        <p>Please verify your email:</p>
-        <a href="${verifyURL}">${verifyURL}</a>
-      `,
-    });
+    // Use sendEmail safely so signup doesn't crash if email fails
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Verify Your Email',
+        html: `
+          <p>Please verify your email:</p>
+          <a href="${verifyURL}">${verifyURL}</a>
+        `,
+      });
+    } catch (err) {
+      console.warn('⚠️ Verification email failed:', err.message);
+    }
 
     // ================= AUTH TOKENS =================
 
@@ -408,16 +412,21 @@ export const forgotPassword = async (req, res) => {
       .digest('hex');
 
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
     await user.save();
 
     const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    await sendEmail({
-      to: user.email,
-      subject: 'Password Reset',
-      html: `<p>You requested a password reset</p><a href="${resetURL}">${resetURL}</a>`,
-    });
+    // ================= SEND EMAIL =================
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Password Reset',
+        html: `<p>You requested a password reset</p><a href="${resetURL}">${resetURL}</a>`,
+      });
+    } catch (err) {
+      console.warn('⚠️ Failed to send password reset email:', err.message);
+    }
 
     res.status(200).json({ message: 'Password reset email sent' });
   } catch (err) {
@@ -431,11 +440,12 @@ export const resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
 
-    if (!isStrongPassword(password))
+    if (!isStrongPassword(password)) {
       return res.status(400).json({
         message:
           'Password must contain uppercase, lowercase, number, special character and be 8+ characters long.',
       });
+    }
 
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
@@ -452,6 +462,7 @@ export const resetPassword = async (req, res) => {
     user.resetPasswordExpire = undefined;
 
     await user.save();
+
     res.status(200).json({ message: 'Password reset successful' });
   } catch (err) {
     console.error('Reset password error:', err);
@@ -513,34 +524,36 @@ export const verifyEmail = async (req, res) => {
         expert.status = 'pending_admin_review';
         await expert.save();
 
-        // Notify admin
+        // Notify admin (DB notification)
         await Notification.create({
           userType: 'Admin',
           title: 'New Expert Awaiting Approval',
           message: `${expert.name} has verified their email and awaits approval.`,
         });
 
-        // Email admin
+        // ================= EMAIL ADMIN =================
         if (process.env.ADMIN_EMAIL) {
-          await sendEmail({
-            to: process.env.ADMIN_EMAIL,
-            subject: 'New Expert Awaiting Approval',
-            html: `
-              <p><b>${expert.name}</b> has verified their email and is awaiting approval.</p>
-            `,
-          });
+          try {
+            await sendEmail({
+              to: process.env.ADMIN_EMAIL,
+              subject: 'New Expert Awaiting Approval',
+              html: `<p><b>${expert.name}</b> has verified their email and is awaiting approval.</p>`,
+            });
+          } catch (err) {
+            console.warn(
+              '⚠️ Failed to send admin notification email:',
+              err.message,
+            );
+          }
         }
       }
     }
 
     // ================= CLEANUP =================
-
     await EmailToken.deleteMany({ user: user._id });
 
     // ================= REDIRECT FRONTEND =================
-
     const frontendURL = process.env.FRONTEND_URL;
-
     return res.redirect(`${frontendURL}/email-verified`);
   } catch (error) {
     console.error('Email verification error:', error);

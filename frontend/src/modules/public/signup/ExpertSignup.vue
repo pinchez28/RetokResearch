@@ -11,8 +11,7 @@
       </h1>
 
       <p class="text-primary-300 text-2xl text-center">
-        Sign up to collaborate and earn by providing research services
-        seamlessly.
+        Sign up to collaborate and earn by providing research services seamlessly.
       </p>
 
       <Vue3Lottie
@@ -30,12 +29,10 @@
       >
         <!-- Heading -->
         <div class="text-center space-y-2">
-          <h1 class="text-4xl font-extrabold text-accent-400">
-            Service Provider Signup
-          </h1>
+          <h1 class="text-4xl font-extrabold text-accent-400">Service Provider Signup</h1>
           <p class="text-primary-300 text-2xl">
-            Join our platform to collaborate and earn on research projects.
-            Create your professionl profile.
+            Join our platform to collaborate and earn on research projects. Create your
+            professionl profile.
           </p>
         </div>
 
@@ -61,9 +58,7 @@
 
           <!-- Email -->
           <div>
-            <label class="block text-sm font-medium text-primary-300 mb-2">
-              Email
-            </label>
+            <label class="block text-sm font-medium text-primary-300 mb-2"> Email </label>
             <input
               v-model="form.email"
               type="email"
@@ -75,9 +70,7 @@
 
           <!-- Phone -->
           <div class="col-span-1 sm:col-span-2">
-            <label class="block text-sm font-medium text-primary-300 mb-2">
-              Phone
-            </label>
+            <label class="block text-sm font-medium text-primary-300 mb-2"> Phone </label>
             <input
               v-model="form.phone"
               type="tel"
@@ -170,9 +163,7 @@
 
           <!-- Bio -->
           <div class="col-span-1 sm:col-span-2">
-            <label class="block text-sm font-medium text-primary-300 mb-2">
-              Bio
-            </label>
+            <label class="block text-sm font-medium text-primary-300 mb-2"> Bio </label>
             <textarea
               v-model="form.bio"
               rows="3"
@@ -237,9 +228,7 @@
           </button>
 
           <!-- Login link -->
-          <p
-            class="col-span-1 sm:col-span-2 text-sm text-primary-300 text-center"
-          >
+          <p class="col-span-1 sm:col-span-2 text-sm text-primary-300 text-center">
             Already have an account?
             <router-link
               to="/login"
@@ -263,128 +252,130 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { authApi } from '@/core/api/http.js';
-import Swal from 'sweetalert2';
-import { Loader, Eye, EyeOff } from 'lucide-vue-next';
-import { Vue3Lottie } from 'vue3-lottie';
-import signupAnimation from '@/assets/animations/expert-signup-animation.json';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { authApi } from "@/core/api/http.js";
+import Swal from "sweetalert2";
+import { Loader, Eye, EyeOff } from "lucide-vue-next";
+import { Vue3Lottie } from "vue3-lottie";
+import signupAnimation from "@/assets/animations/expert-signup-animation.json";
 
 const router = useRouter();
-
-const form = ref({
-  name: '',
-  email: '',
-  phone: '',
-  photo: null,
-  cvPdf: null,
-  specialization: '',
-  bio: '',
-  experience: 0,
-  education: '',
-  certifications: '',
-  password: '',
-  confirmPassword: '',
-});
-
 const loading = ref(false);
 
 // Password toggles
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 
+// Form state
+const form = ref({
+  name: "",
+  email: "",
+  phone: "",
+  photo: null,
+  cvPdf: null,
+  specialization: "",
+  bio: "",
+  experience: 0,
+  education: "",
+  certifications: "",
+  password: "",
+  confirmPassword: "",
+});
+
+// File uploads
 const handlePhotoUpload = (e) => {
-  form.value.photo = e.target.files[0] || null;
+  form.value.photo = e.target.files?.[0] || null;
 };
 const handleCVUpload = (e) => {
-  form.value.cvPdf = e.target.files[0] || null;
+  form.value.cvPdf = e.target.files?.[0] || null;
 };
 
+// Signup handler
 const handleSignup = async () => {
-  const requiredFields = [
-    'name',
-    'email',
-    'phone',
-    'photo',
-    'cvPdf',
-    'password',
-    'confirmPassword',
-  ];
+  const { name, email, phone, photo, cvPdf, password, confirmPassword } = form.value;
 
-  for (const f of requiredFields) {
-    if (!form.value[f]) {
-      return Swal.fire({
-        icon: 'warning',
-        title: 'Missing Required Fields',
-        text: 'Please fill all required fields.',
-        confirmButtonColor: '#ECB365',
-      });
-    }
+  // Required validation
+  if (!name || !email || !phone || !photo || !cvPdf || !password || !confirmPassword) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Missing Required Fields",
+      text: "Please fill all required fields.",
+      confirmButtonColor: "#ECB365",
+    });
   }
 
-  if (form.value.password !== form.value.confirmPassword) {
+  if (password !== confirmPassword) {
     return Swal.fire({
-      icon: 'error',
-      title: 'Password Mismatch',
-      text: 'Password and Confirm Password must match.',
-      confirmButtonColor: '#ECB365',
+      icon: "error",
+      title: "Password Mismatch",
+      text: "Password and Confirm Password must match.",
+      confirmButtonColor: "#ECB365",
     });
   }
 
   loading.value = true;
 
   try {
+    // Prepare payload
     const payload = new FormData();
-
-    payload.append('role', 'Expert');
-    payload.append('name', form.value.name);
-    payload.append('email', form.value.email);
-    payload.append('phone', form.value.phone);
-    payload.append('password', form.value.password);
-    payload.append('specialization', form.value.specialization);
-    payload.append('bio', form.value.bio);
-    payload.append('experience', Number(form.value.experience));
-    payload.append('education', form.value.education);
+    payload.append("role", "Expert");
+    payload.append("name", name);
+    payload.append("email", email);
+    payload.append("phone", phone);
+    payload.append("password", password);
+    payload.append("specialization", form.value.specialization);
+    payload.append("bio", form.value.bio);
+    payload.append("experience", Number(form.value.experience));
+    payload.append("education", form.value.education);
 
     if (form.value.certifications) {
       form.value.certifications
-        .split(',')
+        .split(",")
         .map((c) => c.trim())
         .filter(Boolean)
-        .forEach((c) => payload.append('certifications[]', c));
+        .forEach((c) => payload.append("certifications[]", c));
     }
 
-    payload.append('photo', form.value.photo);
-    payload.append('cvPdf', form.value.cvPdf);
+    payload.append("photo", photo);
+    payload.append("cvPdf", cvPdf);
 
+    // API request
     const { data } = await authApi.signupExpert(payload, true);
+    console.log("✅ Signup response:", data);
 
-    if (data.status === 'pending_admin_review') {
+    if (data?.success) {
+      // Show success Swal and wait for confirmation
       await Swal.fire({
-        icon: 'success',
-        title: 'Signup Successful',
-        html: 'Your account has been created successfully.<br><br><b>Admin approval is required before login.</b>',
-        confirmButtonColor: '#ECB365',
+        icon: "success",
+        title: "Signup Successful",
+        html:
+          "Your account has been created successfully.<br><br>Please verify your email before login.",
+        confirmButtonColor: "#ECB365",
       });
 
-      router.push('/pending-approval');
+      // Redirect after user clicks OK
+      router.push("/verify-email");
     } else {
       Swal.fire({
-        icon: 'error',
-        title: 'Signup Failed',
-        text: data.message || 'Signup failed. Please try again.',
-        confirmButtonColor: '#ECB365',
+        icon: "error",
+        title: "Signup Failed",
+        text: data?.message || "Signup failed. Please try again.",
+        confirmButtonColor: "#ECB365",
       });
     }
   } catch (err) {
+    console.error("❌ Signup Error:", err);
+    console.error("❌ Response:", err.response?.data);
+
     Swal.fire({
-      icon: 'error',
-      title: 'Signup Failed',
+      icon: "error",
+      title: "Signup Failed",
       text:
         err.response?.data?.message ||
-        'Something went wrong. Please try again.',
-      confirmButtonColor: '#ECB365',
+        err.message ||
+        "Something went wrong. Please try again.",
+      confirmButtonColor: "#ECB365",
     });
   } finally {
     loading.value = false;

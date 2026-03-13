@@ -1,6 +1,14 @@
-// server.js
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+import { fileURLToPath } from 'url';
+import Payment from './src/models/client/Payment.js';
+
+// ------------------- Setup __dirname -------------------
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ------------------- Load .env first -------------------
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 import http from 'http';
 import mongoose from 'mongoose';
@@ -16,19 +24,36 @@ mongoose
   .then(() => {
     console.log('✅ MongoDB connected');
 
-    // Cleanup job every 48 hours (runs at midnight every 2 days)
+    // Cleanup unverified users every 48 hours
     cron.schedule('0 0 */2 * *', async () => {
       console.log('🧹 Running cleanup job every 48 hours...');
       await cleanupUnverifiedUsers();
     });
 
+    // Expire old pending M-Pesa payments every 5 minutes
+    cron.schedule('*/5 * * * *', async () => {
+      console.log('⏳ Checking for expired pending payments...');
+
+      await Payment.updateMany(
+        {
+          status: 'pending',
+          createdAt: { $lt: new Date(Date.now() - 10 * 60 * 1000) }, // older than 10 minutes
+        },
+        {
+          status: 'timeout',
+          failedAt: new Date(),
+          'mpesa.resultDesc': 'Payment timeout',
+        },
+      );
+    });
+
     console.log('✅ Cleanup scheduler started');
+    console.log('✅ Payment timeout scheduler started');
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err.message);
     process.exit(1);
   });
-
 // -------------------- HTTP SERVER --------------------
 const server = http.createServer(app);
 

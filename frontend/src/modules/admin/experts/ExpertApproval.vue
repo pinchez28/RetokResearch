@@ -26,7 +26,7 @@
           class="bg-gradient-to-r from-[#001BB7] to-[#0046FF] p-5 text-white flex justify-between items-center"
         >
           <div>
-            <h3 class="text-xl font-bold truncate">
+            <h3 class="text-xl text-accent-300 font-bold truncate">
               {{ expert?.name || expert?.user?.name || "N/A" }}
             </h3>
             <p class="text-blue-100 text-sm truncate">
