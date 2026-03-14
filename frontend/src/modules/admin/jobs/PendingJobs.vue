@@ -1,11 +1,7 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-6"
-  >
+  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-6">
     <!-- Header -->
-    <div
-      class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
-    >
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-1">
           Pending Job Reviews
@@ -16,9 +12,7 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <div
-          class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-200"
-        >
+        <div class="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-200">
           <div class="text-xs text-gray-500 font-medium">Pending</div>
           <div class="text-xl font-bold text-blue-600">
             {{ pendingJobs.length }}
@@ -48,12 +42,8 @@
 
     <!-- Empty state -->
     <div v-else-if="pendingJobs.length === 0" class="text-center py-16">
-      <h3 class="text-xl font-semibold text-gray-700 mb-2">
-        No Pending Reviews
-      </h3>
-      <p class="text-gray-500">
-        All job requests have been reviewed and processed.
-      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mb-2">No Pending Reviews</h3>
+      <p class="text-gray-500">All job requests have been reviewed and processed.</p>
     </div>
 
     <!-- Job cards -->
@@ -73,7 +63,7 @@
                 <div
                   class="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold mb-3"
                 >
-                  {{ job.branch || 'Uncategorized' }}
+                  {{ job.branch || "Uncategorized" }}
                 </div>
                 <h3
                   class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2"
@@ -82,9 +72,7 @@
                 </h3>
               </div>
               <div class="ml-3">
-                <span
-                  class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium"
-                >
+                <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium">
                   {{ formatRelativeDate(job.createdAt) }}
                 </span>
               </div>
@@ -99,19 +87,19 @@
             <div class="flex items-center">
               <p class="text-xs text-gray-500 mr-2">Client:</p>
               <p class="font-semibold text-gray-800">
-                {{ job.client?.name || 'Unknown' }}
+                {{ job.client?.name || "Unknown" }}
               </p>
             </div>
             <div class="flex items-center">
               <p class="text-xs text-gray-500 mr-2">Email:</p>
               <p class="font-semibold text-gray-800 truncate">
-                {{ job.client?.user?.email || 'N/A' }}
+                {{ job.client?.user?.email || "N/A" }}
               </p>
             </div>
             <div class="flex items-center">
               <p class="text-xs text-gray-500 mr-2">Phone:</p>
               <p class="font-semibold text-gray-800">
-                {{ job.client?.phone || 'N/A' }}
+                {{ job.client?.phone || "N/A" }}
               </p>
             </div>
           </div>
@@ -119,7 +107,7 @@
           <!-- Action button -->
           <button
             @click.stop="openJobModal(job)"
-            class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg flex items-center justify-center gap-2"
+            class="w-full px-4 py-3 bg-primary-900 text-primary-100 font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg flex items-center justify-center gap-2"
           >
             <i class="fas fa-eye"></i>
             Review Details
@@ -152,9 +140,7 @@
           class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-5xl sm:w-full mx-auto my-8"
         >
           <!-- Modal Header -->
-          <div
-            class="px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-between"
-          >
+          <div class="px-8 py-6 bg-primary-900 flex items-center justify-between">
             <h3 class="text-xl font-bold text-white truncate">
               {{ selectedJob.title }}
             </h3>
@@ -181,26 +167,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <!-- Client Info -->
                   <div class="bg-white border border-gray-200 rounded-xl p-6">
-                    <h4 class="font-bold text-gray-800 mb-2">
-                      Client Information
-                    </h4>
+                    <h4 class="font-bold text-gray-800 mb-2">Client Information</h4>
                     <p class="mb-2">
                       <strong class="text-gray-600">Name:</strong>
-                      <span class="ml-2">{{
-                        selectedJob.client?.name || 'N/A'
-                      }}</span>
+                      <span class="ml-2">{{ selectedJob.client?.name || "N/A" }}</span>
                     </p>
                     <p class="mb-2">
                       <strong class="text-gray-600">Email:</strong>
                       <span class="ml-2">{{
-                        selectedJob.client?.user?.email || 'N/A'
+                        selectedJob.client?.user?.email || "N/A"
                       }}</span>
                     </p>
                     <p>
                       <strong class="text-gray-600">Phone:</strong>
-                      <span class="ml-2">{{
-                        selectedJob.client?.phone || 'N/A'
-                      }}</span>
+                      <span class="ml-2">{{ selectedJob.client?.phone || "N/A" }}</span>
                     </p>
                   </div>
 
@@ -209,14 +189,12 @@
                     <h4 class="font-bold text-gray-800 mb-2">Job Details</h4>
                     <p class="mb-2">
                       <strong class="text-gray-600">Submitted:</strong>
-                      <span class="ml-2">{{
-                        formatDate(selectedJob.createdAt)
-                      }}</span>
+                      <span class="ml-2">{{ formatDate(selectedJob.createdAt) }}</span>
                     </p>
                     <p>
                       <strong class="text-gray-600">Deadline:</strong>
                       <span class="ml-2">{{
-                        formatDate(selectedJob.deadline) || 'Flexible'
+                        formatDate(selectedJob.deadline) || "Flexible"
                       }}</span>
                     </p>
                   </div>
@@ -225,13 +203,10 @@
 
               <!-- Admin Actions -->
               <div class="space-y-8">
-                <div
-                  class="bg-white border border-gray-200 rounded-xl p-6 space-y-4"
-                >
+                <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
                   <!-- Branch Selection -->
                   <div>
-                    <label
-                      class="block text-sm font-semibold text-gray-700 mb-2"
+                    <label class="block text-sm font-semibold text-gray-700 mb-2"
                       >Branch *</label
                     >
                     <select
@@ -245,8 +220,7 @@
 
                   <!-- Category Selection -->
                   <div>
-                    <label
-                      class="block text-sm font-semibold text-gray-700 mb-2"
+                    <label class="block text-sm font-semibold text-gray-700 mb-2"
                       >Category *</label
                     >
                     <select
@@ -263,15 +237,13 @@
 
                   <!-- Price Range Section -->
                   <div>
-                    <label
-                      class="block text-sm font-semibold text-gray-700 mb-3"
+                    <label class="block text-sm font-semibold text-gray-700 mb-3"
                       >Price Range (KSh) *</label
                     >
 
                     <!-- Min Price -->
                     <div class="mb-4">
-                      <label
-                        class="block text-sm font-medium text-gray-600 mb-2"
+                      <label class="block text-sm font-medium text-gray-600 mb-2"
                         >Minimum Price</label
                       >
                       <div class="relative">
@@ -296,8 +268,7 @@
 
                     <!-- Max Price -->
                     <div>
-                      <label
-                        class="block text-sm font-medium text-gray-600 mb-2"
+                      <label class="block text-sm font-medium text-gray-600 mb-2"
                         >Maximum Price</label
                       >
                       <div class="relative">
@@ -324,14 +295,11 @@
 
                       <!-- Validation Message -->
                       <div
-                        v-if="
-                          adminPrice.max > 0 && adminPrice.max < adminPrice.min
-                        "
+                        v-if="adminPrice.max > 0 && adminPrice.max < adminPrice.min"
                         class="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg"
                       >
                         <p class="text-xs text-red-600 font-medium">
-                          Maximum price must be greater than or equal to minimum
-                          price
+                          Maximum price must be greater than or equal to minimum price
                         </p>
                       </div>
                     </div>
@@ -374,7 +342,7 @@
                   >
                     <i v-if="isApproving" class="fas fa-spinner fa-spin"></i>
                     <i v-else class="fas fa-check-circle"></i>
-                    {{ isApproving ? 'Approving...' : 'Approve Job' }}
+                    {{ isApproving ? "Approving..." : "Approve Job" }}
                   </button>
 
                   <button
@@ -389,7 +357,7 @@
                   >
                     <i v-if="isRejecting" class="fas fa-spinner fa-spin"></i>
                     <i v-else class="fas fa-times-circle"></i>
-                    {{ isRejecting ? 'Rejecting...' : 'Reject Job' }}
+                    {{ isRejecting ? "Rejecting..." : "Reject Job" }}
                   </button>
                 </div>
               </div>
@@ -402,9 +370,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { adminApi } from '@/core/api/http.js';
-import Swal from 'sweetalert2';
+import { ref, computed, onMounted } from "vue";
+import { adminApi } from "@/core/api/http.js";
+import Swal from "sweetalert2";
 
 // Pending jobs
 const pendingJobs = ref([]);
@@ -417,36 +385,34 @@ const isRejecting = ref(false);
 
 // Admin fields
 const adminPrice = ref({ min: 0, max: 0 });
-const adminBranch = ref('');
-const adminCategory = ref('');
+const adminBranch = ref("");
+const adminCategory = ref("");
 
 // Branches & categories
-const branches = ['Academic Research', 'Industrial Research'];
+const branches = ["Academic Research", "Industrial Research"];
 const academicCategories = [
-  'Essays',
-  'Thesis',
-  'Dissertations',
-  'SPSS',
-  'Statistics',
-  'Research Proposals',
-  'Assignments',
-  'Academic Editing',
+  "Essays",
+  "Thesis",
+  "Dissertations",
+  "SPSS",
+  "Statistics",
+  "Research Proposals",
+  "Assignments",
+  "Academic Editing",
 ];
 const industrialCategories = [
-  'Data Analysis',
-  'AI & Machine Learning',
-  'Business Research',
-  'Technical Writing',
-  'Market Research',
-  'Software Development',
-  'Engineering Reports',
-  'Design & Prototyping',
+  "Data Analysis",
+  "AI & Machine Learning",
+  "Business Research",
+  "Technical Writing",
+  "Market Research",
+  "Software Development",
+  "Engineering Reports",
+  "Design & Prototyping",
 ];
 
 const currentCategories = computed(() =>
-  adminBranch.value === 'Academic Research'
-    ? academicCategories
-    : industrialCategories,
+  adminBranch.value === "Academic Research" ? academicCategories : industrialCategories
 );
 
 // Validation
@@ -455,7 +421,7 @@ const canApprove = computed(
     adminBranch.value &&
     adminCategory.value &&
     adminPrice.value.min > 0 &&
-    adminPrice.value.max >= adminPrice.value.min,
+    adminPrice.value.max >= adminPrice.value.min
 );
 
 // Fetch jobs
@@ -467,11 +433,11 @@ const fetchPendingJobs = async () => {
   } catch (err) {
     console.error(err);
     Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Failed to fetch pending jobs',
+      icon: "error",
+      title: "Error",
+      text: "Failed to fetch pending jobs",
       toast: true,
-      position: 'top-end',
+      position: "top-end",
       timer: 3000,
     });
   } finally {
@@ -484,15 +450,15 @@ const openJobModal = (job) => {
   selectedJob.value = job;
   adminPrice.value.min = job.pricingRange?.min || 0;
   adminPrice.value.max = job.pricingRange?.max || 0;
-  adminBranch.value = job.branch || '';
-  adminCategory.value = job.category || '';
+  adminBranch.value = job.branch || "";
+  adminCategory.value = job.category || "";
 };
 
 const closeJobModal = () => {
   selectedJob.value = null;
   adminPrice.value = { min: 0, max: 0 };
-  adminBranch.value = '';
-  adminCategory.value = '';
+  adminBranch.value = "";
+  adminCategory.value = "";
   isApproving.value = false;
   isRejecting.value = false;
 };
@@ -513,28 +479,24 @@ const approveJob = async () => {
 
     // Show success message
     Swal.fire({
-      icon: 'success',
-      title: 'Job Approved!',
-      text: 'The job has been approved and is now live.',
+      icon: "success",
+      title: "Job Approved!",
+      text: "The job has been approved and is now live.",
       timer: 2000,
       showConfirmButton: false,
       toast: true,
-      position: 'top-end',
+      position: "top-end",
     });
 
     // Remove from list and close modal
-    pendingJobs.value = pendingJobs.value.filter(
-      (j) => j._id !== selectedJob.value._id,
-    );
+    pendingJobs.value = pendingJobs.value.filter((j) => j._id !== selectedJob.value._id);
     closeJobModal();
   } catch (err) {
-    console.error('Approve error:', err);
+    console.error("Approve error:", err);
     Swal.fire({
-      icon: 'error',
-      title: 'Approval Failed',
-      text:
-        err.response?.data?.message ||
-        'Failed to approve job. Please try again.',
+      icon: "error",
+      title: "Approval Failed",
+      text: err.response?.data?.message || "Failed to approve job. Please try again.",
     });
   } finally {
     isApproving.value = false;
@@ -546,19 +508,19 @@ const rejectJob = async () => {
   if (isRejecting.value) return;
 
   const { value: reason } = await Swal.fire({
-    title: 'Reject Job',
-    input: 'textarea',
-    inputPlaceholder: 'Reason for rejection...',
+    title: "Reject Job",
+    input: "textarea",
+    inputPlaceholder: "Reason for rejection...",
     inputValidator: (value) => {
       if (!value || value.trim().length < 10) {
-        return 'Please provide a reason (at least 10 characters)';
+        return "Please provide a reason (at least 10 characters)";
       }
       return null;
     },
     showCancelButton: true,
-    confirmButtonText: 'Confirm Reject',
-    cancelButtonText: 'Cancel',
-    confirmButtonColor: '#d33',
+    confirmButtonText: "Confirm Reject",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#d33",
   });
 
   if (!reason) return;
@@ -569,27 +531,23 @@ const rejectJob = async () => {
     await adminApi.rejectJob(selectedJob.value._id, { reason });
 
     Swal.fire({
-      icon: 'success',
-      title: 'Job Rejected',
-      text: 'The job has been rejected and the client has been notified.',
+      icon: "success",
+      title: "Job Rejected",
+      text: "The job has been rejected and the client has been notified.",
       timer: 2000,
       showConfirmButton: false,
       toast: true,
-      position: 'top-end',
+      position: "top-end",
     });
 
-    pendingJobs.value = pendingJobs.value.filter(
-      (j) => j._id !== selectedJob.value._id,
-    );
+    pendingJobs.value = pendingJobs.value.filter((j) => j._id !== selectedJob.value._id);
     closeJobModal();
   } catch (err) {
-    console.error('Reject error:', err);
+    console.error("Reject error:", err);
     Swal.fire({
-      icon: 'error',
-      title: 'Rejection Failed',
-      text:
-        err.response?.data?.message ||
-        'Failed to reject job. Please try again.',
+      icon: "error",
+      title: "Rejection Failed",
+      text: err.response?.data?.message || "Failed to reject job. Please try again.",
     });
   } finally {
     isRejecting.value = false;
@@ -599,23 +557,23 @@ const rejectJob = async () => {
 // Utilities
 const formatDate = (dateStr) =>
   dateStr
-    ? new Date(dateStr).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+    ? new Date(dateStr).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       })
-    : 'N/A';
+    : "N/A";
 
 const formatRelativeDate = (dateStr) => {
-  if (!dateStr) return '';
+  if (!dateStr) return "";
   const diff = Date.now() - new Date(dateStr);
   const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours < 24) return hours === 1 ? '1 hour ago' : hours + ' hours ago';
+  if (hours < 24) return hours === 1 ? "1 hour ago" : hours + " hours ago";
   const days = Math.floor(hours / 24);
-  return days === 1 ? '1 day ago' : days + ' days ago';
+  return days === 1 ? "1 day ago" : days + " days ago";
 };
 
-const formatNumber = (num) => num?.toLocaleString() || '0';
+const formatNumber = (num) => num?.toLocaleString() || "0";
 
 onMounted(fetchPendingJobs);
 </script>

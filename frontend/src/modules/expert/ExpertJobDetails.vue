@@ -71,12 +71,11 @@
         <!-- Proposal Plain Text -->
         <div>
           <label class="block font-semibold mb-2">Proposal</label>
-          <textarea
+          <AutoTextArea
             v-model="form.proposalText"
-            rows="6"
-            class="w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#001BB7]"
-            required
-          ></textarea>
+            placeholder="Describe an Elaborate Proposal"
+            class="border rounded-xl p-3 focus:ring-2 focus:ring-[#001BB7]"
+          />
         </div>
 
         <!-- Quote -->
@@ -94,6 +93,7 @@
             :min="job.pricingRange?.min"
             :max="job.pricingRange?.max"
             class="w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#001BB7]"
+            placeholder="Quote Must be between the range"
             required
           />
 
@@ -111,6 +111,7 @@
             v-model.number="form.estimatedDeliveryDays"
             min="1"
             class="w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#001BB7]"
+            placeholder="How soon can you do this work in days"
             required
           />
         </div>
@@ -143,6 +144,7 @@ import Swal from "sweetalert2";
 import NotificationSplash from "@/components/ui/NotificationSplash.vue";
 import { useAuthStore } from "@/core/store/auth.js";
 import { useNotificationStore } from "@/core/store/notificationStore.js";
+import AutoTextArea from "@/components/shared/AutoTextArea.vue";
 import { expertApi } from "@/core/api/http.js";
 
 const route = useRoute();

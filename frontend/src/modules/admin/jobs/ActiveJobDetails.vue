@@ -86,27 +86,62 @@
 
     <!-- ================= DETAILS GRID ================= -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <!-- CLIENT DETAILS -->
       <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Client</h2>
         <p class="text-gray-600">
+          Name:
+          <span class="font-medium">{{
+            chatParticipants.client?.name || job.client?.name || "—"
+          }}</span>
+        </p>
+        <p class="text-gray-600">
           Email:
-          <span class="font-medium">{{ chatThread?.clientUser?.email || "—" }}</span>
+          <span class="font-medium">{{
+            chatParticipants.client?.email || job.client?.email || "—"
+          }}</span>
+        </p>
+        <p class="text-gray-600">
+          Phone:
+          <span class="font-medium">{{
+            chatParticipants.client?.phone || job.client?.phone || "—"
+          }}</span>
         </p>
       </div>
 
+      <!-- EXPERT DETAILS -->
       <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Expert</h2>
         <p class="text-gray-600">
+          Name:
+          <span class="font-medium">{{
+            chatParticipants.expert?.name || assignment?.expert?.name || "—"
+          }}</span>
+        </p>
+        <p class="text-gray-600">
           Email:
-          <span class="font-medium">{{ chatThread?.expertUser?.email || "—" }}</span>
+          <span class="font-medium">{{
+            chatParticipants.expert?.email || assignment?.expert?.email || "—"
+          }}</span>
+        </p>
+        <p class="text-gray-600">
+          Phone:
+          <span class="font-medium">{{
+            chatParticipants.expert?.phone || assignment?.expert?.phone || "—"
+          }}</span>
         </p>
       </div>
 
+      <!-- ADMIN DETAILS -->
       <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Admin</h2>
         <p class="text-gray-600">
+          Name:
+          <span class="font-medium">{{ authStore.user?.name || "—" }}</span>
+        </p>
+        <p class="text-gray-600">
           Email:
-          <span class="font-medium">{{ chatThread?.adminUser?.email || "—" }}</span>
+          <span class="font-medium">{{ authStore.user?.email || "—" }}</span>
         </p>
       </div>
     </div>
@@ -234,15 +269,16 @@ const healthBadge = computed(() => {
   return { label: "Healthy", class: "bg-green-100 text-green-700" };
 });
 
-const isInProgress = computed(() =>
-  [
-    "assigned",
-    "in_progress",
-    "downloaded",
-    "in_review",
-    "appealed_for_revision",
-  ].includes(job.value.status)
-);
+const activeWorkflowStatuses = [
+  "assigned",
+  "in_progress",
+  "ready",
+  "downloaded",
+  "in_review",
+  "appealed_for_revision",
+];
+
+const isInProgress = computed(() => activeWorkflowStatuses.includes(job.value.status));
 
 /* ================= ACTIONS ================= */
 const fetchJobDetails = async () => {

@@ -52,12 +52,7 @@
         </div>
 
         <div class="floating-group">
-          <input
-            v-model="phone"
-            type="tel"
-            placeholder=" "
-            class="floating-input peer"
-          />
+          <input v-model="phone" type="tel" placeholder=" " class="floating-input peer" />
           <label class="floating-label">Phone Number</label>
         </div>
 
@@ -73,13 +68,12 @@
         </div>
 
         <div class="floating-group">
-          <textarea
+          <AutoTextArea
             v-model="description"
-            rows="6"
             placeholder=" "
             required
-            class="floating-input peer resize-none"
-          ></textarea>
+            class="floating-input peer"
+          />
           <label class="floating-label">Project Description *</label>
         </div>
 
@@ -99,7 +93,7 @@
           :disabled="loading"
           class="bg-accent-500 hover:bg-accent-400 text-primary-900 font-extrabold uppercase py-4 px-8 rounded-xl transition transform hover:-translate-y-1 shadow-2xl disabled:opacity-50 text-lg"
         >
-          {{ loading ? 'Submitting...' : 'Submit Request' }}
+          {{ loading ? "Submitting..." : "Submit Request" }}
         </button>
       </form>
     </section>
@@ -107,16 +101,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import Swal from 'sweetalert2';
-import { guestApi } from '@/core/api/http.js';
+import { ref } from "vue";
+import Swal from "sweetalert2";
+import { guestApi } from "@/core/api/http.js";
+import AutoTextArea from "@/components/shared/AutoTextArea.vue";
 
-const name = ref('');
-const email = ref('');
-const phone = ref('');
-const topic = ref('');
-const description = ref('');
-const deadline = ref('');
+const name = ref("");
+const email = ref("");
+const phone = ref("");
+const topic = ref("");
+const description = ref("");
+const deadline = ref("");
 const loading = ref(false);
 
 const submitRequest = async () => {
@@ -128,10 +123,10 @@ const submitRequest = async () => {
     !deadline.value
   ) {
     return Swal.fire({
-      icon: 'warning',
-      title: 'Missing Required Fields',
-      text: 'Please fill in all required fields.',
-      confirmButtonColor: '#04293A', // primary-800
+      icon: "warning",
+      title: "Missing Required Fields",
+      text: "Please fill in all required fields.",
+      confirmButtonColor: "#04293A", // primary-800
     });
   }
 
@@ -148,25 +143,25 @@ const submitRequest = async () => {
     });
 
     await Swal.fire({
-      icon: 'success',
-      title: 'Request Submitted Successfully',
-      text: 'Your request has been received and is under review.',
-      confirmButtonColor: '#04293A', // primary-800
+      icon: "success",
+      title: "Request Submitted Successfully",
+      text: "Your request has been received and is under review.",
+      confirmButtonColor: "#04293A", // primary-800
     });
 
-    name.value = '';
-    email.value = '';
-    phone.value = '';
-    topic.value = '';
-    description.value = '';
-    deadline.value = '';
+    name.value = "";
+    email.value = "";
+    phone.value = "";
+    topic.value = "";
+    description.value = "";
+    deadline.value = "";
   } catch (error) {
     console.error(error);
     Swal.fire({
-      icon: 'error',
-      title: 'Submission Failed',
-      text: 'Something went wrong. Please try again.',
-      confirmButtonColor: '#ECB365', // accent-500
+      icon: "error",
+      title: "Submission Failed",
+      text: "Something went wrong. Please try again.",
+      confirmButtonColor: "#ECB365", // accent-500
     });
   } finally {
     loading.value = false;
@@ -217,13 +212,11 @@ const submitRequest = async () => {
 /* Focus input effects: gradient border + soft inner glow */
 .floating-input:focus {
   border: 2px solid transparent;
-  background-image:
-    linear-gradient(#064663, #064663), linear-gradient(135deg, #ecb365, #0e7490);
+  background-image: linear-gradient(#064663, #064663),
+    linear-gradient(135deg, #ecb365, #0e7490);
   background-origin: border-box;
   background-clip: padding-box, border-box;
-  box-shadow:
-    inset 0 0 8px rgba(255, 255, 255, 0.15),
-    0 6px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.15), 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 /* Hero & general animations */

@@ -18,7 +18,7 @@ export const getAllJobs = async (req, res) => {
       .populate('hiredExpertId', 'name email specialization')
       .populate({
         path: 'applications.expert',
-        select: 'name email rating specialization',
+        select: 'name email phone rating specialization',
       })
       .sort({ createdAt: -1 })
       .lean();
@@ -33,31 +33,34 @@ export const getAllJobs = async (req, res) => {
 /* =====================================================
    2. GET ACTIVE JOBS (INCLUDE IN_REVIEW)
 ===================================================== */
+/* =====================================================
+   2. GET ACTIVE JOBS (EXCLUDE COMPLETED)
+===================================================== */
 export const getActiveJobs = async (req, res) => {
   try {
-    const activeStatuses = [
-      'approved_for_bidding',
-      'assigned',
-      'in_progress',
-      'ready',
-      'in_review',
-      'appealed_for_revision',
-    ];
+    const jobs = await Job.find({
+      status: { $ne: 'completed' }, // only exclude completed jobs
+    })
+        .populate('client', 'name email')
+        .populate('hiredExpertId', 'name email specialization')
+        .populate({
+          path: 'applications.expert',
+          select: 'name phone email rating specialization',
+        })
+        .sort({ createdAt: -1 })
+        .lean();
 
-    const jobs = await Job.find({ status: { $in: activeStatuses } })
-      .populate('client', 'name email')
-      .populate('hiredExpertId', 'name email specialization')
-      .populate({
-        path: 'applications.expert',
-        select: 'name email rating specialization',
-      })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    res.status(200).json({ success: true, data: jobs });
+    res.status(200).json({
+      success: true,
+      count: jobs.length,
+      data: jobs,
+    });
   } catch (err) {
     console.error('getActiveJobs error:', err);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch active jobs',
+    });
   }
 };
 
@@ -114,131 +117,94 @@ export const getJobsSummary = async (req, res) => {
 /* =====================================================
    5. GET SINGLE JOB (ADMIN VIEW)
 ===================================================== */
+/* =====================================================
+   5. GET SINGLE JOB (ADMIN VIEW)
+===================================================== */
 export const getJobById = async (req, res) => {
   try {
     const { jobId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(jobId)) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid Job ID' });
+      return res.status(400).json({ success: false, message: 'Invalid Job ID' });
     }
 
     /* ================= JOB ================= */
     const job = await Job.findById(jobId)
-      .populate({
-        path: 'client',
-        select: 'name phone',
-        populate: { path: 'user', select: 'email phone' },
-      })
-      .populate({
-        path: 'hiredExpertId',
-        select: 'name specialization rating phone user',
-        populate: { path: 'user', select: 'email phone' },
-      })
-      .lean();
+        .populate({
+          path: 'client',
+          select: 'name phone',
+          populate: { path: 'user', select: 'email phone' },
+        })
+        .populate({
+          path: 'hiredExpertId',
+          select: 'name specialization rating phone',
+          populate: { path: 'user', select: 'email phone' },
+        })
+        .lean();
 
     if (!job) {
       return res.status(404).json({ success: false, message: 'Job not found' });
     }
 
+    // Flatten client phone/email for frontend
+    if (job.client) {
+      job.client.email = job.client.user?.email || null;
+      job.client.phone = job.client.phone || job.client.user?.phone || null;
+    }
+
+    // Flatten expert phone/email for frontend
+    if (job.hiredExpertId) {
+      job.hiredExpertId.email = job.hiredExpertId.user?.email || null;
+      job.hiredExpertId.phone =
+          job.hiredExpertId.phone || job.hiredExpertId.user?.phone || null;
+    }
+
     /* ================= PROPOSAL ================= */
-    const proposal =
-      job.applications?.find((a) => a.status === 'accepted') || null;
+    const proposal = job.applications?.find((a) => a.status === 'accepted') || null;
 
     /* ================= ASSIGNMENT ================= */
     const assignment = await Assignment.findOne({ job: job._id })
-      .populate({
-        path: 'expert',
-        select: 'name specialization rating',
-        populate: {
-          path: 'user',
-          select: 'email phone',
-        },
-      })
-      .populate({
-        path: 'client',
-        select: 'name',
-        populate: {
-          path: 'user',
-          select: 'email phone',
-        },
-      })
-      .lean();
+        .populate({
+          path: 'expert',
+          select: 'name specialization rating phone',
+          populate: { path: 'user', select: 'email phone' },
+        })
+        .populate({
+          path: 'client',
+          select: 'name phone',
+          populate: { path: 'user', select: 'email phone' },
+        })
+        .lean();
+
+    if (assignment?.expert) {
+      assignment.expert.email = assignment.expert.user?.email || null;
+      assignment.expert.phone = assignment.expert.phone || assignment.expert.user?.phone || null;
+    }
+
+    if (assignment?.client) {
+      assignment.client.email = assignment.client.user?.email || null;
+      assignment.client.phone = assignment.client.phone || assignment.client.user?.phone || null;
+    }
 
     /* ================= CHAT ================= */
     let chatThread = await ChatThread.findOne({ job: job._id })
-      .populate('clientUser', 'name email')
-      .populate('expertUser', 'name email specialization')
-      .populate('adminUser', 'name email')
-      .lean();
+        .populate('clientUser', 'name email phone')
+        .populate('expertUser', 'name email phone specialization')
+        .populate('adminUser', 'name email')
+        .lean();
 
     if (chatThread) {
       chatThread.allowedUserIds = [
-        job.client?.user?._id || job.client?._id,
-        job.hiredExpertId?.user?._id || job.hiredExpertId?._id,
-        chatThread.adminUser?._id || null,
+        job.client?._id,
+        job.hiredExpertId?._id,
+        chatThread.adminUser?._id,
       ].filter(Boolean);
     }
-
-    /* ================= TIMELINE ================= */
-    const timeline = [
-      { label: 'Job Posted', date: job.createdAt },
-      job.reviewedAt && { label: 'Admin Approved', date: job.reviewedAt },
-      assignment?.startedAt && {
-        label: 'Work Started',
-        date: assignment.startedAt,
-      },
-      job.submittedAt && { label: 'Work Submitted', date: job.submittedAt },
-      job.revisionRequestedAt && {
-        label: 'Revision Requested',
-        date: job.revisionRequestedAt,
-      },
-      job.completedAt && { label: 'Completed', date: job.completedAt },
-    ].filter(Boolean);
-
-    /* ================= CHART DATA ================= */
-    const charts = {
-      progress: [
-        { stage: 'Posted', done: true },
-        { stage: 'Assigned', done: !!job.hiredExpertId },
-        { stage: 'In Progress', done: job.status === 'in_progress' },
-        { stage: 'In Review', done: job.status === 'in_review' },
-        { stage: 'Completed', done: job.status === 'completed' },
-      ],
-      revisions: {
-        requested: job.revisionRequestedAt ? 1 : 0,
-        completed: job.status === 'completed' ? 1 : 0,
-      },
-      delivery: {
-        estimatedDays: proposal?.estimatedDeliveryDays || null,
-        actualDays:
-          assignment?.startedAt && job.completedAt
-            ? Math.ceil(
-                (new Date(job.completedAt) - new Date(assignment.startedAt)) /
-                  (1000 * 60 * 60 * 24),
-              )
-            : null,
-      },
-    };
 
     /* ================= RESPONSE ================= */
     res.status(200).json({
       success: true,
-      data: {
-        job,
-        assignment,
-        proposal,
-        chatThread,
-        timeline,
-        charts,
-        /* backwards compatibility */
-        budget: proposal?.quote ?? null,
-        deliveryTime: proposal?.estimatedDeliveryDays ?? null,
-        finalWorkUrl: job.finalWorkUrl || null,
-        downloadedAt: job.downloadedAt || null,
-        revisionRequestedAt: job.revisionRequestedAt || null,
-      },
+      data: { job, assignment, proposal, chatThread },
     });
   } catch (err) {
     console.error('ADMIN getJobById error:', err);

@@ -164,12 +164,11 @@
           <!-- Bio -->
           <div class="col-span-1 sm:col-span-2">
             <label class="block text-sm font-medium text-primary-300 mb-2"> Bio </label>
-            <textarea
+            <AutoTextArea
               v-model="form.bio"
-              rows="3"
               placeholder="Full Biography"
               class="input-dark w-full"
-            ></textarea>
+            />
           </div>
 
           <!-- Password -->
@@ -259,6 +258,7 @@ import Swal from "sweetalert2";
 import { Loader, Eye, EyeOff } from "lucide-vue-next";
 import { Vue3Lottie } from "vue3-lottie";
 import signupAnimation from "@/assets/animations/expert-signup-animation.json";
+import AutoTextArea from "@/components/shared/AutoTextArea.vue";
 
 const router = useRouter();
 const loading = ref(false);

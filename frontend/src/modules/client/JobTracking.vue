@@ -1,9 +1,7 @@
 <template>
   <div class="p-6 md:p-10 space-y-8">
     <!-- Header -->
-    <header
-      class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-    >
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h1 class="text-3xl font-bold text-primary-900">My Jobs</h1>
         <p class="text-primary-700 mt-1">
@@ -24,37 +22,29 @@
       >
         <div class="flex justify-between items-start">
           <h2 class="text-lg font-bold text-yellow-900 truncate">
-            {{ job.title || 'Untitled Job' }}
+            {{ job.title || "Untitled Job" }}
           </h2>
 
           <span
-            class="px-3 py-1 text-xs font-semibold rounded-full text-accent-800"
+            class="px-3 py-1 text-xs font-extrabold rounded-full bg-yellow-500 text-accent-800"
             :class="badgeClass(job.status)"
           >
             {{ formatStatus(job.status) }}
           </span>
         </div>
 
-        <p class="text-primary-800 mt-2 truncate">
-          {{ job.description || job.summary || 'No description' }}
-        </p>
-
         <!-- Rejected Reason Preview -->
         <p
           v-if="job.status === 'admin_rejected'"
           class="text-red-600 text-xs mt-1 truncate"
         >
-          Reason: {{ job.rejectionReason || '—' }}
+          Reason: {{ job.rejectionReason || "—" }}
         </p>
 
-        <div
-          class="flex justify-between items-center mt-4 text-sm text-primary-200"
-        >
+        <div class="flex justify-between items-center mt-4 text-sm text-primary-200">
           <span class="font-bold text-green-600">
             Due:
-            {{
-              job.deadline ? new Date(job.deadline).toLocaleDateString() : '—'
-            }}
+            {{ job.deadline ? new Date(job.deadline).toLocaleDateString() : "—" }}
           </span>
         </div>
 
@@ -69,7 +59,7 @@
           <button
             v-if="job.applications?.length"
             @click="goToApplications(job)"
-            class="px-4 py-2 rounded-xl bg-accent-500 text-neutral-white font-extrabold hover:bg-accent-400 transition"
+            class="px-4 py-2 rounded-xl bg-green-500 text-neutral-white font-extrabold hover:bg-accent-400 transition"
           >
             Applications ({{ job.applications.length }})
           </button>
@@ -78,9 +68,7 @@
     </section>
 
     <!-- Empty State -->
-    <div v-else class="text-center text-primary-200 py-20">
-      No jobs available.
-    </div>
+    <div v-else class="text-center text-primary-200 py-20">No jobs available.</div>
 
     <!-- Job Details Modal -->
     <div
@@ -92,10 +80,7 @@
           <h2 class="text-2xl font-bold text-primary-900">
             {{ selectedJob?.title }}
           </h2>
-          <button
-            @click="closeJobModal"
-            class="text-primary-200 hover:text-primary-900"
-          >
+          <button @click="closeJobModal" class="text-primary-200 hover:text-primary-900">
             ✕
           </button>
         </div>
@@ -103,30 +88,25 @@
         <div class="space-y-4">
           <p>
             <strong>Description:</strong>
-            {{ selectedJob?.description || 'No description' }}
+            {{ selectedJob?.description || "No description" }}
           </p>
           <p>
             <strong>Due Date:</strong>
             {{
               selectedJob?.deadline
                 ? new Date(selectedJob.deadline).toLocaleDateString()
-                : '—'
+                : "—"
             }}
           </p>
           <p>
             <strong>Status:</strong>
-            <span
-              :class="[
-                'px-2 py-1 rounded-full',
-                badgeClass(selectedJob?.status),
-              ]"
-            >
-              {{ formatStatus(selectedJob?.status || 'unknown') }}
+            <span :class="['px-2 py-1 rounded-full', badgeClass(selectedJob?.status)]">
+              {{ formatStatus(selectedJob?.status || "unknown") }}
             </span>
           </p>
           <p>
             <strong>Assigned Expert:</strong>
-            {{ selectedJob?.assignedExpert?.name || 'Not assigned yet' }}
+            {{ selectedJob?.assignedExpert?.name || "Not assigned yet" }}
           </p>
           <p v-if="selectedJob?.applications?.length">
             <strong>Applications:</strong> {{ selectedJob.applications.length }}
@@ -136,16 +116,11 @@
             v-if="selectedJob?.status === 'admin_rejected'"
             class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm"
           >
-            <p class="font-semibold text-red-700">
-              Rejection Reason from Admin:
-            </p>
+            <p class="font-semibold text-red-700">Rejection Reason from Admin:</p>
             <p class="text-red-600 mt-1">
-              {{ selectedJob?.rejectionReason || 'No reason provided.' }}
+              {{ selectedJob?.rejectionReason || "No reason provided." }}
             </p>
-            <p
-              v-if="selectedJob?.rejectedAt"
-              class="text-primary-200 text-xs mt-2"
-            >
+            <p v-if="selectedJob?.rejectedAt" class="text-primary-200 text-xs mt-2">
               Rejected At:
               {{ new Date(selectedJob.rejectedAt).toLocaleString() }}
             </p>
@@ -174,10 +149,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from '@/core/api/http.js';
-import Swal from 'sweetalert2';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from "vue";
+import axios from "@/core/api/http.js";
+import Swal from "sweetalert2";
+import { useRouter } from "vue-router";
 
 const jobs = ref([]);
 const selectedJob = ref(null);
@@ -189,14 +164,14 @@ const router = useRouter();
 // ============================
 const loadJobs = async () => {
   try {
-    const { data } = await axios.get('/client/jobs');
+    const { data } = await axios.get("/client/jobs");
 
     jobs.value = (data.jobs || []).sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
   } catch (err) {
     console.error(err);
-    Swal.fire('Error', 'Failed to load jobs', 'error');
+    Swal.fire("Error", "Failed to load jobs", "error");
   }
 };
 
@@ -204,8 +179,8 @@ const loadJobs = async () => {
 // View job
 // ============================
 const viewJob = (job) => {
-  if (job.status === 'in_progress' || job.assignedExpert?._id) {
-    router.push({ name: 'ClientJobDetails', params: { jobId: job._id } });
+  if (job.status === "in_progress" || job.assignedExpert?._id) {
+    router.push({ name: "ClientJobDetails", params: { jobId: job._id } });
 
     return;
   }
@@ -223,7 +198,7 @@ const closeJobModal = () => {
 // ============================
 const goToApplications = (job) => {
   router.push({
-    name: 'ClientJobApplications',
+    name: "ClientJobApplications",
     params: { jobId: job._id },
   });
 };
@@ -232,7 +207,7 @@ const goToApplications = (job) => {
 // Payments placeholder
 // ============================
 const goToPayments = (job) => {
-  Swal.fire('Payment', `Redirect to payment for "${job.title}"`, 'info');
+  Swal.fire("Payment", `Redirect to payment for "${job.title}"`, "info");
 };
 
 // ============================
@@ -240,20 +215,20 @@ const goToPayments = (job) => {
 // ============================
 const badgeClass = (status) => {
   switch (status) {
-    case 'admin_rejected':
-      return 'bg-red-600 text-white';
-    case 'open':
-      return 'bg-primary-500 text-white'; // instead of #0046FF
-    case 'in_progress':
-      return 'bg-primary-900 text-white'; // instead of #001BB7
-    case 'submitted':
-      return 'bg-primary-500 text-white';
-    case 'approved_for_bidding':
-      return 'bg-accent-500 text-white'; // already semantic
-    case 'completed':
-      return 'bg-green-600 text-white';
+    case "admin_rejected":
+      return "bg-red-600 text-white";
+    case "open":
+      return "bg-primary-500 text-white"; // instead of #0046FF
+    case "in_progress":
+      return "bg-primary-900 text-white"; // instead of #001BB7
+    case "submitted":
+      return "bg-primary-500 text-white";
+    case "approved_for_bidding":
+      return "bg-accent-500 text-white"; // already semantic
+    case "completed":
+      return "bg-green-600 text-white";
     default:
-      return 'bg-gray-200 text-gray-800';
+      return "bg-gray-200 text-gray-800";
   }
 };
 
@@ -261,9 +236,9 @@ const badgeClass = (status) => {
 // Format status
 // ============================
 const formatStatus = (status) => {
-  if (!status) return 'Unknown';
+  if (!status) return "Unknown";
 
-  return status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 };
 
 // ============================

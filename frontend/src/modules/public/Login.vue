@@ -9,13 +9,11 @@
       <div class="text-center space-y-4 max-w-md">
         <h1 class="text-5xl font-extrabold text-accent-400">Welcome Back</h1>
         <p class="text-primary-200 text-2xl">
-          Sign in to request and track research services seamlessly.
+          Access your workspace and manage research projects with ease.
         </p>
       </div>
 
-      <div
-        class="flex-1 w-full flex items-center justify-center overflow-hidden"
-      >
+      <div class="flex-1 w-full flex items-center justify-center overflow-hidden">
         <Vue3Lottie
           :animationData="loginAnimation"
           :loop="true"
@@ -41,9 +39,7 @@
         <form @submit.prevent="handleLogin" class="space-y-6">
           <!-- EMAIL -->
           <div>
-            <label class="block text-sm font-medium text-primary-300 mb-2"
-              >Email</label
-            >
+            <label class="block text-sm font-medium text-primary-300 mb-2">Email</label>
             <input
               v-model="email"
               type="email"
@@ -95,7 +91,7 @@
             class="w-full bg-accent-500 text-primary-900 font-bold py-3 rounded-xl hover:bg-accent-400 transition-all duration-300 shadow-float-md flex items-center justify-center gap-2"
           >
             <Loader v-if="loading" class="animate-spin w-5 h-5" />
-            {{ loading ? 'Signing in...' : 'Login' }}
+            {{ loading ? "Signing in..." : "Login" }}
           </button>
         </form>
 
@@ -135,12 +131,8 @@
               </button>
 
               <div class="text-center space-y-2">
-                <h3 class="text-2xl font-extrabold text-accent-400">
-                  Create Account As
-                </h3>
-                <p class="text-primary-300 text-sm">
-                  Choose your role to continue
-                </p>
+                <h3 class="text-2xl font-extrabold text-accent-400">Create Account As</h3>
+                <p class="text-primary-300 text-sm">Choose your role to continue</p>
               </div>
 
               <div class="space-y-4">
@@ -210,39 +202,39 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import Swal from 'sweetalert2';
-import { useAuthStore } from '@/core/store/auth.js';
-import { Loader, User, Briefcase, Eye, EyeOff } from 'lucide-vue-next';
-import { Vue3Lottie } from 'vue3-lottie';
-import loginAnimation from '@/assets/animations/login-animation.json';
-import { authApi } from '@/core/api/http.js';
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import Swal from "sweetalert2";
+import { useAuthStore } from "@/core/store/auth.js";
+import { Loader, User, Briefcase, Eye, EyeOff } from "lucide-vue-next";
+import { Vue3Lottie } from "vue3-lottie";
+import loginAnimation from "@/assets/animations/login-animation.json";
+import { authApi } from "@/core/api/http.js";
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
-const email = ref('');
-const password = ref('');
+const email = ref("");
+const password = ref("");
 const loading = ref(false);
 const showPassword = ref(false);
 const showSignupModal = ref(false);
 
 /* Forgot password */
 const showForgotModal = ref(false);
-const forgotEmail = ref('');
+const forgotEmail = ref("");
 
 onMounted(() => {
-  email.value = route.query.email || '';
+  email.value = route.query.email || "";
 });
 
 const handleLogin = async () => {
   if (!email.value || !password.value) {
     return Swal.fire({
-      icon: 'warning',
-      title: 'Missing Credentials',
-      text: 'Please enter both email and password.',
+      icon: "warning",
+      title: "Missing Credentials",
+      text: "Please enter both email and password.",
     });
   }
 
@@ -256,24 +248,24 @@ const handleLogin = async () => {
 
     const user = authStore.user;
 
-    if (user.role === 'Expert' && user.profile?.status !== 'approved') {
+    if (user.role === "Expert" && user.profile?.status !== "approved") {
       await Swal.fire({
-        icon: 'info',
-        title: 'Account Pending Approval',
-        text: 'Your Expert account is pending admin approval.',
+        icon: "info",
+        title: "Account Pending Approval",
+        text: "Your Expert account is pending admin approval.",
       });
       return;
     }
 
-    if (user.role === 'Admin') router.push('/admin');
-    else if (user.role === 'Client') router.push('/client');
-    else if (user.role === 'Expert') router.push('/expert');
-    else router.push('/');
+    if (user.role === "Admin") router.push("/admin");
+    else if (user.role === "Client") router.push("/client");
+    else if (user.role === "Expert") router.push("/expert");
+    else router.push("/");
   } catch (err) {
     await Swal.fire({
-      icon: 'error',
-      title: 'Login Failed',
-      text: err.response?.data?.message || 'Login failed. Please try again.',
+      icon: "error",
+      title: "Login Failed",
+      text: err.response?.data?.message || "Login failed. Please try again.",
     });
   } finally {
     loading.value = false;
@@ -283,9 +275,9 @@ const handleLogin = async () => {
 const handleForgotPassword = async () => {
   if (!forgotEmail.value) {
     return Swal.fire({
-      icon: 'warning',
-      title: 'Missing Email',
-      text: 'Please enter your email.',
+      icon: "warning",
+      title: "Missing Email",
+      text: "Please enter your email.",
     });
   }
 
@@ -295,23 +287,23 @@ const handleForgotPassword = async () => {
     showForgotModal.value = false;
 
     await Swal.fire({
-      icon: 'success',
-      title: 'Reset Link Sent',
-      text: 'Check your email for the password reset link.',
+      icon: "success",
+      title: "Reset Link Sent",
+      text: "Check your email for the password reset link.",
     });
   } catch (err) {
     await Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: err.response?.data?.message || 'Failed to send reset email.',
+      icon: "error",
+      title: "Error",
+      text: err.response?.data?.message || "Failed to send reset email.",
     });
   }
 };
 
 const redirectToSignup = (role) => {
   showSignupModal.value = false;
-  if (role === 'client') router.push('/signup/client');
-  if (role === 'expert') router.push('/signup/expert');
+  if (role === "client") router.push("/signup/client");
+  if (role === "expert") router.push("/signup/expert");
 };
 </script>
 
