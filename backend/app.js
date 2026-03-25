@@ -35,6 +35,7 @@ import adminServiceRoutes from './src/routes/admin/adminServiceRoutes.js';
 import adminClientRoutes from './src/routes/admin/adminClientRoutes.js';
 import adminExpertRoutes from './src/routes/admin/adminExpertRoutes.js';
 import adminJobRoutes from './src/routes/admin/adminJobRoutes.js';
+import adminProjectRoutes from './src/routes/admin/adminProjectRoutes.js';
 import adminRoutes from './src/routes/admin/adminRoutes.js';
 import adminGuestGuestRequestRoutes from './src/routes/admin/adminGuestRequestRoutes.js';
 import adminGuestMessageRoutes from './src/routes/admin/adminGuestMessagesRoutes.js';
@@ -96,6 +97,7 @@ app.use('/api/admin/jobs', adminJobRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/guest-requests', adminGuestGuestRequestRoutes);
 app.use('/api/admin/guest-messages', adminGuestMessageRoutes);
+app.use('/api/admin/projects', adminProjectRoutes);
 
 // -------------------- CLIENT ROUTES --------------------
 app.use('/api/client/projects', clientProjectRoutes);

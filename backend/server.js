@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Payment from './src/models/client/Payment.js';
+import Payment from './src/models/payments/Payment.js';
 
 // ------------------- Setup __dirname -------------------
 const __filename = fileURLToPath(import.meta.url);

@@ -504,8 +504,8 @@ export const submitWork = async (req, res) => {
     await assignment.save();
 
     /* ======================================================
-       7️⃣ 🔥 SYNC CLIENT PROJECT (CRITICAL FIX)
-    ====================================================== */
+   7️⃣ 🔥 SYNC CLIENT PROJECT
+====================================================== */
     const project = await ClientProject.findOneAndUpdate(
       { assignment: assignment._id },
       {
@@ -523,15 +523,51 @@ export const submitWork = async (req, res) => {
     }
 
     /* ======================================================
-       8️⃣ NOTIFY CLIENT
-    ====================================================== */
+   8️⃣ NOTIFY CLIENT + ADMIN (PAYMENT REQUIRED)
+====================================================== */
+
+    // Notify client
     await Notification.create({
       userType: 'Client',
       userId: job.client,
-      title: 'Work Submitted',
-      message: `Expert has submitted work for "${job.title}"`,
+      title: 'Project Ready - Payment Required',
+      message: `Your project "${job.title}" is ready. Please complete payment to download.`,
       jobId: job._id,
     });
+
+    // Notify admin
+    await Notification.create({
+      userType: 'Admin',
+      title: 'Project Awaiting Payment',
+      message: `Project "${job.title}" is ready and awaiting client payment confirmation.`,
+      jobId: job._id,
+    });
+
+    if (assignment.client?.email) {
+      await sendEmail({
+        to: assignment.client.email,
+        subject: 'Your Project is Ready',
+        html: `
+      <h2>Your project is ready</h2>
+      <p>The expert has completed work for:</p>
+      <b>${job.title}</b>
+
+      <p>Please complete payment to download your project.</p>
+
+      <p><b>Amount:</b> KES ${project.finalCost}</p>
+
+      <p>You can pay using:</p>
+
+      <h3>Family Bank Paybill</h3>
+      <p>Paybill: 222111</p>
+      <p>Account Number: ${project.accountNumber}</p>
+
+      <p>Or pay using MPESA STK push on the platform.</p>
+
+      <p>Login to download your project after payment confirmation.</p>
+    `,
+      });
+    }
 
     /* ======================================================
        9️⃣ RESPONSE

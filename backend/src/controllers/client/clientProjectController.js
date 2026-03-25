@@ -8,7 +8,7 @@ import Client from '../../models/client/Client.js';
 import Notification from '../../models/notification/Notification.js';
 import ClientProject from '../../models/client/ClientProject.js';
 import Assignment from '../../models/expert/ExpertAssignment.js';
-import Payment from '../../models/client/Payment.js';
+import Payment from '../../models/payments/Payment.js';
 import { initiateStkPush } from '../../services/mpesa/stkService.js';
 import { emitProjectDownloaded } from '../../sockets/index.js';
 import path from 'path';
@@ -228,6 +228,8 @@ export const getClientProjectDetails = async (req, res) => {
         finalWorkUrl: job?.finalWorkUrl || null,
         deliveredWorkAttachments: job?.deliveredWorkAttachments || [],
 
+        accountNumber: project.accountNumber,
+
         paymentConfirmed: project.paymentConfirmed,
         isPaid: project.isPaid,
 
@@ -242,6 +244,68 @@ export const getClientProjectDetails = async (req, res) => {
   } catch (err) {
     console.error('getClientProjectDetails ERROR:', err);
     res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+};
+
+/* ==========================================================================
+ CLIENT REQUEST ADMIN CONFIRMATION AND UNLOCKING
+=============================================================================*/
+export const requestManualPaymentConfirmation = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const project = await ClientProject.findOne({
+      _id: projectId,
+      client: req.user.profile._id,
+    })
+      .populate('job', 'title')
+      .populate({
+        path: 'client',
+        populate: { path: 'user', select: '_id' },
+      });
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    /* 🔒 Prevent misuse */
+    if (project.adminUnlocked || project.isPaid) {
+      return res.status(400).json({
+        message: 'Project already paid and unlocked',
+      });
+    }
+
+    /* 🔁 Force payment method */
+    project.paymentMethod = 'paybill_manual';
+
+    /* 🚫 Prevent spam */
+    if (project.manualPaymentRequested) {
+      return res.status(400).json({
+        message: 'Payment already requested',
+      });
+    }
+
+    project.manualPaymentRequested = true;
+    await project.save();
+
+    /* 🔔 NOTIFY ADMIN */
+    await Notification.create({
+      userType: 'Admin',
+      title: 'Manual Payment Verification Required',
+      message: `Client claims payment for "${project.job?.title}". Please verify.`,
+      jobId: project.job?._id || null,
+    });
+
+    return res.json({
+      success: true,
+      message: 'Payment request sent to admin',
+    });
+  } catch (err) {
+    console.error('[requestManualPaymentConfirmation]', err);
+    return res.status(500).json({
       success: false,
       message: 'Server error',
     });

@@ -153,6 +153,12 @@ export const clientApi = {
   retryProjectPayment(projectId, phone) {
     return api.post(`/client/projects/${projectId}/pay/retry`, { phone });
   },
+
+  requestPaymentConfirmation(projectId) {
+    return api.post(
+      `/client/projects/${projectId}/request-payment-confirmation`,
+    );
+  },
   manualProjectPayment(projectId, phone) {
     return api.post(`/client/projects/${projectId}/manual-pay`, { phone });
   },
@@ -243,6 +249,7 @@ export const adminApi = {
   getActiveJobs: () => api.get('/admin/jobs/active'),
   getCompletedJobs: () => api.get('/admin/jobs/completed'),
   getJobById: (id) => api.get(`/admin/jobs/${id}`),
+  getProjectByJobId: (jobId) => api.get(`/admin/projects/by-job/${jobId}`),
   reviewJob: (id, data) => api.patch(`/admin/jobs/${id}/review`, data),
   rejectJob: (id, data) => api.patch(`/admin/jobs/${id}/reject`, data),
   overrideAssignment: (id, data) =>
@@ -252,6 +259,8 @@ export const adminApi = {
   getApprovedExperts: () => api.get('/admin/jobs/approved-experts'),
   assignExpert: (jobId, expertId) =>
     api.post(`/admin/jobs/${jobId}/assign`, { expertId }),
+  confirmManualPayment: (projectId) =>
+    api.post(`/admin/projects/${projectId}/unlock`),
 
   // =========================
   // 🔥 GUEST REQUESTS

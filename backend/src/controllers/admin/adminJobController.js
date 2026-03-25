@@ -31,9 +31,6 @@ export const getAllJobs = async (req, res) => {
 };
 
 /* =====================================================
-   2. GET ACTIVE JOBS (INCLUDE IN_REVIEW)
-===================================================== */
-/* =====================================================
    2. GET ACTIVE JOBS (EXCLUDE COMPLETED)
 ===================================================== */
 export const getActiveJobs = async (req, res) => {
@@ -41,14 +38,14 @@ export const getActiveJobs = async (req, res) => {
     const jobs = await Job.find({
       status: { $ne: 'completed' }, // only exclude completed jobs
     })
-        .populate('client', 'name email')
-        .populate('hiredExpertId', 'name email specialization')
-        .populate({
-          path: 'applications.expert',
-          select: 'name phone email rating specialization',
-        })
-        .sort({ createdAt: -1 })
-        .lean();
+      .populate('client', 'name email')
+      .populate('hiredExpertId', 'name email specialization')
+      .populate({
+        path: 'applications.expert',
+        select: 'name phone email rating specialization',
+      })
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -117,30 +114,29 @@ export const getJobsSummary = async (req, res) => {
 /* =====================================================
    5. GET SINGLE JOB (ADMIN VIEW)
 ===================================================== */
-/* =====================================================
-   5. GET SINGLE JOB (ADMIN VIEW)
-===================================================== */
 export const getJobById = async (req, res) => {
   try {
     const { jobId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(jobId)) {
-      return res.status(400).json({ success: false, message: 'Invalid Job ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Job ID' });
     }
 
     /* ================= JOB ================= */
     const job = await Job.findById(jobId)
-        .populate({
-          path: 'client',
-          select: 'name phone',
-          populate: { path: 'user', select: 'email phone' },
-        })
-        .populate({
-          path: 'hiredExpertId',
-          select: 'name specialization rating phone',
-          populate: { path: 'user', select: 'email phone' },
-        })
-        .lean();
+      .populate({
+        path: 'client',
+        select: 'name phone',
+        populate: { path: 'user', select: 'email phone' },
+      })
+      .populate({
+        path: 'hiredExpertId',
+        select: 'name specialization rating phone',
+        populate: { path: 'user', select: 'email phone' },
+      })
+      .lean();
 
     if (!job) {
       return res.status(404).json({ success: false, message: 'Job not found' });
@@ -156,42 +152,45 @@ export const getJobById = async (req, res) => {
     if (job.hiredExpertId) {
       job.hiredExpertId.email = job.hiredExpertId.user?.email || null;
       job.hiredExpertId.phone =
-          job.hiredExpertId.phone || job.hiredExpertId.user?.phone || null;
+        job.hiredExpertId.phone || job.hiredExpertId.user?.phone || null;
     }
 
     /* ================= PROPOSAL ================= */
-    const proposal = job.applications?.find((a) => a.status === 'accepted') || null;
+    const proposal =
+      job.applications?.find((a) => a.status === 'accepted') || null;
 
     /* ================= ASSIGNMENT ================= */
     const assignment = await Assignment.findOne({ job: job._id })
-        .populate({
-          path: 'expert',
-          select: 'name specialization rating phone',
-          populate: { path: 'user', select: 'email phone' },
-        })
-        .populate({
-          path: 'client',
-          select: 'name phone',
-          populate: { path: 'user', select: 'email phone' },
-        })
-        .lean();
+      .populate({
+        path: 'expert',
+        select: 'name specialization rating phone',
+        populate: { path: 'user', select: 'email phone' },
+      })
+      .populate({
+        path: 'client',
+        select: 'name phone',
+        populate: { path: 'user', select: 'email phone' },
+      })
+      .lean();
 
     if (assignment?.expert) {
       assignment.expert.email = assignment.expert.user?.email || null;
-      assignment.expert.phone = assignment.expert.phone || assignment.expert.user?.phone || null;
+      assignment.expert.phone =
+        assignment.expert.phone || assignment.expert.user?.phone || null;
     }
 
     if (assignment?.client) {
       assignment.client.email = assignment.client.user?.email || null;
-      assignment.client.phone = assignment.client.phone || assignment.client.user?.phone || null;
+      assignment.client.phone =
+        assignment.client.phone || assignment.client.user?.phone || null;
     }
 
     /* ================= CHAT ================= */
     let chatThread = await ChatThread.findOne({ job: job._id })
-        .populate('clientUser', 'name email phone')
-        .populate('expertUser', 'name email phone specialization')
-        .populate('adminUser', 'name email')
-        .lean();
+      .populate('clientUser', 'name email phone')
+      .populate('expertUser', 'name email phone specialization')
+      .populate('adminUser', 'name email')
+      .lean();
 
     if (chatThread) {
       chatThread.allowedUserIds = [

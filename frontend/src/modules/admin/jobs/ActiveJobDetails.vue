@@ -1,6 +1,7 @@
+```vue
 <template>
   <div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-8">
-    <!-- ================= HEADER ================= -->
+    <!-- HEADER -->
     <div
       class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0"
     >
@@ -13,7 +14,7 @@
 
       <div class="flex flex-wrap items-center gap-3">
         <span
-          class="px-4 py-1 rounded-full text-sm font-semibold transition"
+          class="px-4 py-1 rounded-full text-sm font-semibold"
           :class="healthBadge.class"
         >
           {{ healthBadge.label }}
@@ -22,159 +23,116 @@
         <button
           @click="assignExpert(job)"
           :disabled="!!job.hiredExpertId"
-          class="px-5 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50 hover:bg-green-700 transition"
+          class="px-5 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
         >
           Assign Expert
         </button>
 
         <button
           @click="overrideAssignment"
-          class="px-5 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
+          class="px-5 py-2 bg-yellow-600 text-white rounded-lg"
         >
           Override
         </button>
 
         <button
           @click="deleteJob(job._id)"
-          class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          class="px-5 py-2 bg-red-600 text-white rounded-lg"
         >
           Delete
         </button>
+
+        <!-- ✅ PAYMENT BUTTON (FIXED PROPERLY) -->
+        <!-- SAFE PAYMENT BUTTON -->
+        <button
+          v-if="project && !project.adminUnlocked"
+          @click="confirmPayment(project._id)"
+          class="px-5 py-2 bg-blue-600 text-white rounded-lg"
+        >
+          Confirm Payment & Unlock Project
+        </button>
+
+        <!-- LOADING STATE -->
+        <span
+          v-else-if="!project"
+          class="px-4 py-1 rounded-full bg-gray-100 text-gray-500 text-sm"
+        >
+          Loading project...
+        </span>
+
+        <!-- CONFIRMED -->
+        <span
+          v-else
+          class="px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold"
+        >
+          Payment Confirmed
+        </span>
       </div>
     </div>
 
-    <!-- ================= TITLE ================= -->
-    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 tracking-tight">
+    <!-- TITLE -->
+    <h1 class="text-3xl font-bold text-gray-800">
       {{ job.title || "Job Details" }}
     </h1>
 
-    <!-- ================= KPI STRIP ================= -->
+    <!-- KPI -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-      <!-- Progress -->
-      <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
+      <div class="bg-white p-6 rounded-lg shadow border">
         <h3 class="text-sm text-gray-500 mb-2">Progress</h3>
         <div class="w-full bg-gray-200 rounded-full h-4">
           <div
-            class="h-4 rounded-full transition-all duration-500 ease-in-out"
+            class="h-4 rounded-full"
             :class="progressColor"
             :style="{ width: progressWidth }"
           ></div>
         </div>
-        <p class="mt-2 text-sm font-medium text-gray-700">{{ progressText }}</p>
+        <p class="mt-2 text-sm">{{ progressText }}</p>
       </div>
 
-      <!-- Budget -->
-      <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
+      <div class="bg-white p-6 rounded-lg shadow border">
         <h3 class="text-sm text-gray-500 mb-2">Budget</h3>
-        <p class="text-2xl font-bold text-gray-800">
+        <p class="text-2xl font-bold">
           {{ proposal?.quote ?? job.pricingRange?.min ?? "—" }}
         </p>
       </div>
 
-      <!-- Delivery -->
-      <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
+      <div class="bg-white p-6 rounded-lg shadow border">
         <h3 class="text-sm text-gray-500 mb-2">Delivery</h3>
-        <p class="text-2xl font-bold text-blue-600">{{ deliveryText }}</p>
+        <p class="text-2xl text-blue-600">{{ deliveryText }}</p>
       </div>
 
-      <!-- Risk -->
-      <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
+      <div class="bg-white p-6 rounded-lg shadow border">
         <h3 class="text-sm text-gray-500 mb-2">Risk</h3>
-        <p class="text-2xl font-bold" :class="riskColor">{{ riskLabel }}</p>
+        <p class="text-2xl" :class="riskColor">{{ riskLabel }}</p>
       </div>
     </div>
 
-    <!-- ================= DETAILS GRID ================= -->
+    <!-- CLIENT / EXPERT / ADMIN -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      <!-- CLIENT DETAILS -->
-      <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Client</h2>
-        <p class="text-gray-600">
-          Name:
-          <span class="font-medium">{{
-            chatParticipants.client?.name || job.client?.name || "—"
-          }}</span>
-        </p>
-        <p class="text-gray-600">
-          Email:
-          <span class="font-medium">{{
-            chatParticipants.client?.email || job.client?.email || "—"
-          }}</span>
-        </p>
-        <p class="text-gray-600">
-          Phone:
-          <span class="font-medium">{{
-            chatParticipants.client?.phone || job.client?.phone || "—"
-          }}</span>
-        </p>
+      <div class="bg-white p-6 rounded-lg shadow border">
+        <h2 class="text-xl mb-4">Client</h2>
+        <p>Name: {{ job.client?.name || "—" }}</p>
+        <p>Email: {{ job.client?.email || "—" }}</p>
       </div>
 
-      <!-- EXPERT DETAILS -->
-      <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Expert</h2>
-        <p class="text-gray-600">
-          Name:
-          <span class="font-medium">{{
-            chatParticipants.expert?.name || assignment?.expert?.name || "—"
-          }}</span>
-        </p>
-        <p class="text-gray-600">
-          Email:
-          <span class="font-medium">{{
-            chatParticipants.expert?.email || assignment?.expert?.email || "—"
-          }}</span>
-        </p>
-        <p class="text-gray-600">
-          Phone:
-          <span class="font-medium">{{
-            chatParticipants.expert?.phone || assignment?.expert?.phone || "—"
-          }}</span>
-        </p>
+      <div class="bg-white p-6 rounded-lg shadow border">
+        <h2 class="text-xl mb-4">Expert</h2>
+        <p>Name: {{ assignment?.expert?.name || "—" }}</p>
+        <p>Email: {{ assignment?.expert?.email || "—" }}</p>
       </div>
 
-      <!-- ADMIN DETAILS -->
-      <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Admin</h2>
-        <p class="text-gray-600">
-          Name:
-          <span class="font-medium">{{ authStore.user?.name || "—" }}</span>
-        </p>
-        <p class="text-gray-600">
-          Email:
-          <span class="font-medium">{{ authStore.user?.email || "—" }}</span>
-        </p>
+      <div class="bg-white p-6 rounded-lg shadow border">
+        <h2 class="text-xl mb-4">Admin</h2>
+        <p>Name: {{ authStore.user?.name || "—" }}</p>
+        <p>Email: {{ authStore.user?.email || "—" }}</p>
       </div>
     </div>
 
-    <!-- ================= DESCRIPTION ================= -->
-    <div class="bg-white p-6 rounded-lg shadow border hover:shadow-md transition">
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Description</h2>
-      <p class="text-gray-700">
-        {{ job.description || "No description provided" }}
-      </p>
+    <!-- DESCRIPTION -->
+    <div class="bg-white p-6 rounded-lg shadow border">
+      <h2 class="text-xl mb-4">Description</h2>
+      <p>{{ job.description || "No description provided" }}</p>
     </div>
-
-    <!-- ================= CHAT SECTION ================= -->
-    <div
-      v-if="assignment?.chatThreadId && isInProgress"
-      class="mt-10 bg-white rounded-2xl shadow-lg h-[500px] overflow-hidden"
-    >
-      <ChatThread
-        :thread-id="assignment.chatThreadId"
-        :messages="chatMessages"
-        :participants="chatParticipants"
-        :loading="chatLoading"
-        :current-user-id="currentUserId"
-        :current-user-role="currentUserRole"
-        :admin-mode="isAdmin"
-        :status="assignment.status"
-        @send="sendMessage"
-      />
-    </div>
-
-    <p v-else-if="!chatThread" class="text-gray-500 text-center py-10">
-      No chat thread available.
-    </p>
   </div>
 </template>
 
@@ -182,48 +140,27 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Swal from "sweetalert2";
-import { adminApi, chatApi } from "@/core/api/http";
+import { adminApi } from "@/core/api/http";
 import { useAuthStore } from "@/core/store/auth";
-import ChatThread from "@/components/ui/chat/ChatThread.vue";
 
-/* ================= ROUTE + AUTH ================= */
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
-/* ================= STATE ================= */
 const job = ref({});
 const assignment = ref(null);
 const proposal = ref(null);
-const chatThread = ref(null);
+const project = ref(null); // ✅ NEW
 
-const chatMessages = ref([]);
-const chatParticipants = ref({ client: null, expert: null, admin: null });
-const chatLoading = ref(false);
-
-/* ================= AUTH INFO ================= */
-const currentUserId = computed(() => authStore.user?._id || null);
-const currentUserRole = "admin";
-const isAdmin = true;
-
-/* ================= PROGRESS BASED ON STATUS ================= */
+/* PROGRESS */
 const progressValue = computed(() => {
   switch (job.value.status) {
-    case "pending_admin_review":
-    case "admin_rejected":
-      return 0;
-    case "approved_for_bidding":
-      return 20;
     case "assigned":
       return 40;
     case "in_progress":
       return 60;
-    case "appealed_for_revision":
-      return 65;
     case "in_review":
       return 70;
-    case "downloaded":
-      return 80;
     case "completed":
       return 100;
     default:
@@ -234,10 +171,6 @@ const progressValue = computed(() => {
 const progressText = computed(() => `${progressValue.value}%`);
 const progressWidth = computed(() => `${progressValue.value}%`);
 
-const deliveryText = computed(() =>
-  assignment.value?.deliveryTime ? assignment.value.deliveryTime + " days" : "—"
-);
-
 const progressColor = computed(() =>
   progressValue.value < 50
     ? "bg-yellow-500"
@@ -246,87 +179,76 @@ const progressColor = computed(() =>
     : "bg-green-600"
 );
 
-const isLate = computed(
-  () => job.value.deadline && new Date(job.value.deadline) < new Date()
+const deliveryText = computed(() =>
+  assignment.value?.deliveryTime ? assignment.value.deliveryTime + " days" : "—"
 );
 
-const riskLabel = computed(() =>
-  isLate.value ? "High" : progressValue.value < 50 ? "Medium" : "Low"
-);
+const riskLabel = computed(() => (progressValue.value < 50 ? "Medium" : "Low"));
 
 const riskColor = computed(() =>
-  isLate.value
-    ? "text-red-600"
-    : progressValue.value < 50
-    ? "text-yellow-600"
-    : "text-green-600"
+  progressValue.value < 50 ? "text-yellow-600" : "text-green-600"
 );
 
-const healthBadge = computed(() => {
-  if (isLate.value) return { label: "Critical", class: "bg-red-100 text-red-700" };
-  if (progressValue.value < 50)
-    return { label: "At Risk", class: "bg-yellow-100 text-yellow-700" };
-  return { label: "Healthy", class: "bg-green-100 text-green-700" };
-});
+const healthBadge = computed(() =>
+  progressValue.value < 50
+    ? { label: "At Risk", class: "bg-yellow-100 text-yellow-700" }
+    : { label: "Healthy", class: "bg-green-100 text-green-700" }
+);
 
-const activeWorkflowStatuses = [
-  "assigned",
-  "in_progress",
-  "ready",
-  "downloaded",
-  "in_review",
-  "appealed_for_revision",
-];
-
-const isInProgress = computed(() => activeWorkflowStatuses.includes(job.value.status));
-
-/* ================= ACTIONS ================= */
+/* FETCH JOB */
 const fetchJobDetails = async () => {
   try {
     const { data } = await adminApi.getJobById(route.params.jobId);
 
-    console.log("ADMIN JOB DETAILS RESPONSE 👉", data.data);
-
     job.value = data.data.job;
     assignment.value = data.data.assignment;
     proposal.value = data.data.proposal;
-    chatThread.value = data.data.chatThread ?? null;
+  } catch (err) {
+    Swal.fire("Error", "Failed to load job", "error");
+  }
+};
 
-    if (chatThread.value) {
-      chatParticipants.value = {
-        client: chatThread.value.clientUser ?? job.value.client ?? null,
-        expert: chatThread.value.expertUser ?? assignment.value?.expert ?? null,
-        admin: chatThread.value.adminUser ?? authStore.user ?? null,
-      };
-      chatMessages.value = chatThread.value.messages ?? [];
+/* FETCH PROJECT (CRITICAL FIX) */
+const fetchProject = async () => {
+  try {
+    console.log("Fetching project for job:", route.params.jobId); // 👈 ADD
+
+    const { data } = await adminApi.getProjectByJobId(route.params.jobId);
+
+    console.log("PROJECT RESPONSE:", data); // 👈 ADD
+
+    project.value = data.project;
+  } catch (err) {
+    console.error("❌ Project fetch failed", err.response || err); // 👈 IMPORTANT
+  }
+};
+
+/* PAYMENT */
+const confirmPayment = async (projectId) => {
+  try {
+    const { data } = await adminApi.confirmManualPayment(projectId);
+
+    if (data.success) {
+      Swal.fire("Success", data.message, "success");
+
+      // ✅ Update project state
+      project.value.adminUnlocked = true;
     }
   } catch (err) {
-    console.error(err);
-    Swal.fire("Error", "Failed to load job details", "error");
+    Swal.fire(
+      "Error",
+      err.response?.data?.message || "Failed to confirm payment",
+      "error"
+    );
   }
 };
 
-const sendMessage = async (content) => {
-  if (!content?.trim() || !assignment.value?.chatThreadId) return;
-
-  try {
-    chatLoading.value = true;
-    await chatApi.sendMessage(assignment.value.chatThreadId, content);
-    const { data } = await chatApi.getThread(assignment.value.chatThreadId);
-    chatMessages.value = data.messages ?? [];
-  } catch (err) {
-    console.error(err);
-    Swal.fire("Error", "Failed to send message", "error");
-  } finally {
-    chatLoading.value = false;
-  }
-};
-
+/* ACTIONS */
 const assignExpert = (job) =>
   router.push({ name: "AssignExpert", params: { jobId: job._id } });
 
 const overrideAssignment = async () => {
-  await Swal.fire("Override applied (placeholder)");
+  Swal.fire("Override placeholder");
 };
 
 const deleteJob = async (id) => {
@@ -334,12 +256,17 @@ const deleteJob = async (id) => {
     title: "Delete Job?",
     showCancelButton: true,
   });
+
   if (!result.isConfirmed) return;
 
   await adminApi.deleteJob(id);
   router.push({ name: "ActiveJobs" });
 };
 
-/* ================= LIFECYCLE ================= */
-onMounted(fetchJobDetails);
+/* INIT */
+onMounted(() => {
+  fetchJobDetails();
+  fetchProject(); // ✅ IMPORTANT
+});
 </script>
+```

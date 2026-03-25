@@ -180,6 +180,7 @@ const loading = ref(true);
 const error = ref("");
 const downloading = ref(false);
 const revisionNote = ref("");
+const requestingConfirmation = ref(false);
 
 /* Chat */
 const chatThread = ref(null);
@@ -247,6 +248,28 @@ async function loadProject() {
     error.value = "Failed to load project details.";
   } finally {
     loading.value = false;
+  }
+}
+
+async function requestPaymentConfirmation() {
+  if (requestingConfirmation.value) return;
+
+  requestingConfirmation.value = true;
+
+  try {
+    const res = await clientApi.requestPaymentConfirmation(project.value._id);
+
+    alert(res.data.message || "Request sent to admin");
+
+    project.value.manualPaymentRequested = true;
+  } catch (err) {
+    console.error(err);
+    alert(
+      err.response?.data?.message ||
+        "Failed to request payment confirmation"
+    );
+  } finally {
+    requestingConfirmation.value = false;
   }
 }
 

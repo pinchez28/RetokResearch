@@ -4,6 +4,7 @@ import {
   getClientProjectDetails,
   requestRevision,
   getProjectPaymentStatus,
+  requestManualPaymentConfirmation,
   downloadWork,
   markProjectDownloaded,
 } from '../../controllers/client/clientProjectController.js';
@@ -32,6 +33,14 @@ router.post(
   authMiddleware,
   protectClient,
   initiateProjectPayment,
+);
+
+// Client requests admin to confirm Paybill payment
+router.post(
+  '/:projectId/request-payment-confirmation',
+  authMiddleware,
+  protectClient,
+  requestManualPaymentConfirmation,
 );
 
 // Retry failed payment (MPESA)

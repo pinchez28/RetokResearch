@@ -3,6 +3,7 @@ import Client from '../models/client/Client.js';
 import Assignment from '../models/expert/ExpertAssignment.js';
 import ClientProject from '../models/client/ClientProject.js';
 import Notification from '../models/notification/Notification.js';
+import crypto from 'crypto';
 
 /**
  * Assign a job to an expert
@@ -62,6 +63,7 @@ export const assignJobToExpert = async ({
         job: job._id,
         status: 'assigned', // match job.status
         isPaid: false,
+        paymentRef: crypto.randomUUID(),
         finalCost: quote, // 🔒 lock the final cost
         createdAt: new Date(),
       },

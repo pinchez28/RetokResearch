@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 
 const clientProjectSchema = new mongoose.Schema(
   {
@@ -44,22 +45,70 @@ const clientProjectSchema = new mongoose.Schema(
       index: true,
     },
 
-    paymentConfirmed: { type: Boolean, default: false },
+    /* ========================================
+       PAYMENT FLAGS
+    ======================================== */
+
+    paymentConfirmed: { type: Boolean, default: false }, // MPESA confirmation
     isPaid: { type: Boolean, default: false },
     paidAt: Date,
 
-    readyAt: { type: Date, default: null },
-    downloadedAt: { type: Date, default: null },
-    revisionRequestedAt: { type: Date, default: null },
-    completedAt: { type: Date, default: null },
+    /* ========================================
+       FINAL COST (ADMIN CONTROLLED)
+    ======================================== */
 
-    // 🔒 BACKEND CONTROLLED: final cost client must pay
     finalCost: {
       type: Number,
       default: 0,
       min: 0,
       required: true,
     },
+
+    /* ========================================
+       PAYMENT SYSTEM (NEW)
+    ======================================== */
+
+    paymentMethod: {
+      type: String,
+      enum: ['mpesa_stk', 'paybill_manual'],
+      default: 'paybill_manual', // default to manual unless client chooses STK
+    },
+
+    // Account number for manual paybill
+    accountNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    // Unique payment reference for MPESA/STK
+    paymentRef: {
+      type: String,
+      required: true,
+      unique: true,
+      default: () => crypto.randomUUID(),
+    },
+
+    // Client claims they have paid via paybill
+    manualPaymentRequested: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Admin unlocks project after verifying bank payment
+    adminUnlocked: {
+      type: Boolean,
+      default: false,
+    },
+
+    /* ========================================
+       TIMELINE
+    ======================================== */
+
+    readyAt: { type: Date, default: null },
+    downloadedAt: { type: Date, default: null },
+    revisionRequestedAt: { type: Date, default: null },
+    completedAt: { type: Date, default: null },
   },
   {
     timestamps: true,
@@ -72,17 +121,16 @@ const clientProjectSchema = new mongoose.Schema(
    VIRTUALS
 ============================ */
 
-// Can client download the final work?
+// Can client download final work?
 clientProjectSchema.virtual('canClientDownload').get(function () {
   return (
-    this.paymentConfirmed &&
-    this.isPaid &&
     this.status === 'ready' &&
-    !this.downloadedAt
+    !this.downloadedAt &&
+    ((this.paymentConfirmed && this.isPaid) || this.adminUnlocked === true)
   );
 });
 
-// Is the project currently active (in progress or waiting)?
+// Is project active
 clientProjectSchema.virtual('isActive').get(function () {
   return [
     'assigned',
@@ -93,14 +141,25 @@ clientProjectSchema.virtual('isActive').get(function () {
   ].includes(this.status);
 });
 
-// Has the project been fully completed?
+// Completed project
 clientProjectSchema.virtual('isCompleted').get(function () {
   return this.status === 'completed' && !!this.completedAt;
 });
 
-// Has the project been delivered to client (downloaded)?
+// Delivered to client
 clientProjectSchema.virtual('isDelivered').get(function () {
   return !!this.downloadedAt;
+});
+
+/* ============================
+   AUTO GENERATE PAYBILL ACCOUNT
+============================ */
+
+clientProjectSchema.pre('save', function (next) {
+  if (!this.accountNumber) {
+    this.accountNumber = Math.floor(100000 + Math.random() * 900000).toString();
+  }
+  next();
 });
 
 export default mongoose.model('ClientProject', clientProjectSchema);

@@ -1,4 +1,4 @@
-import Payment from '../../models/client/Payment.js';
+import Payment from '../../models/payments/Payment.js';
 import ClientProject from '../../models/client/ClientProject.js';
 import Job from '../../models/client/Job.js';
 import { emitProjectPaid } from '../../sockets/index.js';
@@ -171,6 +171,7 @@ export const initiateProjectPayment = async (req, res) => {
         amount: amountToPay,
         mpesa: { phone },
         status: 'pending',
+        type: 'PROJECT_PAYMENT',
       });
     } catch (err) {
       if (err.code === 11000) {
