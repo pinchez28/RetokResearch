@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-8">
     <!-- HEADER -->
@@ -42,17 +41,17 @@
           Delete
         </button>
 
-        <!-- ✅ PAYMENT BUTTON (FIXED PROPERLY) -->
-        <!-- SAFE PAYMENT BUTTON -->
+        <!-- PAYMENT BUTTON -->
+        <!-- PAYMENT BUTTON -->
         <button
-          v-if="project && !project.adminUnlocked"
+          v-if="project && project.paymentStatus === 'ready' && !project.adminUnlocked"
           @click="confirmPayment(project._id)"
           class="px-5 py-2 bg-blue-600 text-white rounded-lg"
         >
           Confirm Payment & Unlock Project
         </button>
 
-        <!-- LOADING STATE -->
+        <!-- LOADING -->
         <span
           v-else-if="!project"
           class="px-4 py-1 rounded-full bg-gray-100 text-gray-500 text-sm"
@@ -62,7 +61,7 @@
 
         <!-- CONFIRMED -->
         <span
-          v-else
+          v-else-if="project && project.adminUnlocked"
           class="px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold"
         >
           Payment Confirmed
@@ -133,16 +132,34 @@
       <h2 class="text-xl mb-4">Description</h2>
       <p>{{ job.description || "No description provided" }}</p>
     </div>
+
+    <!-- CHAT MODERATION -->
+    <ChatThread
+      v-if="chatThreadId"
+      :thread-id="chatThreadId"
+      :messages="messages"
+      :participants="participants"
+      :loading="chatLoading"
+      :current-user-id="authStore.user?._id"
+      :current-user-role="'admin'"
+      :admin-mode="true"
+      :status="job.status"
+      @send="sendMessage"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Swal from "sweetalert2";
-import { adminApi } from "@/core/api/http";
+import { adminApi, chatApi } from "@/core/api/http";
 import { useAuthStore } from "@/core/store/auth";
 
+import ChatThread from "@/components/ui/chat/ChatThread.vue";
+import { useChat } from "@/composables/chat/useChat";
+
+/* ===================== STATE ===================== */
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -150,9 +167,26 @@ const authStore = useAuthStore();
 const job = ref({});
 const assignment = ref(null);
 const proposal = ref(null);
-const project = ref(null); // ✅ NEW
+const project = ref(null);
 
-/* PROGRESS */
+const chatThreadId = computed(() => {
+  const thread = assignment.value?.chatThreadId;
+  return typeof thread === "string" ? thread : thread?._id || null;
+});
+
+const canAccessChat = computed(() => !!chatThreadId.value);
+
+const { messages, participants, loading: chatLoading, sendMessage } = useChat(
+  chatThreadId,
+  canAccessChat,
+  {
+    _id: authStore.user?._id,
+    role: "admin",
+  },
+  true // admin mode
+);
+
+/* ===================== COMPUTED ===================== */
 const progressValue = computed(() => {
   switch (job.value.status) {
     case "assigned":
@@ -195,11 +229,10 @@ const healthBadge = computed(() =>
     : { label: "Healthy", class: "bg-green-100 text-green-700" }
 );
 
-/* FETCH JOB */
+/* ===================== API FUNCTIONS ===================== */
 const fetchJobDetails = async () => {
   try {
     const { data } = await adminApi.getJobById(route.params.jobId);
-
     job.value = data.data.job;
     assignment.value = data.data.assignment;
     proposal.value = data.data.proposal;
@@ -208,42 +241,29 @@ const fetchJobDetails = async () => {
   }
 };
 
-/* FETCH PROJECT (CRITICAL FIX) */
 const fetchProject = async () => {
   try {
-    console.log("Fetching project for job:", route.params.jobId); // 👈 ADD
-
     const { data } = await adminApi.getProjectByJobId(route.params.jobId);
-
-    console.log("PROJECT RESPONSE:", data); // 👈 ADD
-
     project.value = data.project;
   } catch (err) {
-    console.error("❌ Project fetch failed", err.response || err); // 👈 IMPORTANT
+    console.error("❌ Project fetch failed", err.response || err);
   }
 };
 
-/* PAYMENT */
+/* ===================== PAYMENT ===================== */
 const confirmPayment = async (projectId) => {
   try {
     const { data } = await adminApi.confirmManualPayment(projectId);
-
     if (data.success) {
-      Swal.fire("Success", data.message, "success");
-
-      // ✅ Update project state
       project.value.adminUnlocked = true;
+      project.value.paymentStatus = "confirmed"; // Optional: mark status as confirmed
     }
   } catch (err) {
-    Swal.fire(
-      "Error",
-      err.response?.data?.message || "Failed to confirm payment",
-      "error"
-    );
+    Swal.fire("Error", "Failed to confirm payment", "error");
   }
 };
 
-/* ACTIONS */
+/* ===================== ACTIONS ===================== */
 const assignExpert = (job) =>
   router.push({ name: "AssignExpert", params: { jobId: job._id } });
 
@@ -263,10 +283,9 @@ const deleteJob = async (id) => {
   router.push({ name: "ActiveJobs" });
 };
 
-/* INIT */
-onMounted(() => {
-  fetchJobDetails();
-  fetchProject(); // ✅ IMPORTANT
+/* ===================== INIT ===================== */
+onMounted(async () => {
+  await fetchJobDetails();
+  await fetchProject();
 });
 </script>
-```

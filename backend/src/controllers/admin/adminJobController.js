@@ -6,6 +6,9 @@ import sendEmail from '../../../utils/sendEmail.js';
 import Proposal from '../../models/expert/ExpertProposal.js';
 import ChatThread from '../../models/chat/ChatThread.js';
 import Assignment from '../../models/expert/ExpertAssignment.js';
+import Project from '../../models/client/Project.js';
+import ExpertAssignment from '../../models/expert/ExpertAssignment.js';
+import ClientProject from '../../models/client/ClientProject.js';
 import mongoose from 'mongoose';
 
 /* =====================================================
@@ -82,6 +85,66 @@ export const getPendingJobs = async (req, res) => {
   }
 };
 
+// Get active job details (for admin view)
+export const getActiveJobDetails = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    // 1️⃣ Fetch job and populate client
+    const job = await Job.findById(jobId)
+      .populate({ path: 'client', select: '_id name phone' })
+      .lean();
+    if (!job)
+      return res.status(404).json({ success: false, message: 'Job not found' });
+
+    // 2️⃣ Build applications with expertSnapshot manually
+    const applications =
+      job.applications?.map((app) => ({
+        ...app,
+        expertSnapshot: {
+          expertId: app.expert,
+          // Fetch expert info (name, photo, etc.)
+          ...(app.expertSnapshot || {}), // fallback in case already present
+        },
+      })) || [];
+
+    // 3️⃣ Fetch assignment for this job
+    const assignment = await ExpertAssignment.findOne({ job: jobId })
+      .populate({
+        path: 'expert',
+        select: '_id name phone photo specialization bio cvPdf',
+      })
+      .populate({ path: 'chatThreadId' })
+      .lean();
+
+    // 4️⃣ Fetch client project if exists
+    const project = await ClientProject.findOne({ job: jobId })
+      .populate({
+        path: 'expert',
+        select:
+          '_id name phone photo specialization bio cvPdf pendingUpdates status',
+      })
+      .populate({ path: 'client' })
+      .populate({ path: 'assignment' })
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        job: { ...job, applications },
+        assignment,
+        project,
+      },
+    });
+  } catch (err) {
+    console.error('getActiveJobDetails error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch job details',
+      error: err.message,
+    });
+  }
+};
 /* =====================================================
    4. JOB SUMMARY (ADMIN DASHBOARD)
 ===================================================== */

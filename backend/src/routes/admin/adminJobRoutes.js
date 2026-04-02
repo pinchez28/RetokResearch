@@ -5,6 +5,7 @@ import { authorizeRoles } from '../../middleware/rolesMiddleware.js';
 import {
   getAllJobs,
   getActiveJobs,
+  getActiveJobDetails,
   getPendingJobs,
   getCompletedJobs,
   getJobsSummary,
@@ -38,6 +39,9 @@ router.get('/pending', adminGuard, getPendingJobs);
 
 // Active jobs
 router.get('/active', adminGuard, getActiveJobs);
+
+// Active job detailsrouter.get('/active/:jobId', adminGuard, getActiveJobDetails);
+router.get('/active/:jobId', adminGuard, getActiveJobDetails);
 
 // Completed jobs
 router.get('/completed', adminGuard, getCompletedJobs);

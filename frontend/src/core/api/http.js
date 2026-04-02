@@ -262,6 +262,11 @@ export const adminApi = {
   confirmManualPayment: (projectId) =>
     api.post(`/admin/projects/${projectId}/unlock`),
 
+  // ----- ASSIGNMENTS -----
+  getAssignmentById: (id) => api.get(`/admin/assignments/${id}`),
+  overrideAssignmentByAdmin: (assignmentId, data) =>
+    api.patch(`/admin/assignments/${assignmentId}/override`, data),
+
   // =========================
   // 🔥 GUEST REQUESTS
   // =========================
