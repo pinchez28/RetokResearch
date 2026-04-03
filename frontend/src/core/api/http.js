@@ -159,8 +159,10 @@ export const clientApi = {
       `/client/projects/${projectId}/request-payment-confirmation`,
     );
   },
-  manualProjectPayment(projectId, phone) {
-    return api.post(`/client/projects/${projectId}/manual-pay`, { phone });
+  requestManualPaymentConfirmation(projectId) {
+    return api.post(
+      `/client/projects/${projectId}/request-payment-confirmation`,
+    );
   },
   getProjectPaymentStatus(projectId) {
     return api.get(`/client/projects/${projectId}/payment-status`);

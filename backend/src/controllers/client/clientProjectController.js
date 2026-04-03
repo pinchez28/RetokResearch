@@ -11,6 +11,7 @@ import Assignment from '../../models/expert/ExpertAssignment.js';
 import Payment from '../../models/payments/Payment.js';
 import { initiateStkPush } from '../../services/mpesa/stkService.js';
 import { emitProjectDownloaded } from '../../sockets/index.js';
+import { sendEmail } from '../../services/emailService.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -206,6 +207,7 @@ export const getClientProjectDetails = async (req, res) => {
     }
 
     /* 7️⃣ Respond */
+
     res.json({
       success: true,
       project: {
@@ -233,6 +235,9 @@ export const getClientProjectDetails = async (req, res) => {
         paymentConfirmed: project.paymentConfirmed,
         isPaid: project.isPaid,
 
+        /* 🔹 ADD THIS */
+        manualPaymentRequested: project.manualPaymentRequested || false,
+
         downloadedAt: project.downloadedAt,
         revisionRequestedAt: project.revisionRequestedAt,
         completedAt: project.completedAt,
@@ -257,6 +262,9 @@ export const requestManualPaymentConfirmation = async (req, res) => {
   try {
     const { projectId } = req.params;
 
+    /* ======================================
+       FIND PROJECT (OWNERSHIP CHECK)
+    ====================================== */
     const project = await ClientProject.findOne({
       _id: projectId,
       client: req.user.profile._id,
@@ -264,47 +272,105 @@ export const requestManualPaymentConfirmation = async (req, res) => {
       .populate('job', 'title')
       .populate({
         path: 'client',
-        populate: { path: 'user', select: '_id' },
+        populate: {
+          path: 'user',
+          model: 'User',
+          select: 'email', // no need for name here
+        },
       });
 
     if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
-    }
-
-    /* 🔒 Prevent misuse */
-    if (project.adminUnlocked || project.isPaid) {
-      return res.status(400).json({
-        message: 'Project already paid and unlocked',
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found',
       });
     }
 
-    /* 🔁 Force payment method */
-    project.paymentMethod = 'paybill_manual';
+    /* ======================================
+       SAFE DATA EXTRACTION (NO UNDEFINED EVER)
+    ====================================== */
 
-    /* 🚫 Prevent spam */
+    const clientName = project.client?.name || 'Unknown Client';
+    const clientEmail = project.client?.user?.email || 'No Email';
+    const projectTitle = project.job?.title || 'Untitled Project';
+
+    console.log('CLIENT NAME:', clientName);
+    console.log('CLIENT EMAIL:', clientEmail);
+    console.log('PROJECT TITLE:', projectTitle);
+
+    /* ======================================
+       BLOCK INVALID STATES
+    ====================================== */
+
+    if (project.isPaid || project.adminUnlocked) {
+      return res.status(400).json({
+        success: false,
+        message: 'Project already paid',
+      });
+    }
+
     if (project.manualPaymentRequested) {
       return res.status(400).json({
-        message: 'Payment already requested',
+        success: false,
+        message: 'Payment request already sent',
       });
     }
 
+    /* ======================================
+       SET MANUAL PAYMENT REQUEST
+    ====================================== */
+
+    project.paymentMethod = 'paybill_manual';
     project.manualPaymentRequested = true;
+    project.manualPaymentRequestedAt = new Date();
+
     await project.save();
 
-    /* 🔔 NOTIFY ADMIN */
+    /* ======================================
+       NOTIFY ADMIN (IN-APP)
+    ====================================== */
+
     await Notification.create({
       userType: 'Admin',
-      title: 'Manual Payment Verification Required',
-      message: `Client claims payment for "${project.job?.title}". Please verify.`,
+      title: 'Manual Payment Request',
+      message: `Client "${clientName}" requested payment verification for "${projectTitle}"`,
       jobId: project.job?._id || null,
     });
+
+    /* ======================================
+       EMAIL ADMIN (SAFE)
+    ====================================== */
+
+    if (process.env.ADMIN_EMAIL) {
+      sendEmail({
+        to: process.env.ADMIN_EMAIL,
+        subject: 'Manual Payment Verification Needed',
+        html: `
+          <h2>Manual Payment Request</h2>
+          <p><strong>Client:</strong> ${clientName}</p>
+          <p><strong>Email:</strong> ${clientEmail}</p>
+          <p><strong>Project:</strong> ${projectTitle}</p>
+        `,
+      }).catch((err) => {
+        console.error('EMAIL FAILED:', err);
+      });
+    }
+
+    /* ======================================
+       RESPONSE
+    ====================================== */
 
     return res.json({
       success: true,
       message: 'Payment request sent to admin',
+      data: {
+        projectId: project._id,
+        manualPaymentRequested: true,
+      },
     });
   } catch (err) {
-    console.error('[requestManualPaymentConfirmation]', err);
+    console.error('requestManualPaymentConfirmation error:', err);
+
     return res.status(500).json({
       success: false,
       message: 'Server error',
@@ -320,39 +386,64 @@ export const downloadWork = async (req, res) => {
     const { projectId } = req.params;
 
     const clientProject = await ClientProject.findById(projectId);
-    if (!clientProject)
+    if (!clientProject) {
+      console.log('❌ ClientProject not found:', projectId);
       return res.status(404).json({ message: 'ClientProject not found' });
+    }
 
-    if (clientProject.client.toString() !== req.user.profileId)
+    console.log('🔹 ClientProject found:', clientProject._id);
+
+    // Check ownership
+    console.log('Client ID:', clientProject.client.toString());
+    console.log('Logged in profileId:', req.user.profileId);
+    if (clientProject.client.toString() !== req.user.profileId) {
+      console.log('❌ Forbidden: Not the client');
       return res.status(403).json({ message: 'Not your project' });
+    }
 
-    if (!clientProject.isPaid)
+    // Check payment
+    console.log('isPaid:', clientProject.isPaid);
+    if (!clientProject.isPaid) {
+      console.log('❌ Forbidden: Payment not confirmed');
       return res.status(403).json({ message: 'Payment not confirmed' });
+    }
 
+    // Get the job
     const job = await Job.findById(clientProject.job);
-    if (!job)
+    if (!job) {
+      console.log('❌ Associated job not found:', clientProject.job);
       return res.status(404).json({ message: 'Associated job not found' });
+    }
 
-    if (!job.canClientDownload)
+    console.log(
+      'Job found:',
+      job._id,
+      'canClientDownload:',
+      job.canClientDownload,
+    );
+    if (!job.canClientDownload) {
+      console.log('❌ Forbidden: Download not yet available');
       return res.status(403).json({ message: 'Download not yet available' });
+    }
 
-    // 1️⃣ Make sure the file exists
+    // File path check
     const filePath = path.join(
       process.cwd(),
       job.finalWorkUrl.replace(/^\/+/, ''),
     );
-
     console.log('Resolved file path:', filePath);
 
-    if (!fs.existsSync(filePath))
+    if (!fs.existsSync(filePath)) {
+      console.log('❌ File not found on server:', filePath);
       return res.status(404).json({ message: 'File not found on server' });
+    }
 
-    // 2️⃣ Mark project as downloaded
+    // Mark as downloaded
     clientProject.downloadedAt = new Date();
     clientProject.status = 'downloaded';
     await clientProject.save();
 
-    // 3️⃣ Send the file (triggers Save As dialog)
+    console.log('✅ Download starting for project:', projectId);
     return res.download(filePath, path.basename(job.finalWorkUrl), (err) => {
       if (err) {
         console.error('Download error:', err);

@@ -106,7 +106,8 @@ export const getProjectByJobId = async (req, res) => {
     const project = await ClientProject.findOne({ job: jobId })
       .populate('client', 'name email')
       .populate('expert', 'name email')
-      .populate('job', 'title');
+      .populate('job', 'title')
+      .lean(); // ✅ IMPORTANT
 
     if (!project) {
       return res.status(404).json({
@@ -117,7 +118,15 @@ export const getProjectByJobId = async (req, res) => {
 
     res.json({
       success: true,
-      project,
+      project: {
+        ...project,
+
+        // 🔥 EXPLICIT FLAGS FOR FRONTEND
+        manualPaymentRequested: project.manualPaymentRequested || false,
+        adminUnlocked: project.adminUnlocked || false,
+        isPaid: project.isPaid || false,
+        paymentConfirmed: project.paymentConfirmed || false,
+      },
     });
   } catch (err) {
     console.error('[getProjectByJobId]', err);
@@ -140,7 +149,7 @@ export const confirmManualPayment = async (req, res) => {
         path: 'client',
         populate: { path: 'user', select: '_id email name' },
       })
-      .populate('job', 'title');
+      .populate('job', 'title canClientDownload');
 
     if (!project) {
       return res.status(404).json({
@@ -152,7 +161,6 @@ export const confirmManualPayment = async (req, res) => {
     /* ======================================
        PREVENT DOUBLE CONFIRMATION
     ====================================== */
-
     if (project.adminUnlocked) {
       return res.status(400).json({
         success: false,
@@ -161,9 +169,8 @@ export const confirmManualPayment = async (req, res) => {
     }
 
     /* ======================================
-       UNLOCK PROJECT
+       UNLOCK PROJECT & ALLOW CLIENT DOWNLOAD
     ====================================== */
-
     project.adminUnlocked = true;
     project.paymentConfirmed = true;
     project.isPaid = true;
@@ -171,10 +178,15 @@ export const confirmManualPayment = async (req, res) => {
 
     await project.save();
 
+    // ✅ Mark job as downloadable for client
+    if (project.job) {
+      project.job.paymentConfirmed = true;
+      await project.job.save();
+    }
+
     /* ======================================
        CLIENT IN-APP NOTIFICATION
     ====================================== */
-
     if (project.client?.user?._id) {
       await Notification.create({
         userType: 'Client',
@@ -186,9 +198,8 @@ export const confirmManualPayment = async (req, res) => {
     }
 
     /* ======================================
-       ADMIN NOTIFICATION (OPTIONAL)
+       ADMIN NOTIFICATION
     ====================================== */
-
     await Notification.create({
       userType: 'Admin',
       title: 'Payment Verified',
@@ -199,20 +210,15 @@ export const confirmManualPayment = async (req, res) => {
     /* ======================================
        EMAIL CLIENT
     ====================================== */
-
     if (project.client?.user?.email) {
       await sendEmail({
         to: project.client.user.email,
         subject: 'Payment Confirmed - Project Download Available',
         html: `
           <h2>Payment Confirmed</h2>
-
           <p>Your payment for the project below has been confirmed:</p>
-
           <b>${project.job?.title}</b>
-
           <p>You can now login to your dashboard and download your completed work.</p>
-
           <p>Thank you for using our platform.</p>
         `,
       });
@@ -220,13 +226,18 @@ export const confirmManualPayment = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Payment confirmed and project unlocked',
+      message: 'Payment confirmed, project unlocked, client can download',
       projectId: project._id,
       unlocked: true,
+      project: {
+        adminUnlocked: true,
+        isPaid: true,
+        paymentConfirmed: true,
+        canClientDownload: project.job?.canClientDownload || false,
+      },
     });
   } catch (err) {
     console.error('[confirmManualPayment]', err);
-
     return res.status(500).json({
       success: false,
       message: 'Server error',

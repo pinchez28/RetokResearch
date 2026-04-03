@@ -44,7 +44,9 @@
         <!-- PAYMENT BUTTON -->
         <!-- PAYMENT BUTTON -->
         <button
-          v-if="project && project.paymentStatus === 'ready' && !project.adminUnlocked"
+          v-if="
+            project && project.manualPaymentRequested && !project.adminUnlocked
+          "
           @click="confirmPayment(project._id)"
           class="px-5 py-2 bg-blue-600 text-white rounded-lg"
         >
@@ -53,16 +55,15 @@
 
         <!-- LOADING -->
         <span
-          v-else-if="!project"
-          class="px-4 py-1 rounded-full bg-gray-100 text-gray-500 text-sm"
+          v-if="project?.manualPaymentRequested && !project?.adminUnlocked"
+          class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm"
         >
-          Loading project...
+          Awaiting Payment Confirmation
         </span>
 
-        <!-- CONFIRMED -->
         <span
-          v-else-if="project && project.adminUnlocked"
-          class="px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold"
+          v-else-if="project?.adminUnlocked"
+          class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"
         >
           Payment Confirmed
         </span>
@@ -71,7 +72,7 @@
 
     <!-- TITLE -->
     <h1 class="text-3xl font-bold text-gray-800">
-      {{ job.title || "Job Details" }}
+      {{ job.title || 'Job Details' }}
     </h1>
 
     <!-- KPI -->
@@ -91,7 +92,7 @@
       <div class="bg-white p-6 rounded-lg shadow border">
         <h3 class="text-sm text-gray-500 mb-2">Budget</h3>
         <p class="text-2xl font-bold">
-          {{ proposal?.quote ?? job.pricingRange?.min ?? "—" }}
+          {{ proposal?.quote ?? job.pricingRange?.min ?? '—' }}
         </p>
       </div>
 
@@ -110,27 +111,27 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
       <div class="bg-white p-6 rounded-lg shadow border">
         <h2 class="text-xl mb-4">Client</h2>
-        <p>Name: {{ job.client?.name || "—" }}</p>
-        <p>Email: {{ job.client?.email || "—" }}</p>
+        <p>Name: {{ job.client?.name || '—' }}</p>
+        <p>Email: {{ job.client?.email || '—' }}</p>
       </div>
 
       <div class="bg-white p-6 rounded-lg shadow border">
         <h2 class="text-xl mb-4">Expert</h2>
-        <p>Name: {{ assignment?.expert?.name || "—" }}</p>
-        <p>Email: {{ assignment?.expert?.email || "—" }}</p>
+        <p>Name: {{ assignment?.expert?.name || '—' }}</p>
+        <p>Email: {{ assignment?.expert?.email || '—' }}</p>
       </div>
 
       <div class="bg-white p-6 rounded-lg shadow border">
         <h2 class="text-xl mb-4">Admin</h2>
-        <p>Name: {{ authStore.user?.name || "—" }}</p>
-        <p>Email: {{ authStore.user?.email || "—" }}</p>
+        <p>Name: {{ authStore.user?.name || '—' }}</p>
+        <p>Email: {{ authStore.user?.email || '—' }}</p>
       </div>
     </div>
 
     <!-- DESCRIPTION -->
     <div class="bg-white p-6 rounded-lg shadow border">
       <h2 class="text-xl mb-4">Description</h2>
-      <p>{{ job.description || "No description provided" }}</p>
+      <p>{{ job.description || 'No description provided' }}</p>
     </div>
 
     <!-- CHAT MODERATION -->
@@ -150,14 +151,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import Swal from "sweetalert2";
-import { adminApi, chatApi } from "@/core/api/http";
-import { useAuthStore } from "@/core/store/auth";
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
+import { adminApi, chatApi } from '@/core/api/http';
+import { useAuthStore } from '@/core/store/auth';
 
-import ChatThread from "@/components/ui/chat/ChatThread.vue";
-import { useChat } from "@/composables/chat/useChat";
+import ChatThread from '@/components/ui/chat/ChatThread.vue';
+import { useChat } from '@/composables/chat/useChat';
 
 /* ===================== STATE ===================== */
 const route = useRoute();
@@ -171,31 +172,36 @@ const project = ref(null);
 
 const chatThreadId = computed(() => {
   const thread = assignment.value?.chatThreadId;
-  return typeof thread === "string" ? thread : thread?._id || null;
+  return typeof thread === 'string' ? thread : thread?._id || null;
 });
 
 const canAccessChat = computed(() => !!chatThreadId.value);
 
-const { messages, participants, loading: chatLoading, sendMessage } = useChat(
+const {
+  messages,
+  participants,
+  loading: chatLoading,
+  sendMessage,
+} = useChat(
   chatThreadId,
   canAccessChat,
   {
     _id: authStore.user?._id,
-    role: "admin",
+    role: 'admin',
   },
-  true // admin mode
+  true, // admin mode
 );
 
 /* ===================== COMPUTED ===================== */
 const progressValue = computed(() => {
   switch (job.value.status) {
-    case "assigned":
+    case 'assigned':
       return 40;
-    case "in_progress":
+    case 'in_progress':
       return 60;
-    case "in_review":
+    case 'in_review':
       return 70;
-    case "completed":
+    case 'completed':
       return 100;
     default:
       return 0;
@@ -207,26 +213,28 @@ const progressWidth = computed(() => `${progressValue.value}%`);
 
 const progressColor = computed(() =>
   progressValue.value < 50
-    ? "bg-yellow-500"
+    ? 'bg-yellow-500'
     : progressValue.value < 80
-    ? "bg-blue-500"
-    : "bg-green-600"
+      ? 'bg-blue-500'
+      : 'bg-green-600',
 );
 
 const deliveryText = computed(() =>
-  assignment.value?.deliveryTime ? assignment.value.deliveryTime + " days" : "—"
+  assignment.value?.deliveryTime
+    ? assignment.value.deliveryTime + ' days'
+    : '—',
 );
 
-const riskLabel = computed(() => (progressValue.value < 50 ? "Medium" : "Low"));
+const riskLabel = computed(() => (progressValue.value < 50 ? 'Medium' : 'Low'));
 
 const riskColor = computed(() =>
-  progressValue.value < 50 ? "text-yellow-600" : "text-green-600"
+  progressValue.value < 50 ? 'text-yellow-600' : 'text-green-600',
 );
 
 const healthBadge = computed(() =>
   progressValue.value < 50
-    ? { label: "At Risk", class: "bg-yellow-100 text-yellow-700" }
-    : { label: "Healthy", class: "bg-green-100 text-green-700" }
+    ? { label: 'At Risk', class: 'bg-yellow-100 text-yellow-700' }
+    : { label: 'Healthy', class: 'bg-green-100 text-green-700' },
 );
 
 /* ===================== API FUNCTIONS ===================== */
@@ -237,7 +245,7 @@ const fetchJobDetails = async () => {
     assignment.value = data.data.assignment;
     proposal.value = data.data.proposal;
   } catch (err) {
-    Swal.fire("Error", "Failed to load job", "error");
+    Swal.fire('Error', 'Failed to load job', 'error');
   }
 };
 
@@ -246,41 +254,54 @@ const fetchProject = async () => {
     const { data } = await adminApi.getProjectByJobId(route.params.jobId);
     project.value = data.project;
   } catch (err) {
-    console.error("❌ Project fetch failed", err.response || err);
+    console.error('❌ Project fetch failed', err.response || err);
   }
 };
 
 /* ===================== PAYMENT ===================== */
 const confirmPayment = async (projectId) => {
+  const confirm = await Swal.fire({
+    title: 'Confirm Payment?',
+    text: 'This will unlock the project for the client.',
+    icon: 'warning',
+    showCancelButton: true,
+  });
+
+  if (!confirm.isConfirmed) return;
+
   try {
     const { data } = await adminApi.confirmManualPayment(projectId);
+
     if (data.success) {
       project.value.adminUnlocked = true;
-      project.value.paymentStatus = "confirmed"; // Optional: mark status as confirmed
+      project.value.isPaid = true;
+      project.value.paymentConfirmed = true;
+
+      Swal.fire('Success', 'Project unlocked for client', 'success');
     }
   } catch (err) {
-    Swal.fire("Error", "Failed to confirm payment", "error");
+    Swal.fire('Error', 'Failed to confirm payment', 'error');
   }
 };
 
 /* ===================== ACTIONS ===================== */
 const assignExpert = (job) =>
-  router.push({ name: "AssignExpert", params: { jobId: job._id } });
+  router.push({ name: 'AssignExpert', params: { jobId: job._id } });
 
 const overrideAssignment = async () => {
-  Swal.fire("Override placeholder");
+  Swal.fire('Override placeholder');
 };
 
 const deleteJob = async (id) => {
   const result = await Swal.fire({
-    title: "Delete Job?",
+    title: 'Delete Job?',
     showCancelButton: true,
   });
 
   if (!result.isConfirmed) return;
 
   await adminApi.deleteJob(id);
-  router.push({ name: "ActiveJobs" });
+  router.push({ name: 'ActiveJobs' });
 };
 
 /* ===================== INIT ===================== */

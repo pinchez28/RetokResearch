@@ -83,7 +83,7 @@
           </h3>
 
           <p class="text-sm text-slate-600 mb-3">
-            Follow the details below to complete your payment:
+            Complete payment using the details below, then confirm so admin can verify.
           </p>
 
           <div class="space-y-2 text-base">
@@ -97,16 +97,31 @@
             <p>
               <span class="font-medium text-slate-600">Account Number:</span>
               <span class="ml-2 font-bold text-xl text-green-800 tracking-wide">
-                169624
+                {{ project.accountNumber }}
               </span>
             </p>
           </div>
 
-          <div class="mt-4 p-3 bg-white border border-dashed border-green-300 rounded-lg">
-            <p class="text-xs text-slate-500">
-              Payment is completed outside this app. After paying, return and confirm from
-              your dashboard.
-            </p>
+          <!-- ACTION AREA -->
+          <div class="mt-6">
+            <!-- BUTTON -->
+            <button
+              v-if="!manualRequested"
+              @click="requestManualConfirmation"
+              :disabled="requestingManual"
+              class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {{ requestingManual ? "Sending request..." : "I HAVE PAID" }}
+            </button>
+
+            <!-- WAITING STATE -->
+            <div
+              v-else
+              class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm"
+            >
+              Payment request sent. Awaiting admin confirmation. You will be notified once
+              your project is unlocked.
+            </div>
           </div>
         </div>
 
@@ -151,6 +166,7 @@ const route = useRoute();
 const router = useRouter();
 const projectId = route.params.projectId;
 
+/* ================= STATE ================= */
 const project = ref(null);
 const loading = ref(true);
 const error = ref("");
@@ -158,24 +174,33 @@ const paying = ref(false);
 const phone = ref("");
 const paymentMethod = ref("mpesa_stk");
 
-let stkTimeout = null;
+/* ✅ MANUAL PAYMENT STATE */
+const requestingManual = ref(false);
+const manualRequested = ref(false);
 
+let stkTimeout = null;
 const socket = io(import.meta.env.VITE_API_URL || "http://localhost:4000");
 
+/* ================= SOCKET ================= */
 function joinProjectRoom() {
   socket.emit("join-project", projectId);
+
   socket.on("project-paid", async (data) => {
     if (data.projectId === projectId) {
       clearTimeout(stkTimeout);
       paying.value = false;
-      project.value.paymentStatus = "confirmed";
+
+      if (project.value) project.value.paymentStatus = "confirmed";
+
       Swal.close();
+
       await Swal.fire({
         icon: "success",
         title: "Payment Confirmed",
         timer: 2000,
         showConfirmButton: false,
       });
+
       router.replace(`/client/projects/${projectId}`);
     }
   });
@@ -186,6 +211,7 @@ onUnmounted(() => {
   clearTimeout(stkTimeout);
 });
 
+/* ================= PHONE HELPERS ================= */
 function isValidKenyanPhone(value) {
   const cleaned = value.replace(/\s+/g, "");
   return /^(?:\+254|254|0)?(7\d{8}|1\d{8})$/.test(cleaned);
@@ -199,29 +225,46 @@ function normalizePhone(value) {
 }
 
 function handleBlurNormalize() {
-  if (isValidKenyanPhone(phone.value)) {
-    phone.value = normalizePhone(phone.value);
-  }
+  if (isValidKenyanPhone(phone.value)) phone.value = normalizePhone(phone.value);
 }
 
+/* ================= LOAD PROJECT ================= */
 async function loadProject() {
   loading.value = true;
+  error.value = "";
+
   try {
     const res = await clientApi.getProjectById(projectId);
-    project.value = res.data.project;
-    if (project.value.clientPhone)
-      phone.value = normalizePhone(project.value.clientPhone);
 
+    /* ✅ BACKEND NOW PROVIDES manualPaymentRequested */
+    project.value = res.data.project || res.data.data?.project || null;
+
+    if (!project.value) {
+      error.value = "Project not found";
+      return;
+    }
+
+    manualRequested.value = project.value.manualPaymentRequested || false;
+
+    // Normalize client phone if exists
+    if (project.value.clientPhone) {
+      phone.value = normalizePhone(project.value.clientPhone);
+    }
+
+    // Fetch current payment status
     const statusRes = await clientApi.getProjectPaymentStatus(projectId);
     project.value.paymentStatus = statusRes.data.status || "none";
+
+    console.log("Project loaded:", project.value);
   } catch (err) {
-    console.error(err);
+    console.error("loadProject error:", err);
     error.value = "Failed to load payment details.";
   } finally {
     loading.value = false;
   }
 }
 
+/* ================= STK PAYMENT ================= */
 async function handlePayment() {
   if (paying.value) return;
   paying.value = true;
@@ -238,8 +281,10 @@ async function handlePayment() {
         paying.value = false;
         return;
       }
+
       await clientApi.initiateProjectPayment(projectId, normalizePhone(phone.value));
-      project.value.paymentStatus = "pending";
+      if (project.value) project.value.paymentStatus = "pending";
+
       Swal.fire({
         icon: "info",
         title: "Check Your Phone",
@@ -252,6 +297,7 @@ async function handlePayment() {
       stkTimeout = setTimeout(async () => {
         paying.value = false;
         Swal.close();
+
         const { value: confirm } = await Swal.fire({
           icon: "warning",
           title: "Payment Pending",
@@ -260,20 +306,26 @@ async function handlePayment() {
           confirmButtonText: "I have paid",
           cancelButtonText: "Cancel",
         });
+
         if (confirm) {
           const statusRes = await clientApi.getProjectPaymentStatus(projectId);
-          project.value.paymentStatus = statusRes.data.status || "none";
+          if (project.value)
+            project.value.paymentStatus = statusRes.data.status || "none";
         }
       }, 60000);
-    } else if (paymentMethod.value === "paybill") {
+    } else if (paymentMethod.value === "paybill_manual") {
       await Swal.fire({
         icon: "info",
         title: "Pay via Paybill",
-        html: `Pay KES ${project.value.budget} to <strong>516600</strong> with Account Number: <strong>${project.value.accountNumber}</strong>`,
+        html: `
+          Pay KES ${project.value.budget} to <strong>222111</strong><br/>
+          Account Number: <strong>${project.value.accountNumber}</strong>
+        `,
       });
+      paying.value = false;
     }
   } catch (err) {
-    console.error(err);
+    console.error("handlePayment error:", err);
     paying.value = false;
     Swal.fire({
       icon: "error",
@@ -283,6 +335,49 @@ async function handlePayment() {
   }
 }
 
+/* ================= MANUAL CONFIRMATION ================= */
+async function requestManualConfirmation() {
+  if (requestingManual.value || manualRequested.value) return;
+
+  requestingManual.value = true;
+
+  try {
+    const res = await clientApi.requestManualPaymentConfirmation(projectId);
+
+    if (res.data.success) {
+      manualRequested.value = true;
+      Swal.fire({
+        icon: "success",
+        title: "Request Sent",
+        text: "Admin will verify your payment shortly.",
+        confirmButtonColor: "#16a34a",
+      });
+    }
+  } catch (err) {
+    console.error("requestManualConfirmation error:", err);
+
+    const message = err.response?.data?.message;
+
+    if (message === "Payment request already sent") {
+      manualRequested.value = true;
+      Swal.fire({
+        icon: "info",
+        title: "Already Requested",
+        text: "Admin is already reviewing your payment.",
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Request Failed",
+        text: message || "Something went wrong",
+      });
+    }
+  } finally {
+    requestingManual.value = false;
+  }
+}
+
+/* ================= INIT ================= */
 onMounted(async () => {
   await loadProject();
   joinProjectRoom();
