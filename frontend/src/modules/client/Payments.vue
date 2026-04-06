@@ -97,7 +97,8 @@
             <p>
               <span class="font-medium text-slate-600">Account Number:</span>
               <span class="ml-2 font-bold text-xl text-green-800 tracking-wide">
-                {{ project.accountNumber }}
+                <!-- {{ project.accountNumber }} -->
+                169624
               </span>
             </p>
           </div>

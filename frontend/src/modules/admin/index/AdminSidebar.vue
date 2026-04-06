@@ -31,9 +31,7 @@
           Retok
         </span>
 
-        <span class="text-xs sm:text-sm text-primary-200 font-medium">
-          Admin Panel
-        </span>
+        <span class="text-xs sm:text-sm text-primary-200 font-medium"> Admin Panel </span>
       </div>
     </RouterLink>
 
@@ -188,10 +186,10 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
-import { useNotificationStore } from '@/core/store/notificationStore.js';
-import { useUIStore } from '@/core/store/uiStore';
+import { useRoute, useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { useNotificationStore } from "@/core/store/notificationStore.js";
+import { useUIStore } from "@/core/store/uiStore";
 
 const route = useRoute();
 const router = useRouter();
@@ -207,41 +205,39 @@ const handleNavigate = () => {
 
 // Links
 const homepageLinks = [
-  { name: 'Services', path: '/admin/homepage/services' },
-  { name: 'Top Experts', path: '/admin/homepage/experts' },
-  { name: 'About Section', path: '/admin/homepage/about' },
-  { name: 'Contact Section', path: '/admin/homepage/contact' },
+  { name: "Top Experts", path: "/admin/homepage/experts" },
+  { name: "About Section", path: "/admin/homepage/about" },
 ];
 
 const jobLinks = [
-  { name: 'Pending Jobs', path: '/admin/jobs/pending' },
-  { name: 'Active Jobs', path: '/admin/jobs/active' },
-  { name: 'Completed Jobs', path: '/admin/jobs/completed' },
-  { name: 'Disputes', path: '/admin/jobs/disputes' },
+  { name: "Pending Jobs", path: "/admin/jobs/pending" },
+  { name: "Active Jobs", path: "/admin/jobs/active" },
+  { name: "Completed Jobs", path: "/admin/jobs/completed" },
+  { name: "Disputes", path: "/admin/jobs/disputes" },
 ];
 
 const clientLinks = [
-  { name: 'All Clients', path: '/admin/clients' },
-  { name: 'Client Activity Logs', path: '/admin/clients/logs' },
+  { name: "All Clients", path: "/admin/clients" },
+  { name: "Client Activity Logs", path: "/admin/clients/logs" },
 ];
 
 const expertLinks = [
-  { name: 'Pending Approvals', path: '/admin/experts/pending' },
-  { name: 'Approved Experts', path: '/admin/experts' },
-  { name: 'Expert Performance', path: '/admin/experts/performance' },
+  { name: "Pending Approvals", path: "/admin/experts/pending" },
+  { name: "Approved Experts", path: "/admin/experts" },
+  { name: "Expert Performance", path: "/admin/experts/performance" },
 ];
 
 const supportLinks = [
-  { name: 'Guest Support', path: '/admin/guest-support' },
-  { name: 'Client Support', path: '/admin/client-support' },
-  { name: 'Expert Support', path: '/admin/expert-support' },
+  { name: "Guest Support", path: "/admin/guest-support" },
+  { name: "Client Support", path: "/admin/client-support" },
+  { name: "Expert Support", path: "/admin/expert-support" },
 ];
 
 const isActive = (path) => route.path === path;
 
 const logout = () => {
   closeSidebar();
-  router.push('/login');
+  router.push("/login");
 };
 </script>
 

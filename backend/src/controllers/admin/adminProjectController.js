@@ -210,19 +210,19 @@ export const confirmManualPayment = async (req, res) => {
     /* ======================================
        EMAIL CLIENT
     ====================================== */
-    if (project.client?.user?.email) {
-      await sendEmail({
-        to: project.client.user.email,
-        subject: 'Payment Confirmed - Project Download Available',
-        html: `
-          <h2>Payment Confirmed</h2>
-          <p>Your payment for the project below has been confirmed:</p>
-          <b>${project.job?.title}</b>
-          <p>You can now login to your dashboard and download your completed work.</p>
-          <p>Thank you for using our platform.</p>
-        `,
-      });
-    }
+    // if (project.client?.user?.email) {
+    //   await sendEmail({
+    //     to: project.client.user.email,
+    //     subject: 'Payment Confirmed - Project Download Available',
+    //     html: `
+    //       <h2>Payment Confirmed</h2>
+    //       <p>Your payment for the project below has been confirmed:</p>
+    //       <b>${project.job?.title}</b>
+    //       <p>You can now login to your dashboard and download your completed work.</p>
+    //       <p>Thank you for using our platform.</p>
+    //     `,
+    //   });
+    // }
 
     return res.json({
       success: true,

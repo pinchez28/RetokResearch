@@ -78,11 +78,11 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useUIStore } from '@/core/store/uiStore.js';
-import { User } from 'lucide-vue-next';
-import api from '@/core/api/http.js';
+import { computed, ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useUIStore } from "@/core/store/uiStore.js";
+import { User } from "lucide-vue-next";
+import api from "@/core/api/http.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -91,14 +91,12 @@ const uiStore = useUIStore();
 const sidebarOpen = computed(() => uiStore.state.sidebarOpen);
 
 const links = [
-  { name: 'Dashboard', path: '/client/dashboard' },
-  { name: 'Post Job', path: '/client/post-job' },
-  { name: 'Job Tracking', path: '/client/job-tracking' },
-  { name: 'Projects', path: '/client/projects' },
-  { name: 'Messages', path: '/client/messages' },
-  { name: 'Payments', path: '/client/payments' },
-  { name: 'Profile', path: '/client/profile' },
-  { name: 'Support', path: '/client/support' },
+  { name: "Dashboard", path: "/client/dashboard" },
+  { name: "Post Job", path: "/client/post-job" },
+  { name: "Job Tracking", path: "/client/job-tracking" },
+  { name: "Projects", path: "/client/projects" },
+  { name: "Profile", path: "/client/profile" },
+  { name: "Support", path: "/client/support" },
 ];
 
 const isActive = (path) => route.path === path;
@@ -109,15 +107,15 @@ const closeSidebarOnMobile = () => {
 
 const logout = () => {
   localStorage.clear();
-  router.push('/login');
+  router.push("/login");
 };
 
-const clientName = ref('Client');
+const clientName = ref("Client");
 
 const fetchClientProfile = async () => {
   try {
-    const { data } = await api.get('/client/profile');
-    clientName.value = data?.data?.name || 'Client';
+    const { data } = await api.get("/client/profile");
+    clientName.value = data?.data?.name || "Client";
   } catch (err) {
     console.error(err);
   }
